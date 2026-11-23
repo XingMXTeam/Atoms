@@ -6,7 +6,7 @@ done
 
 ## Commit
 
-feat(TASK-3): Workbench Agent timeline + interrupt 继续 affordance (SHA recorded by `harness task-done`)
+`0401dca` — feat(TASK-3): Workbench Agent timeline + interrupt 继续 affordance
 
 ## What changed
 

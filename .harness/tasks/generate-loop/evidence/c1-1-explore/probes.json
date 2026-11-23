@@ -1,0 +1,73 @@
+{
+  "results": [
+    {
+      "id": "home-structure",
+      "cardCount": 4,
+      "cardNames": [
+        "示例：做一个简洁的待办清单应用，支持添加、完成和删除任务",
+        "示例：做一个番茄钟计时器，支持专注与休息切换，并显示剩余时间",
+        "示例：做一个基础计算器，支持加减乘除和清除",
+        "示例：做一个天气卡片界面，展示城市名称、温度和简短天气描述"
+      ],
+      "projectsHeading": 1,
+      "overflowHome": 1,
+      "homeText": "Atoms Studio 可验证的 AI 应用生成 输入需求，Agent 团队会规划、设计并生成可预览的应用。 描述你想生成的应用 用一句话描述即可 开始生成 待办清单 做一个简洁的待办清单应用，支持添加、完成和删除任务 番茄钟 做一个番茄钟计时器，支持专注与休息切换，并显示剩余时间 计算器 做一个基础计算器，支持加减乘除和清除 天气卡片 做一个天气卡片界面，展示城市名称、温度和简短天气描述 我的项目 还没有项目，输入需求开始生成吧"
+    },
+    {
+      "id": "probe-empty-submit",
+      "disabled": true,
+      "stayed": true,
+      "url": "http://127.0.0.1:3000/"
+    },
+    {
+      "id": "probe-example-fill",
+      "filled": "做一个简洁的待办清单应用，支持添加、完成和删除任务",
+      "ok": true
+    },
+    {
+      "id": "probe-long-input",
+      "length": 1200
+    },
+    {
+      "id": "probe-double-submit",
+      "url": "http://127.0.0.1:3000/projects/a37c77b0-f1ff-4379-a00b-bafdee1156bc?run=362128dc-8014-4f4f-833c-adfa58b7700d"
+    },
+    {
+      "id": "timeline",
+      "runStatus": "completed",
+      "labelBits": {
+        "planner": "规划师 已完成 · 0s 展开详情",
+        "architect": "架构师 已完成 · 0s 展开详情",
+        "engineer": "工程师 已完成 · 0s 展开详情"
+      },
+      "plannerPreVisible": true
+    },
+    {
+      "id": "preview-code",
+      "sandbox": "allow-scripts",
+      "srcdocLen": 1303048,
+      "hasMockMarker": true,
+      "srcdocHasCdn": false,
+      "treeText": "src/App.tsx src/components/TodoList.tsx src/main.tsx src/App.tsx import { useState } from \"react\"; import { TodoList } from \"./components/TodoList\"; type Todo = { id: string; text: string; done: boolean }; export default function App() { const [todos, setTodos] = useState<Todo[]>([ { id: \"1\", text: \"体验 Atoms Studio\", done: false }, ]); const [draft, setDraft] = useState(\"\"); function addTodo() { c",
+      "fileButtons": 3,
+      "returnPreviewLen": 1303048,
+      "cdnHits": []
+    },
+    {
+      "id": "probe-interrupt",
+      "continueVisible": true,
+      "interruptMsg": 1,
+      "interruptStatus": "interrupted"
+    },
+    {
+      "id": "probe-persistence-home",
+      "projectLinks": 2,
+      "homeProjectsText": "Atoms Studio 可验证的 AI 应用生成 输入需求，Agent 团队会规划、设计并生成可预览的应用。 描述你想生成的应用 用一句话描述即可 开始生成 待办清单 做一个简洁的待办清单应用，支持添加、完成和删除任务 番茄钟 做一个番茄钟计时器，支持专注与休息切换，并显示剩余时间 计算器 做一个基础计算器，支持加减乘除和清除 天气卡片 做一个天气卡片界面，展示城市名称、温度和简短天气描述 我的项目 中断探针对：做一个计数器 2026/11/23 18:17:46 中文待办清单 2026/11/23 18:17:41"
+    },
+    {
+      "id": "measure-overflow-workbench",
+      "overflowWorkbench": 0
+    }
+  ],
+  "cdnHits": []
+}

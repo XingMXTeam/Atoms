@@ -93,3 +93,23 @@
 
 **Verify**
 - `pnpm typecheck && pnpm lint && pnpm test && pnpm test:e2e && pnpm build`
+
+### TASK-6: Fix open eval gaps — sandbox/CDN greps, interrupt chrome scoping, painted preview
+
+**Goal** — Close cycle-1 open items: remove `allow-same-origin` / CDN host strings that veto greps, scope 「继续」 to interrupted runs only, and make 预览 paint identifiable mock UI (visual assertion, not srcdoc alone).
+
+**Files**
+- Modify: `src/lib/preview/bundle.ts` (+ tests that must not embed CDN host literals as runtime strings)
+- Modify: workbench timeline / header status components so completed runs hide interrupt recovery chrome and do not stay on 「运行中」
+- Modify: preview host / iframe paint path so mock content is visible; e2e asserts painted pixels or accessible probe text
+- Tests: `src/lib/preview/*.test.ts`, `e2e/generate-preview.spec.ts`, `e2e/generate-timeline.spec.ts`, `e2e/generate-core.spec.ts`
+
+**Contract**
+- No `allow-same-origin` in `src`; no esm.sh/unpkg/jsdelivr/Tailwind CDN/Google Fonts host strings in `src`.
+- 「继续」 / interrupt banner appears iff `data-run-status=interrupted`; completed success does not show it; header status matches terminal run state.
+- After mock Engineer completion, 预览 shows screenshot-identifiable mock UI (RB-13 / RB-30 / E2E-1).
+
+**Verify**
+- `pnpm exec vitest run src/lib/preview src/lib/agents`
+- Playwright preview + timeline + core specs
+- `pnpm typecheck && pnpm lint`

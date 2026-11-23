@@ -132,6 +132,7 @@ Mock provider returns a fixed multi-file React+TS fixture that renders identifia
 - Eval/capture base: `http://127.0.0.1:3000`
 - Frontend working directory: repository root
 - E2E: `LLM_PROVIDER=mock pnpm test:e2e`
+- Capture precondition: `pages.json` lists home `/` only. Workbench `/projects/[id]` needs the creating `deviceId` cookie; there is no F2 seed at `/projects/demo`. For workbench/timeline/preview judges, capture via an authenticated post-submit Playwright journey in the same browser context (UI submit or API create + cookie), never a bare demo route.
 
 ## 9. Risks and trade-offs
 

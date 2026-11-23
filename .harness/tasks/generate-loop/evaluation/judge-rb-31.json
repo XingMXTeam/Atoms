@@ -1,0 +1,7 @@
+{
+  "score": 1,
+  "note": "Clicking the first example card populates the central prompt; the browser observation is true and the captured screenshot shows its text in the textarea.",
+  "artifacts": [".harness/tasks/generate-loop/evidence/c2-confirm-20261123/example-filled.png", ".harness/tasks/generate-loop/evidence/c2-confirm-20261123/exploratory-results.json", ".harness/tasks/generate-loop/evaluation/e2e-cases-c2.md"],
+  "verify": ["typecheck", "lint", "unit", "e2e", "build"],
+  "heuristics": ["H-UX-2.1", "H-UX-6.1", "H-UX-7.1"]
+}

@@ -1,0 +1,7 @@
+{
+  "score": 1,
+  "note": "No external CDN requests occurred during the browser generate and preview flow. The preview iframe uses sandbox=allow-scripts, and the observed app assets load from the local origin; the RL-2 CDN pitfall is absent.",
+  "artifacts": [".harness/tasks/generate-loop/evidence/c2-confirm-20261123/exploratory-results.json", ".harness/tasks/generate-loop/evidence/c2-confirm-20261123/workbench-preview.png", ".harness/tasks/generate-loop/evaluation/e2e-cases-c2.md"],
+  "verify": ["typecheck", "lint", "unit", "e2e", "build"],
+  "heuristics": ["H-UI-7.2"]
+}

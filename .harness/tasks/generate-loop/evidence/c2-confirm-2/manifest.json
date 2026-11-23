@@ -1,0 +1,28 @@
+{
+  "feature": "generate-loop",
+  "runId": "c2-confirm-2",
+  "status": "pass",
+  "note": null,
+  "tool": "@playwright/test",
+  "baseUrl": "http://127.0.0.1:3000",
+  "viewport": {
+    "width": 1280,
+    "height": 800
+  },
+  "fullPage": false,
+  "minBytes": 2048,
+  "generatedAt": "2026-11-23T14:55:31.642Z",
+  "dir": ".harness/tasks/generate-loop/evidence/c2-confirm-2",
+  "pages": [
+    {
+      "name": "home",
+      "route": "/",
+      "url": "http://127.0.0.1:3000/",
+      "file": ".harness/tasks/generate-loop/evidence/c2-confirm-2/home.png",
+      "bytes": 72127,
+      "ok": true,
+      "usedFallback": false,
+      "error": null
+    }
+  ]
+}

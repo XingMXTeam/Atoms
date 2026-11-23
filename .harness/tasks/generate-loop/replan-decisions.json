@@ -1,0 +1,27 @@
+[
+  {
+    "id": "RS-1",
+    "decision": "accepted",
+    "note": "pages.json keeps only capturable static home; workbench evidence requires authenticated post-submit Playwright journeys (documented in tech-design + RB-2). /projects/demo is not a seeded fixture in F2."
+  },
+  {
+    "id": "RS-2",
+    "decision": "accepted",
+    "note": "RB-10 description now states timeline-only RL-3 half; preview blankness is scored exclusively by RB-30."
+  },
+  {
+    "id": "RS-3",
+    "decision": "accepted",
+    "note": "RB-13 now requires screenshot evidence of identifiable mock UI pixels in 预览, not tabs/srcdoc alone."
+  },
+  {
+    "id": "RS-4",
+    "decision": "accepted",
+    "note": "RB-22 (and RB-39) now require 继续 / interrupt recovery chrome iff run is interrupted; completed runs must not show it and must not keep 运行中."
+  },
+  {
+    "id": "RS-5",
+    "decision": "accepted",
+    "note": "RB-30 and E2E-1 now require a visual paint assertion (non-uniform iframe clip or accessible probe text); srcdoc markers alone cannot pass."
+  }
+]

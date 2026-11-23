@@ -67,7 +67,7 @@
       "kind": "judge",
       "anchor": "REF-1",
       "evidence": ".harness/tasks/generate-loop/evaluation/judge-rb-2.json",
-      "description": "Home capture matches REF-1: centered prompt, example cards, 我的项目 grid, Chinese chrome",
+      "description": "Home capture (pages.json static route /) matches REF-1: centered prompt, example cards, 我的项目 grid, Chinese chrome; workbench PNGs for other judges must use authenticated post-submit evidence, not /projects/demo",
       "weight": 2
     },
     {
@@ -121,7 +121,7 @@
       "kind": "judge",
       "anchor": "REF-1",
       "evidence": ".harness/tasks/generate-loop/evaluation/judge-rb-39.json",
-      "description": "Timeline interaction matches REF-1: expandable payloads and live status updates are usable during a mock run",
+      "description": "Timeline interaction matches REF-1: expandable payloads and live status updates are usable during a mock run; when data-run-status=completed, interrupt banner/继续 is hidden and header status is not stuck on 运行中",
       "weight": 2
     },
     {
@@ -173,7 +173,7 @@
       "kind": "judge",
       "anchor": "RL-3",
       "evidence": ".harness/tasks/generate-loop/evaluation/judge-rb-10.json",
-      "description": "Pitfall absent after mock generate: timeline is not missing Chinese Planner/Architect/Engineer progress (RL-3)",
+      "description": "Pitfall absent after mock generate: timeline is not missing Chinese Planner/Architect/Engineer progress (RL-3 timeline half only; preview blankness is scored by RB-30, not here)",
       "weight": 1
     },
     {
@@ -204,7 +204,7 @@
       "kind": "judge",
       "anchor": "REF-1",
       "evidence": ".harness/tasks/generate-loop/evaluation/judge-rb-13.json",
-      "description": "Workbench right pane shows 预览/代码 and non-blank preview consistent with REF-1",
+      "description": "Workbench right pane shows 预览/代码 with 代码 file tree+source and 预览 showing screenshot-identifiable mock UI pixels (not tabs or iframe srcdoc/DOM presence alone) consistent with REF-1",
       "weight": 2
     },
     {
@@ -303,7 +303,7 @@
       "kind": "judge",
       "anchor": "REF-1",
       "evidence": ".harness/tasks/generate-loop/evaluation/judge-rb-22.json",
-      "description": "When interrupted, UI surfaces Chinese 继续 rather than a silent stall (REF-1 interaction)",
+      "description": "Chinese 继续 / interrupt recovery chrome appears iff the run is interrupted (REF-1); score 1 only when interrupted runs show it and completed success runs do not",
       "weight": 2
     },
     {
@@ -386,7 +386,7 @@
       "kind": "judge",
       "anchor": "RL-3",
       "evidence": ".harness/tasks/generate-loop/evaluation/judge-rb-30.json",
-      "description": "After mock generate, 预览 is non-blank (RL-3) with identifiable mock app content",
+      "description": "After mock generate, 预览 is visually non-blank (RL-3 preview half): screenshot/clip shows identifiable mock app UI pixels or accessible probe text — srcdoc markers alone do not pass",
       "weight": 2
     },
     {

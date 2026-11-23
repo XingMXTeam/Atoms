@@ -1,0 +1,10 @@
+{
+  "score": 0.5,
+  "note": "Both tabs work: Preview shows identifiable mock app UI and Code shows the file tree and selected source. The source view is clipped at the right edge for long lines at 1280px; the screenshot does not make horizontal scrolling discoverable, a visible but non-blocking presentation flaw.",
+  "artifacts": [".harness/tasks/generate-loop/evidence/c2-confirm-20261123/workbench-preview.png", ".harness/tasks/generate-loop/evidence/c2-confirm-20261123/workbench-code.png", ".harness/tasks/generate-loop/evaluation/e2e-cases-c2.md"],
+  "verify": ["typecheck", "lint", "unit", "e2e", "build"],
+  "heuristics": ["H-UI-6.4", "H-UI-7.1"],
+  "rubricRefinementSuggestions": [
+    { "type": "refine", "item": "RB-13", "problem": "Code source is technically present but long lines are clipped in the screenshot, and the rubric does not state how the source remains accessible at 1280px.", "suggestion": "Require selected source to remain readable through visible horizontal scrolling or wrapping at 1280px and 375px." }
+  ]
+}

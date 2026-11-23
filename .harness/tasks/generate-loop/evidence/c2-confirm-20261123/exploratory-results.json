@@ -1,0 +1,55 @@
+{
+  "probes": [
+    {
+      "id": "long-input",
+      "chars": 1054,
+      "retained": true,
+      "submitEnabled": true
+    },
+    {
+      "id": "double-submit",
+      "route": "http://127.0.0.1:3000/projects/3a3841ea-e0f4-4cb4-ad27-e033e3c27365?run=528aaff3-b498-4d08-b669-3c9627a21d50",
+      "createRequests": 1
+    },
+    {
+      "id": "back-forward",
+      "backReturnedHome": true,
+      "forwardReturnedWorkbench": true
+    }
+  ],
+  "externalRequests": [],
+  "exampleCardFilled": true,
+  "payloadExpansion": {
+    "planner": true,
+    "architect": true,
+    "engineer": true
+  },
+  "coreJourney": {
+    "homeMeasurements": {
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "bodyScrollWidth": 1280,
+      "clippedTextElements": 1,
+      "exampleCount": 4
+    },
+    "timelineMeasurements": {
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "bodyScrollWidth": 1280,
+      "clippedTextElements": 1,
+      "timelineVisible": true,
+      "timelineText": "Agent 时间线\n\n已完成\n\n规划师\n\n已完成 · 0s\n\n收起详情\n{\n  \"title\": \"中文待办清单\",\n  \"prd\": \"做一个可添加、勾选和删除事项的简洁待办清单，界面文案全部为中文。\",\n  \"acceptance\": [\n    \"AC-1 页面显示标题「我的待办」\",\n    \"AC-2 可以新增一条待办事项\",\n    \"AC-3 可以勾选完成状态\"\n  ]\n}\n架构师\n\n已完成 · 0s\n\n展开详情\n工程师\n\n已完成 · 0s\n\n展开详情"
+    },
+    "codeContainsAppFile": true,
+    "codeContainsMockCopy": true,
+    "preview": {
+      "sandbox": "allow-scripts",
+      "painted": "true",
+      "probeText": "我的待办 添加 体验 Atoms Studio"
+    }
+  }
+}

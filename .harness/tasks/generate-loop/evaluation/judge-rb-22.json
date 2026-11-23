@@ -1,0 +1,7 @@
+{
+  "score": 1,
+  "note": "Aborting the live SSE stream produces interrupted status and a visible Chinese 继续 action; a completed mock run has no recovery banner or continue button.",
+  "artifacts": [".harness/tasks/generate-loop/evidence/c2-confirm-20261123/workbench-interrupted.png", ".harness/tasks/generate-loop/evaluation/e2e-cases-c2.md"],
+  "verify": ["typecheck", "lint", "unit", "e2e", "build"],
+  "heuristics": ["H-UX-2.3", "H-UX-3.4", "H-UX-7.1"]
+}

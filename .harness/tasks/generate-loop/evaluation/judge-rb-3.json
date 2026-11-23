@@ -1,0 +1,7 @@
+{
+  "score": 1,
+  "note": "The screenshot shows a Chinese generation workflow with Chinese examples and empty-state copy; the ANTI-1 English-only agent-marketing pattern is absent.",
+  "artifacts": [".harness/tasks/generate-loop/evidence/c2-confirm-20261123/home.png"],
+  "verify": ["typecheck", "lint", "unit", "e2e", "build"],
+  "heuristics": ["H-UI-7.2"]
+}

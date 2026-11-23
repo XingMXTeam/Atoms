@@ -7,16 +7,7 @@
       "name": "home",
       "route": "/",
       "waitFor": "main"
-    },
-    {
-      "name": "workbench",
-      "route": "/projects/demo",
-      "waitFor": "[data-testid=agent-timeline], [data-agent-timeline], aside"
-    },
-    {
-      "name": "workbench-after-submit",
-      "route": "/projects/demo",
-      "waitFor": "main"
     }
-  ]
+  ],
+  "captureNotes": "Workbench routes are not listed here: /projects/[id] requires the creating deviceId cookie and a real project id. Official harness capture covers home only. Workbench / timeline / preview judge artifacts must come from an authenticated post-submit Playwright journey (create project via UI or API in the same browser context), never from a bare /projects/demo URL."
 }

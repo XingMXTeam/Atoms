@@ -50,5 +50,16 @@
       "pnpm test:e2e",
       "pnpm build"
     ]
+  },
+  {
+    "id": "TASK-6",
+    "title": "Fix open eval gaps: sandbox/CDN greps, interrupt chrome scoping, painted preview",
+    "requirements": ["REQ-5", "REQ-6", "REQ-9", "REQ-4", "REQ-10"],
+    "checks": [
+      "pnpm exec vitest run src/lib/preview src/lib/agents",
+      "pnpm exec playwright test e2e/generate-preview.spec.ts e2e/generate-timeline.spec.ts e2e/generate-core.spec.ts",
+      "pnpm typecheck",
+      "pnpm lint"
+    ]
   }
 ]

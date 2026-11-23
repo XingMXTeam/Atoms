@@ -6,7 +6,7 @@ done
 
 ## Commit
 
-(pending until commit lands; filled via task-done SHA)
+`d513cde` — feat(TASK-4): Self-hosted esbuild-wasm preview + 代码 tab
 
 ## What changed
 

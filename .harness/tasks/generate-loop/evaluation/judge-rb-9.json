@@ -1,0 +1,7 @@
+{
+  "score": 1,
+  "note": "The workbench has a scannable left timeline with Chinese Planner/Architect/Engineer labels, completed status, elapsed time, and expandable payloads. The expanded screenshot confirms all three cards reveal their payloads.",
+  "artifacts": [".harness/tasks/generate-loop/evidence/c2-confirm-20261123/workbench-all-expanded.png", ".harness/tasks/generate-loop/evidence/c2-confirm-20261123/exploratory-results.json"],
+  "verify": ["typecheck", "lint", "unit", "e2e", "build"],
+  "heuristics": ["H-UI-1.1", "H-UI-4.1", "H-UI-5.1", "H-UI-7.1"]
+}

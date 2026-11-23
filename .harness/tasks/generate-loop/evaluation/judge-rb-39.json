@@ -1,0 +1,7 @@
+{
+  "score": 1,
+  "note": "In the authenticated mock journey all three timeline cards show completed status and elapsed time, and Planner, Architect, and Engineer payloads each expand. Interrupt handling also distinguishes interrupted from completed runs: 继续 is shown only after disconnect.",
+  "artifacts": [".harness/tasks/generate-loop/evidence/c2-confirm-20261123/workbench-all-expanded.png", ".harness/tasks/generate-loop/evidence/c2-confirm-20261123/workbench-interrupted.png", ".harness/tasks/generate-loop/evaluation/e2e-cases-c2.md", ".harness/tasks/generate-loop/evidence/c2-confirm-20261123/exploratory-results.json"],
+  "verify": ["typecheck", "lint", "unit", "e2e", "build"],
+  "heuristics": ["H-UX-2.1", "H-UX-2.3", "H-UX-6.1", "H-UX-7.1"]
+}

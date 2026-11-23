@@ -14,7 +14,7 @@
       "open 预览 tab"
     ],
     "expect": [
-      "preview iframe is non-blank",
+      "preview iframe is visually non-blank (painted UI pixels or accessible probe text — not srcdoc markers alone)",
       "iframe body contains expected mock app content marker"
     ]
   },
@@ -24,10 +24,10 @@
     "mapsTo": "REQ-4",
     "blocking": true,
     "severity": "critical",
-    "route": "/projects/demo",
+    "route": "/",
     "steps": [
-      "complete a mock generate",
-      "inspect left Agent timeline"
+      "complete a mock generate via home submit (authenticated deviceId cookie)",
+      "inspect left Agent timeline on /projects/[id]"
     ],
     "expect": [
       "Planner / Architect / Engineer cards visible with Chinese labels",
@@ -40,15 +40,16 @@
     "mapsTo": "REQ-9",
     "blocking": true,
     "severity": "critical",
-    "route": "/projects/demo",
+    "route": "/",
     "steps": [
-      "start a mock run",
+      "start a mock run via home submit",
       "force SSE disconnect mid-run via test hook or aborted client",
-      "observe workbench"
+      "observe workbench on /projects/[id]"
     ],
     "expect": [
       "run status becomes interrupted",
-      "Chinese 继续 affordance is visible"
+      "Chinese 继续 affordance is visible",
+      "a completed success run in the same suite does not show interrupt recovery chrome"
     ]
   },
   {
@@ -106,14 +107,14 @@
     "mapsTo": "REQ-5",
     "blocking": false,
     "severity": "medium",
-    "route": "/projects/demo",
+    "route": "/",
     "steps": [
-      "complete a mock generate",
-      "switch 预览 → 代码 → 预览"
+      "complete a mock generate via home submit",
+      "on /projects/[id] switch 预览 → 代码 → 预览"
     ],
     "expect": [
       "代码 tab shows a file tree and source for a selected file",
-      "returning to 预览 keeps a non-blank iframe",
+      "returning to 预览 keeps a visually non-blank iframe (painted content, not srcdoc alone)",
       "iframe sandbox attribute is allow-scripts only"
     ]
   },

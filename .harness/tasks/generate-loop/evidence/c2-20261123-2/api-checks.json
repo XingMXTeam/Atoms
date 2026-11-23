@@ -1,0 +1,42 @@
+{
+  "checks": [
+    {
+      "case": "POST /api/projects valid prompt",
+      "expected": "200 with projectId, runId, and mode",
+      "actualStatus": 200,
+      "actualBody": { "projectId": "b94f1bc7-8091-4c84-a6ce-5883d42bc541", "runId": "22432df0-0497-487a-855d-eb5477d81c0f", "mode": "mock" },
+      "verdict": "PASS"
+    },
+    {
+      "case": "POST /api/projects empty prompt",
+      "expected": "400 with Chinese validation message",
+      "actualStatus": 400,
+      "actualBody": { "messageZh": "请输入需求后再开始生成" },
+      "verdict": "PASS"
+    },
+    {
+      "case": "POST /api/projects malformed JSON",
+      "expected": "400 with a messageZh string; tech design does not define the exact error copy",
+      "actualStatus": 400,
+      "actualBody": { "messageZh": "请输入需求后再开始生成" },
+      "verdict": "PASS",
+      "contractNote": "The API rejects malformed input; exact error copy is unspecified."
+    },
+    {
+      "case": "GET stream for owned project/run",
+      "expected": "200 text/event-stream with ordered Planner, Architect, Engineer events and increasing seq",
+      "actualStatus": 200,
+      "contentType": "text/event-stream; charset=utf-8",
+      "events": [ { "agent": "planner", "type": "plan", "seq": 1 }, { "agent": "architect", "type": "design", "seq": 2 }, { "agent": "engineer", "type": "file", "seq": 3 } ],
+      "monotonicSeq": true,
+      "verdict": "PASS"
+    },
+    {
+      "case": "GET stream from a different deviceId context",
+      "expected": "404 project not found",
+      "actualStatus": 404,
+      "actualBody": { "messageZh": "项目不存在" },
+      "verdict": "PASS"
+    }
+  ]
+}

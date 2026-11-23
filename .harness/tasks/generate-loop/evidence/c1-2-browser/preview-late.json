@@ -1,0 +1,15 @@
+{
+  "srcdocLen": 1303048,
+  "sandbox": "allow-scripts",
+  "frameText": "",
+  "header": [
+    "工作台",
+    "",
+    "做一个简洁的待办清单应用，支持添加、完成和删除任务",
+    "",
+    "运行中 · 80fb6a4f-8823-484b-902d-f68648970c01",
+    ""
+  ],
+  "running": 1,
+  "packaging": 0
+}
