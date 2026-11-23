@@ -3,11 +3,13 @@ import { createSqliteRepository } from "./adapters/sqlite";
 import type { AppRepository } from "./repository";
 
 export type {
+  AgentEvent,
   AppRepository,
   Message,
   Project,
   Run,
   UsageRecord,
+  Version,
 } from "./repository";
 export type { D1Binding } from "./adapters/d1";
 export * from "./schema";

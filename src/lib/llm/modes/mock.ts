@@ -1,13 +1,46 @@
+import {
+  MOCK_ARCHITECT,
+  MOCK_ENGINEER,
+  MOCK_PLANNER,
+} from "@/lib/agents/fixtures";
 import type { LlmCompletion, LlmProvider } from "../types";
 
-/** Deterministic fixture used by unit/e2e tests (REQ-5). */
+/** Deterministic fixture used by unit/e2e tests (REQ-5 / REQ-8). */
 export const MOCK_COMPLETION_TEXT =
   "[mock] Atoms Studio — 固定演示输出：已根据提示生成可验证应用骨架。";
+
+type MockCompleteInput = {
+  stage?: "planner" | "architect" | "engineer" | string;
+};
 
 export function createMockProvider(): LlmProvider {
   return {
     mode: "mock",
-    async complete(_input: unknown): Promise<LlmCompletion> {
+    async complete(input: unknown): Promise<LlmCompletion> {
+      const stage =
+        input && typeof input === "object" && "stage" in input
+          ? (input as MockCompleteInput).stage
+          : undefined;
+
+      if (stage === "planner") {
+        return {
+          text: JSON.stringify(MOCK_PLANNER),
+          meta: { mode: "mock" },
+        };
+      }
+      if (stage === "architect") {
+        return {
+          text: JSON.stringify(MOCK_ARCHITECT),
+          meta: { mode: "mock" },
+        };
+      }
+      if (stage === "engineer") {
+        return {
+          text: JSON.stringify(MOCK_ENGINEER),
+          meta: { mode: "mock" },
+        };
+      }
+
       return {
         text: MOCK_COMPLETION_TEXT,
         meta: { mode: "mock" },

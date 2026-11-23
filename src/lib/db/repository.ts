@@ -1,8 +1,15 @@
-import { and, desc, eq, sql } from "drizzle-orm";
+import { and, asc, desc, eq, sql } from "drizzle-orm";
 import type { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
 import type { DrizzleD1Database } from "drizzle-orm/d1";
 import * as schema from "./schema";
-import { messages, projects, runs, usage } from "./schema";
+import {
+  agentEvents,
+  messages,
+  projects,
+  runs,
+  usage,
+  versions,
+} from "./schema";
 
 export type Project = {
   id: string;
@@ -41,17 +48,50 @@ export type Message = {
   createdAt: Date;
 };
 
+export type AgentEvent = {
+  id: string;
+  runId: string;
+  seq: number;
+  agent: "planner" | "architect" | "engineer" | "qa";
+  type: "plan" | "design" | "file" | "probe" | "verdict" | "fix" | "error";
+  payload: unknown;
+};
+
+export type Version = {
+  id: string;
+  projectId: string;
+  runId: string;
+  parentId: string | null;
+  files: unknown;
+  acceptance: unknown;
+  qaScore: number | null;
+  summary: string | null;
+};
+
 export interface AppRepository {
   createProject(input: { deviceId: string; title: string }): Promise<Project>;
   getProject(id: string, deviceId: string): Promise<Project | null>;
   listProjects(deviceId: string): Promise<Project[]>;
+  updateProjectTitle(id: string, title: string): Promise<Project>;
   createRun(input: { projectId: string; status: string }): Promise<Run>;
+  getRun(id: string): Promise<Run | null>;
   updateRun(id: string, patch: Partial<Pick<Run, "status" | "finishedAt">>): Promise<Run>;
   addMessage(input: {
     projectId: string;
     role: "user" | "agent";
     content: string;
   }): Promise<Message>;
+  listMessages(projectId: string): Promise<Message[]>;
+  appendAgentEvent(input: Omit<AgentEvent, "id">): Promise<AgentEvent>;
+  listAgentEvents(runId: string): Promise<AgentEvent[]>;
+  createVersion(input: {
+    projectId: string;
+    runId: string;
+    files: unknown;
+    acceptance: unknown;
+    summary: string;
+  }): Promise<Version>;
+  setCurrentVersion(projectId: string, versionId: string): Promise<void>;
   incrementUsage(
     deviceId: string,
     day: string,
@@ -109,6 +149,30 @@ function mapMessage(row: typeof messages.$inferSelect): Message {
   };
 }
 
+function mapAgentEvent(row: typeof agentEvents.$inferSelect): AgentEvent {
+  return {
+    id: row.id,
+    runId: row.runId,
+    seq: row.seq,
+    agent: row.agent,
+    type: row.type,
+    payload: row.payload,
+  };
+}
+
+function mapVersion(row: typeof versions.$inferSelect): Version {
+  return {
+    id: row.id,
+    projectId: row.projectId,
+    runId: row.runId,
+    parentId: row.parentId,
+    files: row.files,
+    acceptance: row.acceptance,
+    qaScore: row.qaScore,
+    summary: row.summary,
+  };
+}
+
 export function createAppRepository(db: AppDb): AppRepository {
   return {
     async createProject(input) {
@@ -146,6 +210,20 @@ export function createAppRepository(db: AppDb): AppRepository {
       return rows.map(mapProject);
     },
 
+    async updateProjectTitle(id, title) {
+      const now = new Date();
+      await db
+        .update(projects)
+        .set({ title, updatedAt: now })
+        .where(eq(projects.id, id));
+      const rows = await db.select().from(projects).where(eq(projects.id, id)).limit(1);
+      const row = rows[0];
+      if (!row) {
+        throw new Error(`project missing after title update (${id})`);
+      }
+      return mapProject(row);
+    },
+
     async createRun(input) {
       const now = new Date();
       const id = crypto.randomUUID();
@@ -162,6 +240,12 @@ export function createAppRepository(db: AppDb): AppRepository {
       };
       await db.insert(runs).values(row);
       return mapRun(row);
+    },
+
+    async getRun(id) {
+      const rows = await db.select().from(runs).where(eq(runs.id, id)).limit(1);
+      const row = rows[0];
+      return row ? mapRun(row) : null;
     },
 
     async updateRun(id, patch) {
@@ -191,6 +275,62 @@ export function createAppRepository(db: AppDb): AppRepository {
       };
       await db.insert(messages).values(row);
       return mapMessage(row);
+    },
+
+    async listMessages(projectId) {
+      const rows = await db
+        .select()
+        .from(messages)
+        .where(eq(messages.projectId, projectId))
+        .orderBy(asc(messages.createdAt));
+      return rows.map(mapMessage);
+    },
+
+    async appendAgentEvent(input) {
+      const id = crypto.randomUUID();
+      const row = {
+        id,
+        runId: input.runId,
+        seq: input.seq,
+        agent: input.agent,
+        type: input.type,
+        payload: input.payload,
+      };
+      await db.insert(agentEvents).values(row);
+      return mapAgentEvent(row);
+    },
+
+    async listAgentEvents(runId) {
+      const rows = await db
+        .select()
+        .from(agentEvents)
+        .where(eq(agentEvents.runId, runId))
+        .orderBy(asc(agentEvents.seq));
+      return rows.map(mapAgentEvent);
+    },
+
+    async createVersion(input) {
+      const id = crypto.randomUUID();
+      const row = {
+        id,
+        projectId: input.projectId,
+        runId: input.runId,
+        parentId: null,
+        files: input.files,
+        acceptance: input.acceptance,
+        qaScore: null,
+        summary: input.summary,
+      };
+      await db.insert(versions).values(row);
+      return mapVersion(row);
+    },
+
+    async setCurrentVersion(projectId, versionId) {
+      const now = new Date();
+      await db
+        .update(projects)
+        .set({ currentVersionId: versionId, updatedAt: now })
+        .where(eq(projects.id, projectId));
     },
 
     async incrementUsage(deviceId, day, delta) {
