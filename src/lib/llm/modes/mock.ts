@@ -1,4 +1,5 @@
 import {
+  createMockQaVerdicts,
   MOCK_ARCHITECT,
   MOCK_ENGINEER,
   MOCK_PLANNER,
@@ -10,7 +11,13 @@ export const MOCK_COMPLETION_TEXT =
   "[mock] Atoms Studio — 固定演示输出：已根据提示生成可验证应用骨架。";
 
 type MockCompleteInput = {
-  stage?: "planner" | "architect" | "engineer" | string;
+  stage?: "planner" | "architect" | "engineer" | "qa" | string;
+  acceptance?: string[];
+  probe?: {
+    compileErrors: string[];
+    runtimeErrors: string[];
+    blankScreen: boolean;
+  };
 };
 
 export function createMockProvider(): LlmProvider {
@@ -37,6 +44,22 @@ export function createMockProvider(): LlmProvider {
       if (stage === "engineer") {
         return {
           text: JSON.stringify(MOCK_ENGINEER),
+          meta: { mode: "mock" },
+        };
+      }
+      if (stage === "qa") {
+        const qaInput = input as MockCompleteInput;
+        return {
+          text: JSON.stringify(
+            createMockQaVerdicts({
+              acceptance: qaInput.acceptance ?? [],
+              probe: qaInput.probe ?? {
+                compileErrors: [],
+                runtimeErrors: [],
+                blankScreen: false,
+              },
+            }),
+          ),
           meta: { mode: "mock" },
         };
       }

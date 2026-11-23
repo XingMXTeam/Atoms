@@ -6,6 +6,30 @@ export type PlannerPayload = {
   acceptance: string[];
 };
 
+export function createMockQaVerdicts(input: {
+  acceptance: string[];
+  probe: {
+    compileErrors: string[];
+    runtimeErrors: string[];
+    blankScreen: boolean;
+  };
+}) {
+  const errors = [
+    ...input.probe.compileErrors,
+    ...input.probe.runtimeErrors,
+  ];
+  const failed = errors.length > 0 || input.probe.blankScreen;
+  return {
+    verdicts: input.acceptance.map((criterion) => ({
+      criterion,
+      verdict: failed ? "fail" : "pass",
+      reason: failed
+        ? errors[0] ?? "预览页面为空"
+        : "预览正常显示",
+    })),
+  };
+}
+
 export type ArchitectPayload = {
   files: string[];
   components: string[];

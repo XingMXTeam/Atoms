@@ -12,7 +12,7 @@ export function resolveModelId(
 }
 
 export function modelClassForStage(
-  stage: "planner" | "architect" | "engineer",
+  stage: "planner" | "architect" | "engineer" | "qa",
 ): ModelClass {
   return stage === "engineer" ? "pro" : "flash";
 }
