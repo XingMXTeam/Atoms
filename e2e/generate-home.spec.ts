@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 test.describe("generate-loop home (REQ-1)", () => {
-  test("shows central prompt, ≥4 example cards, and 我的项目 region", async ({
+  test("shows the prompt, examples, and seeded projects", async ({
     page,
   }) => {
     await page.goto("/");
@@ -17,7 +17,8 @@ test.describe("generate-loop home (REQ-1)", () => {
     await expect(exampleCards).toHaveCount(4, { timeout: 10_000 });
 
     await expect(page.getByRole("heading", { name: "我的项目" })).toBeVisible();
-    await expect(page.getByText("还没有项目，输入需求开始生成吧")).toBeVisible();
+    await expect(page.getByTestId("project-score-badge")).toHaveCount(2);
+    await expect(page.getByRole("link", { name: /待办清单示例|专注计时器示例/ })).toHaveCount(2);
   });
 
   test("clicking an example card fills the central prompt", async ({ page }) => {

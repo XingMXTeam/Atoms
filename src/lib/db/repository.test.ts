@@ -72,6 +72,42 @@ describe("AppRepository (sqlite)", () => {
     expect(listed.map((p) => p.id)).toEqual([second.id, first.id]);
   });
 
+  it("seeds two completed example projects once for an empty device", async () => {
+    const repo = createSqliteRepository(":memory:");
+
+    await repo.ensureSeedProjects("device-a");
+    const seeded = await repo.listProjects("device-a");
+
+    expect(seeded).toHaveLength(2);
+    expect(seeded.every((project) => project.currentVersionId !== null)).toBe(true);
+    expect(seeded.every((project) => project.qaScore !== null)).toBe(true);
+    for (const project of seeded) {
+      const version = await repo.getVersion(project.currentVersionId!);
+      expect(version).toMatchObject({
+        projectId: project.id,
+        parentId: null,
+        qaScore: expect.any(Number),
+        summary: expect.any(String),
+      });
+      expect(version?.files).toEqual(expect.arrayContaining([
+        expect.objectContaining({ path: "src/App.tsx", content: expect.any(String) }),
+      ]));
+    }
+
+    await repo.ensureSeedProjects("device-a");
+    expect(await repo.listProjects("device-a")).toHaveLength(2);
+    expect(await repo.listProjects("device-b")).toHaveLength(0);
+  });
+
+  it("does not add seed projects when a device already has a project", async () => {
+    const repo = createSqliteRepository(":memory:");
+    const project = await repo.createProject({ deviceId: "device-a", title: "已有项目" });
+
+    await repo.ensureSeedProjects("device-a");
+
+    expect(await repo.listProjects("device-a")).toEqual([project]);
+  });
+
   it("createRun / addMessage persist for a project", async () => {
     const repo = createSqliteRepository(":memory:");
     const project = await repo.createProject({

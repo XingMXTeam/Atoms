@@ -9,7 +9,9 @@ export const dynamic = "force-dynamic";
 export default async function Home() {
   const cookieStore = await cookies();
   const deviceId = cookieStore.get(DEVICE_ID_COOKIE)?.value;
-  const projects = deviceId ? await getDb().listProjects(deviceId) : [];
+  const repo = getDb();
+  if (deviceId) await repo.ensureSeedProjects(deviceId);
+  const projects = deviceId ? await repo.listProjects(deviceId) : [];
 
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col items-center gap-12 px-6 py-16">

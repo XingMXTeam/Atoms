@@ -16,29 +16,56 @@ test.describe("iterate-versions workbench (REQ-2 / REQ-6)", () => {
 
     await expect(page.getByTestId("agent-card-engineer").getByText("已完成"))
       .toBeVisible({ timeout: 30_000 });
-    await page.getByRole("tab", { name: "版本" }).click();
+    const projectId = new URL(page.url()).pathname.split("/").at(-1);
+    const initialRunId = await page
+      .getByTestId("workbench-score-badge")
+      .getAttribute("data-run-id");
+    await expect(page.getByTestId("preview-paint-probe")).toContainText(
+      "体验 Atoms Studio",
+    );
 
+    const followUp = await page.request.post(
+      new URL(`/api/projects/${projectId}/runs/${initialRunId}/continue`, page.url()).toString(),
+      { data: { prompt: "为每项待办加入优先级标签" } },
+    );
+    expect(followUp.ok()).toBe(true);
+    const { runId } = (await followUp.json()) as { runId: string };
+    await page.goto(`/projects/${projectId}?run=${runId}`);
+    await expect(page.getByTestId("agent-card-engineer").getByText("已完成"))
+      .toBeVisible({ timeout: 30_000 });
+    await page.reload();
+    await expect(page.getByTestId("code-source")).toContainText("优先级");
+
+    await page.getByRole("tab", { name: "版本" }).click();
     const timeline = page.getByTestId("version-timeline");
     await expect(timeline).toBeVisible();
-    const versionRow = timeline.getByTestId("version-row");
-    await expect(versionRow.locator("p").first()).not.toBeEmpty();
-    await expect(versionRow.getByText(/QA \d+ 分/)).toBeVisible();
-    await expect(versionRow.getByText("当前版本")).toBeVisible();
+    const versionRows = timeline.getByTestId("version-row");
+    await expect(versionRows).toHaveCount(2);
+    await expect(versionRows.first().locator("p").first()).not.toBeEmpty();
+    await expect(versionRows.first().getByText(/QA \d+ 分/)).toBeVisible();
+    await expect(versionRows.first().getByText("当前版本")).toBeVisible();
+    const priorVersionId = await versionRows.nth(1).getAttribute("data-version-id");
 
-    const projectUrl = new URL(page.url());
-    const projectId = projectUrl.pathname.split("/").at(-1);
-    const versionId = await versionRow.getAttribute("data-version-id");
     const rollback = await page.request.post(
       new URL(`/api/projects/${projectId}/versions`, page.url()).toString(),
-      { data: { versionId } },
+      { data: { versionId: priorVersionId } },
     );
     expect(rollback.ok()).toBe(true);
-    expect((await rollback.json()).versionId).toBe(versionId);
+    const rollbackPayload = (await rollback.json()) as {
+      versionId: string;
+      files: { path: string }[];
+    };
+    expect(rollbackPayload.versionId).toBe(priorVersionId);
+    expect(rollbackPayload.files.map((file) => file.path)).toContain(
+      "src/components/TodoList.tsx",
+    );
 
     await page.getByRole("tab", { name: "代码" }).click();
-    await expect(page.getByTestId("code-source")).not.toBeEmpty();
+    await expect(page.getByTestId("code-source")).toContainText("体验 Atoms Studio");
     await page.getByRole("tab", { name: "预览" }).click();
-    await expect(page.getByTestId("preview-pane")).toBeVisible();
+    await expect(page.getByTestId("preview-paint-probe")).toContainText(
+      "体验 Atoms Studio",
+    );
 
     await page.getByRole("button", { name: "创建只读分享链接" }).click();
     const shareLink = page.getByRole("link", { name: /\/share\// });
@@ -59,9 +86,23 @@ test.describe("iterate-versions workbench (REQ-2 / REQ-6)", () => {
 
     const deniedMutation = await visitorPage.request.post(
       new URL(`/api/projects/${projectId}/versions`, page.url()).toString(),
-      { data: { versionId } },
+      { data: { versionId: priorVersionId } },
     );
     expect([401, 403]).toContain(deniedMutation.status());
     await visitorContext.close();
+  });
+
+  test("shows completed examples with QA scores for a fresh device", async ({
+    browser,
+  }) => {
+    const context = await browser.newContext();
+    const page = await context.newPage();
+    await page.goto("/");
+
+    const projects = page.getByRole("region", { name: "我的项目" });
+    await expect(projects.getByTestId("project-score-badge")).toHaveCount(2);
+    await expect(projects.getByRole("link")).toHaveCount(2);
+
+    await context.close();
   });
 });

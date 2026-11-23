@@ -2,9 +2,14 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { DEVICE_ID_COOKIE, getOrMintDeviceId } from "@/lib/auth/device-id";
 import { getDb } from "@/lib/db";
+import { z } from "zod";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+const followUpSchema = z.object({
+  prompt: z.string().trim().min(1).max(4_000),
+});
 
 type RouteContext = {
   params: Promise<{ projectId: string; runId: string }>;
@@ -15,7 +20,7 @@ type RouteContext = {
  * Known limitation: starts a fresh run for the same project — not an exact
  * checkpoint resume from the last agent_event.
  */
-export async function POST(_request: Request, context: RouteContext) {
+export async function POST(request: Request, context: RouteContext) {
   const { projectId, runId } = await context.params;
   const cookieStore = await cookies();
   const existing = cookieStore.get(DEVICE_ID_COOKIE)?.value;
@@ -32,6 +37,22 @@ export async function POST(_request: Request, context: RouteContext) {
     );
     if (setCookie) response.headers.append("Set-Cookie", setCookie);
     return response;
+  }
+
+  let followUpPrompt: string | undefined;
+  const rawBody = await request.text();
+  if (rawBody.trim()) {
+    let body: unknown;
+    try {
+      body = JSON.parse(rawBody);
+    } catch {
+      return NextResponse.json({ messageZh: "请求格式无效，请重试" }, { status: 400 });
+    }
+    const parsed = followUpSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json({ messageZh: "请输入有效的后续需求" }, { status: 400 });
+    }
+    followUpPrompt = parsed.data.prompt;
   }
 
   const previous = await repo.getRun(runId);
@@ -55,6 +76,9 @@ export async function POST(_request: Request, context: RouteContext) {
     projectId,
     status: "running",
   });
+  if (followUpPrompt) {
+    await repo.addMessage({ projectId, role: "user", content: followUpPrompt });
+  }
 
   const response = NextResponse.json({ runId: nextRun.id });
   if (setCookie) response.headers.append("Set-Cookie", setCookie);

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { AgentTimeline } from "./agent-timeline";
 import { WorkbenchPanels, type VersionSummary } from "./workbench-panels";
 import type { CodeFile } from "./code-pane";
@@ -59,15 +59,16 @@ export function WorkbenchClient({
   const [sharing, setSharing] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [exportError, setExportError] = useState("");
-  const [liveRunStatus, setLiveRunStatus] = useState<RunStatus>(
-    (initialRunStatus as RunStatus) || "running",
-  );
+  const initialStatus = (initialRunStatus as RunStatus) || "running";
+  const liveRunStatusRef = useRef<RunStatus>(initialStatus);
+  const [liveRunStatus, setLiveRunStatus] = useState(initialStatus);
 
   const handleFiles = useCallback((next: CodeFile[]) => {
-    setFiles(next);
+    if (liveRunStatusRef.current !== "completed") setFiles(next);
   }, []);
 
   const handleRunStatus = useCallback((status: RunStatus) => {
+    liveRunStatusRef.current = status;
     setLiveRunStatus(status);
   }, []);
 
@@ -83,10 +84,12 @@ export function WorkbenchClient({
         const result = (await response.json()) as {
           versions: VersionSummary[];
           currentVersionId: string | null;
+          files: CodeFile[];
         };
         if (cancelled) return;
         setVersions(result.versions);
         setCurrentVersionId(result.currentVersionId);
+        setFiles(result.files);
       } catch (error) {
         if (!cancelled) {
           setRestoreMessage(

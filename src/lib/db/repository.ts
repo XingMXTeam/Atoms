@@ -73,6 +73,7 @@ export interface AppRepository {
   createProject(input: { deviceId: string; title: string }): Promise<Project>;
   getProject(id: string, deviceId: string): Promise<Project | null>;
   listProjects(deviceId: string): Promise<Project[]>;
+  ensureSeedProjects(deviceId: string): Promise<void>;
   getProjectByShareSlug(shareSlug: string): Promise<Project | null>;
   ensureShareSlug(projectId: string, shareSlug: string): Promise<string | null>;
   updateProjectTitle(id: string, title: string): Promise<Project>;
@@ -228,6 +229,62 @@ export function createAppRepository(db: AppDb): AppRepository {
       return rows.map(({ projects: project, versions: version }) =>
         mapProject(project, version?.qaScore ?? null),
       );
+    },
+
+    async ensureSeedProjects(deviceId) {
+      if ((await this.listProjects(deviceId)).length > 0) return;
+
+      const examples = [
+        {
+          title: "待办清单示例",
+          summary: "已完成的待办清单示例，可预览任务状态与添加界面。",
+          qaScore: 96,
+          files: [
+            {
+              path: "src/main.tsx",
+              content: 'import { createRoot } from "react-dom/client";\nimport App from "./App";\n\ncreateRoot(document.getElementById("root")!).render(<App />);',
+            },
+            {
+              path: "src/App.tsx",
+              content: 'export default function App() { return <main><h1>我的待办</h1><ul><li>体验 Atoms Studio</li><li>查看版本记录</li></ul><button>添加待办</button></main>; }',
+            },
+          ],
+        },
+        {
+          title: "专注计时器示例",
+          summary: "已完成的专注计时器示例，包含专注时间与休息提示。",
+          qaScore: 94,
+          files: [
+            {
+              path: "src/main.tsx",
+              content: 'import { createRoot } from "react-dom/client";\nimport App from "./App";\n\ncreateRoot(document.getElementById("root")!).render(<App />);',
+            },
+            {
+              path: "src/App.tsx",
+              content: 'export default function App() { return <main><h1>专注时钟</h1><p>25:00</p><button>开始专注</button><p>专注结束后休息 5 分钟</p></main>; }',
+            },
+          ],
+        },
+      ];
+
+      for (const example of examples) {
+        const project = await this.createProject({ deviceId, title: example.title });
+        const run = await this.createRun({ projectId: project.id, status: "completed" });
+        await this.updateRun(run.id, {
+          status: "completed",
+          qaScore: example.qaScore,
+          finishedAt: new Date(),
+        });
+        const version = await this.createVersion({
+          projectId: project.id,
+          runId: run.id,
+          files: example.files,
+          acceptance: [],
+          summary: example.summary,
+          qaScore: example.qaScore,
+        });
+        await this.setCurrentVersion(project.id, version.id);
+      }
     },
 
     async getProjectByShareSlug(shareSlug) {

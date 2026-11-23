@@ -2,6 +2,7 @@ import {
   createMockQaVerdicts,
   MOCK_ARCHITECT,
   MOCK_ENGINEER,
+  MOCK_ENGINEER_FILES,
   MOCK_PLANNER,
 } from "@/lib/agents/fixtures";
 import type { LlmCompletion, LlmProvider } from "../types";
@@ -59,16 +60,27 @@ export function createMockProvider(): LlmProvider {
       }
       if (stage === "engineer") {
         const engineer = input as MockCompleteInput;
-        const output = engineer.prompt?.includes(MOCK_REPAIR_DEMO_TRIGGER) ||
-          engineer.prompt?.includes(MOCK_PERSISTENT_FAILURE_TRIGGER)
+        const output = engineer.prompt?.includes("优先级标签")
           ? {
-              files: [MOCK_REPAIR_ENTRY, {
-                path: "src/App.tsx",
-                content: "/* MOCK_COMPILE_ERROR */\nexport default function App() { return <main><h1>我的待办</h1>; }",
+              files: [{
+                ...MOCK_ENGINEER_FILES[1],
+                content: MOCK_ENGINEER_FILES[1].content.replace(
+                  "体验 Atoms Studio",
+                  "体验 Atoms Studio（优先级：高）",
+                ),
               }],
-              summary: "演示初始编译错误。",
+              summary: "已为待办加入优先级标签。",
             }
-          : MOCK_ENGINEER;
+          : engineer.prompt?.includes(MOCK_REPAIR_DEMO_TRIGGER) ||
+              engineer.prompt?.includes(MOCK_PERSISTENT_FAILURE_TRIGGER)
+            ? {
+                files: [MOCK_REPAIR_ENTRY, {
+                  path: "src/App.tsx",
+                  content: "/* MOCK_COMPILE_ERROR */\nexport default function App() { return <main><h1>我的待办</h1>; }",
+                }],
+                summary: "演示初始编译错误。",
+              }
+            : MOCK_ENGINEER;
         return {
           text: JSON.stringify(output),
           meta: { mode: "mock" },

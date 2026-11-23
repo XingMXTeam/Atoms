@@ -19,6 +19,9 @@ export async function GET(_request: Request, context: RouteContext) {
   if (!project) return jsonWithCookie({ messageZh: "项目不存在" }, 404, setCookie);
 
   const versions = await repo.listVersions(projectId);
+  const currentVersion = project.currentVersionId
+    ? await repo.getVersion(project.currentVersionId)
+    : null;
   return jsonWithCookie(
     {
       versions: versions.map(({ id, summary, qaScore }) => ({
@@ -27,6 +30,10 @@ export async function GET(_request: Request, context: RouteContext) {
         qaScore,
       })),
       currentVersionId: project.currentVersionId,
+      files:
+        currentVersion?.projectId === projectId
+          ? parseVersionFiles(currentVersion.files)
+          : [],
     },
     200,
     setCookie,
