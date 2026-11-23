@@ -75,7 +75,10 @@ export interface AppRepository {
   updateProjectTitle(id: string, title: string): Promise<Project>;
   createRun(input: { projectId: string; status: string }): Promise<Run>;
   getRun(id: string): Promise<Run | null>;
-  updateRun(id: string, patch: Partial<Pick<Run, "status" | "finishedAt">>): Promise<Run>;
+  updateRun(
+    id: string,
+    patch: Partial<Pick<Run, "status" | "finishedAt" | "qaRounds" | "qaScore">>,
+  ): Promise<Run>;
   addMessage(input: {
     projectId: string;
     role: "user" | "agent";
@@ -90,6 +93,7 @@ export interface AppRepository {
     files: unknown;
     acceptance: unknown;
     summary: string;
+    qaScore?: number | null;
   }): Promise<Version>;
   setCurrentVersion(projectId: string, versionId: string): Promise<void>;
   incrementUsage(
@@ -252,6 +256,8 @@ export function createAppRepository(db: AppDb): AppRepository {
       const updates: Partial<typeof runs.$inferInsert> = {};
       if (patch.status !== undefined) updates.status = patch.status;
       if (patch.finishedAt !== undefined) updates.finishedAt = patch.finishedAt;
+      if (patch.qaRounds !== undefined) updates.qaRounds = patch.qaRounds;
+      if (patch.qaScore !== undefined) updates.qaScore = patch.qaScore;
 
       await db.update(runs).set(updates).where(eq(runs.id, id));
 
@@ -318,7 +324,7 @@ export function createAppRepository(db: AppDb): AppRepository {
         parentId: null,
         files: input.files,
         acceptance: input.acceptance,
-        qaScore: null,
+        qaScore: input.qaScore ?? null,
         summary: input.summary,
       };
       await db.insert(versions).values(row);

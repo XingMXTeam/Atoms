@@ -47,6 +47,18 @@ export function createMockProvider(): LlmProvider {
           meta: { mode: "mock" },
         };
       }
+      if (stage === "engineer-repair") {
+        return {
+          text: JSON.stringify({
+            files: [{
+              path: "src/App.tsx",
+              content: 'export default function App() { return <main><h1>我的待办</h1><p>预览已修复</p></main>; }',
+            }],
+            summary: "已根据 QA 指令修复预览。",
+          }),
+          meta: { mode: "mock" },
+        };
+      }
       if (stage === "qa") {
         const qaInput = input as MockCompleteInput;
         return {

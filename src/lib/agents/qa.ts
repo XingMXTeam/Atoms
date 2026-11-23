@@ -13,6 +13,7 @@ export const qaVerdictSchema = z.object({
       }),
     )
     .min(1),
+  fixInstruction: z.string().min(1).optional(),
 });
 
 export type QaVerdict = z.infer<typeof qaVerdictSchema>["verdicts"][number];
@@ -20,6 +21,7 @@ export type QaVerdict = z.infer<typeof qaVerdictSchema>["verdicts"][number];
 export type QaResult = {
   verdicts: QaVerdict[];
   qa_score: number;
+  fixInstruction?: string;
 };
 
 export function aggregateQaScore(verdicts: QaVerdict[]): number {
@@ -39,7 +41,9 @@ export async function runQa(
     probe: input.probe,
     responseSchema: qaVerdictSchema,
   });
-  const { verdicts } = qaVerdictSchema.parse(JSON.parse(completion.text));
+  const { verdicts, fixInstruction } = qaVerdictSchema.parse(
+    JSON.parse(completion.text),
+  );
   const actualCriteria = new Set(verdicts.map(({ criterion }) => criterion));
   if (
     actualCriteria.size !== verdicts.length ||
@@ -49,5 +53,9 @@ export async function runQa(
     throw new Error("QA verdicts must cover each acceptance criterion exactly once");
   }
 
-  return { verdicts, qa_score: aggregateQaScore(verdicts) };
+  return {
+    verdicts,
+    qa_score: aggregateQaScore(verdicts),
+    ...(fixInstruction ? { fixInstruction } : {}),
+  };
 }

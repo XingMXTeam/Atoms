@@ -53,3 +53,37 @@ export async function runEngineer(
     return await completeEngineer(provider, input);
   }
 }
+
+/** Return only changed files so the pipeline can merge a focused repair. */
+export async function runEngineerRepair(
+  provider: LlmProvider,
+  input: {
+    prompt: string;
+    plan: PlannerPayload;
+    design: ArchitectPayload;
+    currentFiles: EngineerPayload["files"];
+    fixInstruction: string;
+  },
+): Promise<EngineerPayload> {
+  const completion = await provider.complete({
+    prompt: input.prompt,
+    stage: "engineer-repair",
+    modelClass: modelClassForStage("engineer"),
+    plan: input.plan,
+    design: input.design,
+    currentFiles: input.currentFiles,
+    fixInstruction: input.fixInstruction,
+    responseSchema: engineerSchema,
+  });
+  const repair = engineerSchema.parse(JSON.parse(completion.text));
+  const existingFiles = new Map(
+    input.currentFiles.map(({ path, content }) => [path, content]),
+  );
+  const deltaFiles = repair.files.filter(
+    ({ path, content }) => existingFiles.get(path) !== content,
+  );
+  if (deltaFiles.length === 0) {
+    throw new Error("Engineer repair did not change any files");
+  }
+  return { ...repair, files: deltaFiles };
+}

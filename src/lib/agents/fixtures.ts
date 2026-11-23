@@ -27,6 +27,7 @@ export function createMockQaVerdicts(input: {
         ? errors[0] ?? "预览页面为空"
         : "预览正常显示",
     })),
+    ...(failed ? { fixInstruction: `修复预览问题：${errors[0] ?? "页面为空"}` } : {}),
   };
 }
 
