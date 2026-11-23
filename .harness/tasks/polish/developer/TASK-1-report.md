@@ -1,7 +1,7 @@
 # TASK-1 developer report
 
 - **Task:** Design-system pass, reduced-motion, and responsive card/code readability
-- **Commit:** `188297c`
+- **Commit:** `c18783f`
 - **Files:** `src/app/globals.css`, `src/app/globals.css.test.ts`, `src/app/page.tsx`, `src/app/projects/[projectId]/page.tsx`, `src/components/home/example-cards.tsx`, `src/components/home/project-grid.tsx`, `src/components/home/prompt-form.tsx`, `src/components/share/shared-project.tsx`, `src/components/workbench/agent-card.tsx`, `src/components/workbench/agent-timeline.tsx`, `src/components/workbench/code-pane.tsx`, `src/components/workbench/qa-timeline-card.tsx`, `src/components/workbench/workbench-client.tsx`, `src/components/workbench/workbench-panels.tsx`, `e2e/polish.spec.ts`
 - **Checks:**
   - `pnpm exec vitest run src/app/globals.css.test.ts src/components/workbench/agent-card.test.tsx` — 2 files / 4 tests passed.
