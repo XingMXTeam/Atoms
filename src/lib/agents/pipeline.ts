@@ -77,10 +77,13 @@ function mergeFileDelta(
 }
 
 function defaultProbe(files: GeneratedFile[]): PreviewProbeReport {
+  const hasMockCompileError = files.some(({ content }) =>
+    content.includes("/* MOCK_COMPILE_ERROR */"),
+  );
   return {
     source: "atoms-preview",
     type: "probe",
-    compileErrors: [],
+    compileErrors: hasMockCompileError ? ["演示编译错误"] : [],
     runtimeErrors: [],
     blankScreen: false,
     domSummary: {
@@ -261,6 +264,7 @@ export async function runAgentPipeline(
             round: qaRounds,
             fixInstruction,
             files: repair.files.map(({ path }) => path),
+            currentFiles: files,
           },
         },
         onEvent,

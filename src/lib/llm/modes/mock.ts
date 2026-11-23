@@ -12,6 +12,7 @@ export const MOCK_COMPLETION_TEXT =
 
 type MockCompleteInput = {
   stage?: "planner" | "architect" | "engineer" | "qa" | string;
+  prompt?: string;
   acceptance?: string[];
   probe?: {
     compileErrors: string[];
@@ -42,8 +43,18 @@ export function createMockProvider(): LlmProvider {
         };
       }
       if (stage === "engineer") {
+        const engineer = input as MockCompleteInput;
+        const output = engineer.prompt?.includes("触发修复演示")
+          ? {
+              files: [{
+                path: "src/App.tsx",
+                content: "/* MOCK_COMPILE_ERROR */\nexport default function App() { return <main><h1>我的待办</h1>; }",
+              }],
+              summary: "演示初始编译错误。",
+            }
+          : MOCK_ENGINEER;
         return {
-          text: JSON.stringify(MOCK_ENGINEER),
+          text: JSON.stringify(output),
           meta: { mode: "mock" },
         };
       }

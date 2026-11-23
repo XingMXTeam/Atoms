@@ -106,8 +106,15 @@ export function QaTimelineCard({ events, status }: QaTimelineCardProps) {
           <h3 className="text-sm font-medium text-zinc-900 dark:text-zinc-50">质检</h3>
           <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
             {STATUS_LABEL[status]}
-            {latestScore !== undefined ? ` · ${latestScore} 分` : null}
           </p>
+          {latestScore !== undefined ? (
+            <span
+              data-testid="workbench-score-badge"
+              className="mt-2 inline-flex rounded-full bg-zinc-100 px-2.5 py-1 text-xs font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
+            >
+              {latestScore} 分
+            </span>
+          ) : null}
         </div>
         {events.length > 0 ? (
           <button

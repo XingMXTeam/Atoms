@@ -33,6 +33,14 @@ export function ProjectGrid({ projects }: ProjectGridProps) {
                 <span className="mt-1 block text-xs text-zinc-500 dark:text-zinc-400">
                   {project.updatedAt.toLocaleString("zh-CN")}
                 </span>
+                {project.qaScore !== null ? (
+                  <span
+                    data-testid="project-score-badge"
+                    className="mt-2 inline-flex rounded-full bg-zinc-100 px-2.5 py-1 text-xs font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
+                  >
+                    {project.qaScore} 分
+                  </span>
+                ) : null}
               </Link>
             </li>
           ))}

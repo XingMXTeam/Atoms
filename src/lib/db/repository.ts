@@ -16,6 +16,7 @@ export type Project = {
   deviceId: string;
   title: string;
   currentVersionId: string | null;
+  qaScore: number | null;
   shareSlug: string | null;
   createdAt: Date;
   updatedAt: Date;
@@ -108,12 +109,16 @@ export type AppDb =
   | BetterSQLite3Database<typeof schema>
   | DrizzleD1Database<typeof schema>;
 
-function mapProject(row: typeof projects.$inferSelect): Project {
+function mapProject(
+  row: typeof projects.$inferSelect,
+  qaScore: number | null = null,
+): Project {
   return {
     id: row.id,
     deviceId: row.deviceId,
     title: row.title,
     currentVersionId: row.currentVersionId,
+    qaScore,
     shareSlug: row.shareSlug,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
@@ -199,19 +204,25 @@ export function createAppRepository(db: AppDb): AppRepository {
       const rows = await db
         .select()
         .from(projects)
+        .leftJoin(versions, eq(projects.currentVersionId, versions.id))
         .where(and(eq(projects.id, id), eq(projects.deviceId, deviceId)))
         .limit(1);
       const row = rows[0];
-      return row ? mapProject(row) : null;
+      return row
+        ? mapProject(row.projects, row.versions?.qaScore ?? null)
+        : null;
     },
 
     async listProjects(deviceId) {
       const rows = await db
         .select()
         .from(projects)
+        .leftJoin(versions, eq(projects.currentVersionId, versions.id))
         .where(eq(projects.deviceId, deviceId))
         .orderBy(desc(projects.updatedAt), desc(projects.id));
-      return rows.map(mapProject);
+      return rows.map(({ projects: project, versions: version }) =>
+        mapProject(project, version?.qaScore ?? null),
+      );
     },
 
     async updateProjectTitle(id, title) {

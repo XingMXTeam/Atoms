@@ -75,6 +75,14 @@ export default async function WorkbenchPage({
           <h1 className="mt-1 text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
             {project.title}
           </h1>
+          {project.qaScore !== null ? (
+            <span
+              data-testid="workbench-score-badge"
+              className="mt-2 inline-flex rounded-full bg-zinc-100 px-2.5 py-1 text-xs font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
+            >
+              {project.qaScore} 分
+            </span>
+          ) : null}
           {runId ? (
             <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
               {/* Label avoids the substring 「运行中」 (false-match on completed). */}

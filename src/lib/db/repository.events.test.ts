@@ -64,6 +64,7 @@ describe("AppRepository events/versions (REQ-3 / REQ-7)", () => {
       files,
       acceptance,
       summary: "首版待办应用",
+      qaScore: 85,
     });
 
     expect(version.id).toBeTruthy();
@@ -74,6 +75,7 @@ describe("AppRepository events/versions (REQ-3 / REQ-7)", () => {
     await repo.setCurrentVersion(project.id, version.id);
     const refreshed = await repo.getProject(project.id, "device-a");
     expect(refreshed?.currentVersionId).toBe(version.id);
+    expect(refreshed?.qaScore).toBe(85);
   });
 
   it("getRun returns the run by id", async () => {

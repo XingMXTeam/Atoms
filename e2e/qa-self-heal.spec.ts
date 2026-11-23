@@ -33,4 +33,40 @@ test.describe("QA timeline (REQ-4 / REQ-6)", () => {
     await expect(qaCard.getByText("第 0 轮通过").first()).toBeVisible();
     await expect(qaCard.getByText("预览正常显示").first()).toBeVisible();
   });
+
+  test("recovers from the mock compile error and persists the score badge", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    await page
+      .getByRole("textbox", { name: /描述你想生成的应用/ })
+      .fill("触发修复演示：做一个中文待办清单");
+    await page.getByRole("button", { name: "开始生成" }).click();
+
+    await expect(page).toHaveURL(/\/projects\/[0-9a-f-]{36}/i, {
+      timeout: 15_000,
+    });
+
+    const qaCard = page.getByTestId("agent-card-qa");
+    await expect(qaCard).toHaveAttribute("data-status", "completed", {
+      timeout: 45_000,
+    });
+    await expect(page.getByTestId("workbench-score-badge")).toContainText("100 分");
+
+    await qaCard.getByRole("button", { name: "展开质检详情" }).click();
+    await expect(
+      qaCard.getByText("第 0 轮 · 未通过：演示编译错误").first(),
+    ).toBeVisible();
+    await expect(qaCard.getByText("已由第 1 轮修复").first()).toBeVisible();
+    await expect(page.getByTestId("preview-pane")).toHaveAttribute(
+      "data-preview-status",
+      "ready",
+    );
+    await page.getByRole("tab", { name: "代码" }).click();
+    await expect(page.getByTestId("code-pane")).toContainText("预览已修复");
+
+    await page.getByRole("link", { name: "返回首页" }).click();
+    const projectCard = page.getByRole("link", { name: /中文待办清单/ });
+    await expect(projectCard.getByTestId("project-score-badge")).toHaveText("100 分");
+  });
 });

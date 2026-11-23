@@ -268,8 +268,14 @@ export function AgentTimeline({
           return;
         }
 
-        if (event.agent === "engineer" && event.type === "file") {
-          const files = extractFiles(event.payload);
+        if (
+          (event.agent === "engineer" && event.type === "file") ||
+          (event.agent === "qa" && event.type === "fix")
+        ) {
+          const payload = event.payload as { currentFiles?: unknown } | null;
+          const files = event.agent === "qa"
+            ? extractFiles({ files: payload?.currentFiles })
+            : extractFiles(event.payload);
           if (files) onFilesRef.current?.(files);
           setErrorMessage(null);
         }
