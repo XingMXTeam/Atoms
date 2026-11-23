@@ -4,6 +4,7 @@ import { runAgentPipeline } from "@/lib/agents/pipeline";
 import { DEVICE_ID_COOKIE, getOrMintDeviceId } from "@/lib/auth/device-id";
 import { getDb } from "@/lib/db";
 import { createLlmProvider } from "@/lib/llm/provider";
+import { parseVersionFiles } from "@/lib/versions";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -101,8 +102,17 @@ export async function GET(request: Request, context: RouteContext) {
       try {
         const messages = await repo.listMessages(projectId);
         const userPrompt =
-          messages.find((m) => m.role === "user")?.content ?? project.title;
+          messages.filter((m) => m.role === "user").at(-1)?.content ?? project.title;
         const provider = createLlmProvider();
+        const currentVersion = project.currentVersionId
+          ? await repo.getVersion(project.currentVersionId)
+          : null;
+        if (project.currentVersionId && !currentVersion) {
+          throw new Error("Current version snapshot is missing");
+        }
+        if (currentVersion && currentVersion.projectId !== projectId) {
+          throw new Error("Current version does not belong to this project");
+        }
 
         await runAgentPipeline({
           repo,
@@ -110,6 +120,14 @@ export async function GET(request: Request, context: RouteContext) {
           projectId,
           runId,
           prompt: userPrompt,
+          ...(currentVersion
+            ? {
+                currentVersion: {
+                  id: currentVersion.id,
+                  files: parseVersionFiles(currentVersion.files),
+                },
+              }
+            : {}),
           signal: abort.signal,
           stageDelayMs,
           onEvent: (event) => {

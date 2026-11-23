@@ -10,6 +10,7 @@ import {
 } from "./events";
 import type { GeneratedFile, PlannerPayload } from "./fixtures";
 import { runPlanner } from "./planner";
+import { mergeFileDelta } from "@/lib/versions";
 
 export type PipelineResult = {
   plan: PlannerPayload;
@@ -27,6 +28,7 @@ export type RunAgentPipelineOptions = {
   projectId: string;
   runId: string;
   prompt: string;
+  currentVersion?: { id: string; files: GeneratedFile[] };
   onEvent?: (event: AgentEventRecord) => void | Promise<void>;
   /** When true, skip marking the run failed on error (caller handles). */
   signal?: AbortSignal;
@@ -67,15 +69,6 @@ async function persistEvent(
 
 const MAX_FIX_ROUNDS = 3;
 
-function mergeFileDelta(
-  currentFiles: GeneratedFile[],
-  deltaFiles: GeneratedFile[],
-): GeneratedFile[] {
-  const merged = new Map(currentFiles.map((file) => [file.path, file]));
-  for (const file of deltaFiles) merged.set(file.path, file);
-  return [...merged.values()];
-}
-
 function defaultProbe(files: GeneratedFile[]): PreviewProbeReport {
   const hasMockCompileError = files.some(({ content }) =>
     content.includes("/* MOCK_COMPILE_ERROR */"),
@@ -113,6 +106,7 @@ export async function runAgentPipeline(
     projectId,
     runId,
     prompt,
+    currentVersion,
     onEvent,
     signal,
     stageDelayMs,
@@ -165,7 +159,12 @@ export async function runAgentPipeline(
     }
 
     await delayStage(stageDelayMs, signal);
-    const engineer = await runEngineer(provider, { prompt, plan, design });
+    const engineer = await runEngineer(provider, {
+      prompt,
+      plan,
+      design,
+      ...(currentVersion ? { currentFiles: currentVersion.files } : {}),
+    });
     await persistEvent(
       repo,
       {
@@ -178,7 +177,12 @@ export async function runAgentPipeline(
       onEvent,
     );
 
-    let files = engineer.files;
+    if (!currentVersion && engineer.files.length === 0) {
+      throw new Error("Engineer returned no files for the initial version");
+    }
+    let files = currentVersion
+      ? mergeFileDelta(currentVersion.files, engineer.files)
+      : engineer.files;
     let summary = engineer.summary;
     let qaRounds = 0;
     let exhausted = false;
@@ -271,15 +275,20 @@ export async function runAgentPipeline(
       );
     }
 
-    const version = await repo.createVersion({
-      projectId,
-      runId,
-      files,
-      acceptance: plan.acceptance,
-      summary,
-      qaScore: qaResult.qa_score,
-    });
-    await repo.setCurrentVersion(projectId, version.id);
+    const version = engineer.files.length === 0 && currentVersion
+      ? null
+      : await repo.createVersion({
+          projectId,
+          runId,
+          files,
+          acceptance: plan.acceptance,
+          summary,
+          qaScore: qaResult.qa_score,
+          parentId: currentVersion?.id ?? null,
+        });
+    if (version) await repo.setCurrentVersion(projectId, version.id);
+    const versionId = version?.id ?? currentVersion?.id;
+    if (!versionId) throw new Error("Pipeline completed without a version snapshot");
     await repo.addMessage({ projectId, role: "agent", content: summary });
     await repo.updateRun(runId, {
       status: "completed",
@@ -291,7 +300,7 @@ export async function runAgentPipeline(
     return {
       plan,
       files,
-      versionId: version.id,
+      versionId,
       summary,
       qaScore: qaResult.qa_score,
       qaRounds,

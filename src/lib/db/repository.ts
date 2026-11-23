@@ -96,6 +96,7 @@ export interface AppRepository {
     acceptance: unknown;
     summary: string;
     qaScore?: number | null;
+    parentId?: string | null;
   }): Promise<Version>;
   setCurrentVersion(projectId: string, versionId: string): Promise<void>;
   incrementUsage(
@@ -339,7 +340,7 @@ export function createAppRepository(db: AppDb): AppRepository {
         id,
         projectId: input.projectId,
         runId: input.runId,
-        parentId: null,
+        parentId: input.parentId ?? null,
         files: input.files,
         acceptance: input.acceptance,
         qaScore: input.qaScore ?? null,

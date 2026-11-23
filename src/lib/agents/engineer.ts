@@ -14,8 +14,7 @@ export const engineerSchema = z.object({
         path: z.string().min(1),
         content: z.string(),
       }),
-    )
-    .min(1),
+    ),
   summary: z.string().min(1),
 });
 
@@ -25,6 +24,7 @@ async function completeEngineer(
     prompt: string;
     plan: PlannerPayload;
     design: ArchitectPayload;
+    currentFiles?: EngineerPayload["files"];
   },
 ): Promise<EngineerPayload> {
   const completion = await provider.complete({
@@ -33,6 +33,7 @@ async function completeEngineer(
     modelClass: modelClassForStage("engineer"),
     plan: input.plan,
     design: input.design,
+    ...(input.currentFiles ? { currentFiles: input.currentFiles } : {}),
     responseSchema: engineerSchema,
   });
   return engineerSchema.parse(JSON.parse(completion.text));
@@ -45,13 +46,26 @@ export async function runEngineer(
     prompt: string;
     plan: PlannerPayload;
     design: ArchitectPayload;
+    currentFiles?: EngineerPayload["files"];
   },
 ): Promise<EngineerPayload> {
+  let result: EngineerPayload;
   try {
-    return await completeEngineer(provider, input);
+    result = await completeEngineer(provider, input);
   } catch {
-    return await completeEngineer(provider, input);
+    result = await completeEngineer(provider, input);
   }
+  if (!input.currentFiles) return result;
+
+  const existingFiles = new Map(
+    input.currentFiles.map(({ path, content }) => [path, content]),
+  );
+  return {
+    ...result,
+    files: result.files.filter(
+      ({ path, content }) => existingFiles.get(path) !== content,
+    ),
+  };
 }
 
 /** Return only changed files so the pipeline can merge a focused repair. */
