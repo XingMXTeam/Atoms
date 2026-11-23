@@ -38,10 +38,10 @@
       "command": "pnpm test:e2e",
       "status": "passed",
       "exitCode": 0,
-      "durationMs": 19271,
-      "at": 1795466165046,
-      "sha": "41f0ceb",
-      "tail": "  32 passed (18.8s)\n$ playwright test\n[WebServer] ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.\n[WebServer] \n[WebServer]",
+      "durationMs": 19955,
+      "at": 1795466527483,
+      "sha": "214a501",
+      "tail": "  32 passed (19.5s)\n$ playwright test\n[WebServer] ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.\n[WebServer] \n[WebServer]",
       "log": ".harness/verify/e2e.log"
     },
     "build": {
@@ -56,5 +56,5 @@
       "log": ".harness/verify/build.log"
     }
   },
-  "updatedAt": 1795466507491
+  "updatedAt": 1795466527483
 }
