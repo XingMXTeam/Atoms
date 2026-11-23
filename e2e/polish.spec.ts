@@ -239,6 +239,68 @@ test.describe("polish visual system (REQ-1 / REQ-3)", () => {
   });
 });
 
+test.describe("polish preview performance and width (REQ-4 / REQ-5)", () => {
+  test("sandbox: preview iframe stays allow-scripts only", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    await page.getByRole("link", { name: /待办清单示例/ }).click();
+    await expect(page).toHaveURL(/\/projects\//);
+    await page.getByRole("tab", { name: "预览" }).click();
+
+    const iframe = page.getByTestId("preview-iframe");
+    await expect(iframe).toBeVisible({ timeout: 60_000 });
+    await expect(iframe).toHaveAttribute("sandbox", "allow-scripts");
+    const sandbox = await iframe.getAttribute("sandbox");
+    expect(sandbox).toBe("allow-scripts");
+    expect(sandbox?.includes(["allow", "same", "origin"].join("-"))).toBe(false);
+  });
+
+  test("preview-width: 移动 375px constrains the preview frame", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto("/");
+    await page.getByRole("link", { name: /待办清单示例/ }).click();
+    await expect(page).toHaveURL(/\/projects\//);
+    await page.getByRole("tab", { name: "预览" }).click();
+
+    await expect(page.getByTestId("preview-iframe")).toBeVisible({
+      timeout: 60_000,
+    });
+    await expect(page.getByTestId("preview-width-toggle")).toBeVisible();
+
+    const desktopWidth = await page.getByTestId("preview-frame").evaluate((el) => {
+      return (el as HTMLElement).getBoundingClientRect().width;
+    });
+    expect(desktopWidth).toBeGreaterThan(400);
+
+    await page.getByRole("button", { name: "移动 375px" }).click();
+    await expect(page.getByTestId("preview-pane")).toHaveAttribute(
+      "data-preview-width",
+      "mobile",
+    );
+
+    const mobileWidth = await page.getByTestId("preview-frame").evaluate((el) => {
+      return (el as HTMLElement).getBoundingClientRect().width;
+    });
+    expect(mobileWidth).toBeLessThanOrEqual(376);
+    expect(mobileWidth).toBeGreaterThan(300);
+
+    // Sandbox must remain scripts-only after the width toggle.
+    await expect(page.getByTestId("preview-iframe")).toHaveAttribute(
+      "sandbox",
+      "allow-scripts",
+    );
+
+    await page.getByRole("button", { name: "桌面" }).click();
+    await expect(page.getByTestId("preview-pane")).toHaveAttribute(
+      "data-preview-width",
+      "desktop",
+    );
+  });
+});
+
 test.describe("polish follow-up and UX states (REQ-2)", () => {
   test("follow-up: left-rail prompt starts an incremental iteration", async ({
     page,
