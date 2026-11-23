@@ -34,11 +34,18 @@ async function loadEsbuildApi(): Promise<EsbuildApi> {
   // Browser/client: explicit browser entry so Turbopack never follows Node
   // `main` (child_process spawn of bin/esbuild). Node tests: default entry.
   if (typeof window !== "undefined") {
-    esbuildApi = (await import(
-      /* webpackIgnore: true */ "esbuild-wasm/lib/browser.js"
-    )) as EsbuildApi;
+    esbuildApi = (await import("esbuild-wasm/lib/browser.js")) as EsbuildApi;
   } else {
-    esbuildApi = await import("esbuild-wasm");
+    // Keep the Node-only test entry out of Next's server bundle: esbuild's
+    // package entry references a native subprocess unavailable in workers.
+    const nodeModule = process.getBuiltinModule("module") as
+      | typeof import("node:module")
+      | undefined;
+    if (!nodeModule) throw new Error("Node module loader unavailable");
+    const requireFromProject = nodeModule.createRequire(
+      `${process.cwd()}/package.json`,
+    );
+    esbuildApi = requireFromProject("esbuild-wasm") as EsbuildApi;
   }
   return esbuildApi;
 }
