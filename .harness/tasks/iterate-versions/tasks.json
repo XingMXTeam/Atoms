@@ -1,0 +1,48 @@
+[
+  {
+    "id": "TASK-1",
+    "title": "Persist incremental runs and immutable child version snapshots",
+    "requirements": ["REQ-1"],
+    "checks": [
+      "pnpm exec vitest run src/lib/versions",
+      "pnpm typecheck"
+    ]
+  },
+  {
+    "id": "TASK-2",
+    "title": "Add the version timeline and snapshot rollback to the workbench",
+    "requirements": ["REQ-2", "REQ-6"],
+    "checks": [
+      "pnpm exec playwright test e2e/iterate-versions.spec.ts",
+      "pnpm typecheck"
+    ]
+  },
+  {
+    "id": "TASK-3",
+    "title": "Expose cookie-free read-only project sharing",
+    "requirements": ["REQ-3"],
+    "checks": [
+      "pnpm exec playwright test e2e/iterate-versions.spec.ts",
+      "pnpm typecheck"
+    ]
+  },
+  {
+    "id": "TASK-4",
+    "title": "Export the current version as a ZIP download",
+    "requirements": ["REQ-4"],
+    "checks": [
+      "pnpm exec vitest run src/lib/exports",
+      "pnpm typecheck"
+    ]
+  },
+  {
+    "id": "TASK-5",
+    "title": "Seed completed examples and cover version journeys with mock E2E",
+    "requirements": ["REQ-5", "REQ-6"],
+    "checks": [
+      "pnpm exec vitest run src/lib/db",
+      "LLM_PROVIDER=mock pnpm exec playwright test e2e/iterate-versions.spec.ts",
+      "fh verify"
+    ]
+  }
+]

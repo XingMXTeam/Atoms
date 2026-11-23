@@ -1,0 +1,117 @@
+{
+  "version": 1,
+  "feature": "iterate-versions",
+  "title": "",
+  "phase": "implement",
+  "createdAt": 1795458370995,
+  "updatedAt": 1795458672949,
+  "macroCycle": {
+    "current": 1,
+    "max": 5
+  },
+  "consecutivePasses": 0,
+  "clarificationComplete": true,
+  "tasks": [
+    {
+      "id": "TASK-1",
+      "title": "Persist incremental runs and immutable child version snapshots",
+      "requirements": [
+        "REQ-1"
+      ],
+      "status": "pending",
+      "attempts": 0,
+      "commitSha": null
+    },
+    {
+      "id": "TASK-2",
+      "title": "Add the version timeline and snapshot rollback to the workbench",
+      "requirements": [
+        "REQ-2",
+        "REQ-6"
+      ],
+      "status": "pending",
+      "attempts": 0,
+      "commitSha": null
+    },
+    {
+      "id": "TASK-3",
+      "title": "Expose cookie-free read-only project sharing",
+      "requirements": [
+        "REQ-3"
+      ],
+      "status": "pending",
+      "attempts": 0,
+      "commitSha": null
+    },
+    {
+      "id": "TASK-4",
+      "title": "Export the current version as a ZIP download",
+      "requirements": [
+        "REQ-4"
+      ],
+      "status": "pending",
+      "attempts": 0,
+      "commitSha": null
+    },
+    {
+      "id": "TASK-5",
+      "title": "Seed completed examples and cover version journeys with mock E2E",
+      "requirements": [
+        "REQ-5",
+        "REQ-6"
+      ],
+      "status": "pending",
+      "attempts": 0,
+      "commitSha": null
+    }
+  ],
+  "history": [
+    {
+      "at": 1795458370996,
+      "event": "prd-imported",
+      "from": "docs/prd/F4-iterate-versions.md",
+      "requirements": 6,
+      "numberingComplete": true
+    },
+    {
+      "at": 1795458672949,
+      "event": "clarify-done",
+      "tasks": 5
+    }
+  ],
+  "lastEvaluation": null,
+  "lastFailure": null,
+  "prd": {
+    "source": "imported",
+    "from": "docs/prd/F4-iterate-versions.md",
+    "importedAt": "2026-11-23T18:26:10.995Z",
+    "requirements": 6,
+    "numberingComplete": true,
+    "missingNumbers": []
+  },
+  "baseSha": "5da2ad7",
+  "rubricBaseline": {
+    "RB-1": "essential",
+    "RB-2": "important",
+    "RB-3": "essential",
+    "RB-4": "important",
+    "RB-5": "essential",
+    "RB-6": "important",
+    "RB-7": "essential",
+    "RB-8": "important",
+    "RB-9": "essential",
+    "RB-10": "important",
+    "RB-11": "essential",
+    "RB-12": "important",
+    "RB-13": "pitfall",
+    "RB-14": "pitfall",
+    "RB-15": "pitfall",
+    "RB-16": "pitfall",
+    "RB-17": "essential",
+    "RB-18": "essential",
+    "RB-19": "essential",
+    "RB-20": "pitfall",
+    "RB-21": "pitfall"
+  },
+  "rubricHash": "5ed14b8a8b37aa85"
+}
