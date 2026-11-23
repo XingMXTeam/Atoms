@@ -1,7 +1,7 @@
 # TASK-2 developer report
 
 - **Task:** Follow-up UX and complete empty/loading/error/replay states
-- **Commit:** `03603e0`
+- **Commit:** `b24a088`
 - **Files:** `src/components/workbench/follow-up-form.tsx`, `src/components/workbench/follow-up-form.test.tsx`, `src/components/workbench/agent-timeline.tsx`, `src/components/workbench/workbench-client.tsx`, `src/components/home/prompt-form.tsx`, `src/app/projects/[projectId]/page.tsx`, `src/app/api/projects/[projectId]/runs/[runId]/continue/route.ts`, `e2e/polish.spec.ts`
 - **Checks:**
   - `pnpm exec vitest run src/components/workbench/follow-up-form.test.tsx` — 1 passed.
