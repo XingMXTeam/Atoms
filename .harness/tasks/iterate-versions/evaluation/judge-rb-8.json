@@ -1,0 +1,19 @@
+{
+  "score": 1,
+  "note": "下载 ZIP is a primary workbench action next to share. Click produced pending label «正在导出…» then a download named <projectId>.zip (journey zip case). Discoverable with clear in-flight feedback (H-UX-2.1/2.2). Double-click probe did not leave the control locked — polish only, does not block this item.",
+  "artifacts": [
+    ".harness/tasks/iterate-versions/evidence/c1-2-browser/workbench-zip-export.png",
+    ".harness/tasks/iterate-versions/evidence/c1-2-browser/probe-double-zip.png",
+    ".harness/tasks/iterate-versions/evidence/c1-2-browser/journey-results.json"
+  ],
+  "verify": ["typecheck", "lint", "unit", "build", "e2e"],
+  "heuristics": [],
+  "rubricRefinementSuggestions": [
+    {
+      "type": "add",
+      "item": "RB-8",
+      "problem": "No pitfall for double-export while the request is in flight",
+      "suggestion": "Add an L4 pitfall: export control stays pending/disabled while a ZIP request is in flight"
+    }
+  ]
+}

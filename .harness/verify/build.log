@@ -1,25 +1,29 @@
 ▲ Next.js 16.4.6 (Turbopack)
-✓ Running next.config.ts took 622ms
+✓ Running next.config.ts took 606ms
 
   Creating an optimized production build ...
-✓ Compiled successfully in 549ms
+✓ Compiled successfully in 656ms
   Running TypeScript ...
-  Finished TypeScript in 1202ms ...
+  Finished TypeScript in 1305ms ...
   Collecting page data using 9 workers ...
   Generating static pages using 9 workers (0/4) ...
   Generating static pages using 9 workers (1/4) 
   Generating static pages using 9 workers (2/4) 
   Generating static pages using 9 workers (3/4) 
-✓ Generating static pages using 9 workers (4/4) in 232ms
+✓ Generating static pages using 9 workers (4/4) in 70ms
   Finalizing page optimization ...
 
 Route (app)
 ┌ ƒ /
 ├ ○ /_not-found
 ├ ƒ /api/projects
+├ ƒ /api/projects/[projectId]/export
 ├ ƒ /api/projects/[projectId]/runs/[runId]/continue
 ├ ƒ /api/projects/[projectId]/runs/[runId]/stream
-└ ƒ /projects/[projectId]
+├ ƒ /api/projects/[projectId]/share
+├ ƒ /api/projects/[projectId]/versions
+├ ƒ /projects/[projectId]
+└ ƒ /share/[shareSlug]
 
 
 ƒ Proxy (Middleware)
@@ -38,15 +42,15 @@ $ next build
 
   Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
 Turbopack build encountered 1 warning:
-./src/lib/db/adapters/sqlite.ts:72:31
+./src/lib/db/adapters/sqlite.ts:73:31
 Warning: Dynamic filesystem access causes tracing of the whole project
-  [90m70 |[0m ): [33mAppRepository[0m {
-  [90m71 |[0m   [36mif[0m (filename !== [32m":memory:"[0m) {
-[33m[1m>[0m [90m72 |[0m     fs.mkdirSync(path.dirname(path.resolve(filename)), { recursive: [36mtrue[0m });
+  [90m71 |[0m ): [33mAppRepository[0m {
+  [90m72 |[0m   [36mif[0m (filename !== [32m":memory:"[0m) {
+[33m[1m>[0m [90m73 |[0m     fs.mkdirSync(path.dirname(path.resolve(filename)), { recursive: [36mtrue[0m });
   [90m   |[0m                               [33m[1m^^^^^^^^^^^^^^^^^^^^^^[0m
-  [90m73 |[0m   }
-  [90m74 |[0m
-  [90m75 |[0m   [36mconst[0m sqlite = [36mnew[0m [33mDatabase[0m(filename);
+  [90m74 |[0m   }
+  [90m75 |[0m
+  [90m76 |[0m   [36mconst[0m sqlite = [36mnew[0m [33mDatabase[0m(filename);
 
 Static analysis determined that this filesystem access causes the whole project to be traced and included in the output.
 This is usually unintentional and leads to all source files (including the public folder) to be deployed as part of the server code.
@@ -58,14 +62,20 @@ To resolve this, you can
 - remove them.
 
 Import traces:
-  App Route:
+  #1 [App Route]:
     ./src/lib/db/adapters/sqlite.ts
     ./src/lib/db/index.ts
-    ./src/app/api/projects/[projectId]/runs/[runId]/stream/route.ts
+    ./src/app/api/projects/[projectId]/versions/route.ts
 
-  Server Component:
+  #2 [Server Component]:
     ./src/lib/db/adapters/sqlite.ts
     ./src/lib/db/index.ts
-    ./src/app/projects/[projectId]/page.tsx
+    ./src/app/share/[shareSlug]/page.tsx
+
+  #3 [App Route]:
+    ./src/lib/db/adapters/sqlite.ts
+    ./src/lib/db/adapters/sqlite.ts
+    ./src/lib/db/index.ts
+    ./src/app/api/projects/[projectId]/runs/[runId]/continue/route.ts
 
 

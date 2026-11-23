@@ -1,0 +1,233 @@
+{
+  "at": 1795463183764,
+  "verdict": "pass",
+  "verdictReason": "score",
+  "score": 0.985,
+  "passScore": 0.9,
+  "layers": {
+    "L1": {
+      "score": 1,
+      "weight": 0.4
+    },
+    "L4": {
+      "score": 0.9,
+      "weight": 0.15
+    },
+    "L3": {
+      "score": 1,
+      "weight": 0.2
+    },
+    "L2": {
+      "score": 1,
+      "weight": 0.25
+    }
+  },
+  "vetoed": [],
+  "results": [
+    {
+      "id": "RB-1",
+      "requirement": "REQ-1",
+      "level": "essential",
+      "kind": "command",
+      "layer": "L1-function",
+      "score": 1,
+      "detail": "exit=0 (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite: |   - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest package"
+    },
+    {
+      "id": "RB-2",
+      "requirement": "REQ-1",
+      "level": "important",
+      "kind": "judge",
+      "layer": "L4-interaction",
+      "score": 0.5,
+      "detail": "judge: Follow-up completion is clear in the Chinese workbench: after continue, the 版本 timeline shows a new child with summary «已为待办加入优先级标签。» and «QA 100 分» (workbench-version-timeline.png; journey E2E-1 codeHasPriority). The follow-up *action* itself is not discoverable in the UI — workbench-initial"
+    },
+    {
+      "id": "RB-3",
+      "requirement": "REQ-2",
+      "level": "essential",
+      "kind": "command",
+      "layer": "L1-function",
+      "score": 1,
+      "detail": "exit=0 [WebServer] ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests. | [WebServer]  | [WebServer]"
+    },
+    {
+      "id": "RB-4",
+      "requirement": "REQ-2",
+      "level": "important",
+      "kind": "judge",
+      "layer": "L3-ui",
+      "score": 1,
+      "detail": "judge: 版本 timeline matches REF-1: chronological cards with Chinese summaries, «版本 n · QA 100 分», green 当前版本 vs 恢复此版本, sitting beside Agent 时间线 without competing with preview hierarchy. clipped=0 on the timeline viewport."
+    },
+    {
+      "id": "RB-5",
+      "requirement": "REQ-3",
+      "level": "essential",
+      "kind": "command",
+      "layer": "L1-function",
+      "score": 1,
+      "detail": "exit=0 [WebServer] ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests. | [WebServer]  | [WebServer]"
+    },
+    {
+      "id": "RB-6",
+      "requirement": "REQ-3",
+      "level": "important",
+      "kind": "judge",
+      "layer": "L4-interaction",
+      "score": 1,
+      "detail": "judge: Public share (fresh context, no owner cookie) shows «只读分享», current preview «体验 Atoms Studio», and a working 代码 tab with files. No 恢复此版本 / 下载 ZIP / 创建分享 controls (mutationButtons=[]). Visitor POST /versions returned 403. Communicates read-only clearly (RL-2)."
+    },
+    {
+      "id": "RB-7",
+      "requirement": "REQ-4",
+      "level": "essential",
+      "kind": "command",
+      "layer": "L1-function",
+      "score": 1,
+      "detail": "exit=0 (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite: |   - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest package"
+    },
+    {
+      "id": "RB-8",
+      "requirement": "REQ-4",
+      "level": "important",
+      "kind": "judge",
+      "layer": "L4-interaction",
+      "score": 1,
+      "detail": "judge: 下载 ZIP is a primary workbench action next to share. Click produced pending label «正在导出…» then a download named <projectId>.zip (journey zip case). Discoverable with clear in-flight feedback (H-UX-2.1/2.2). Double-click probe did not leave the control locked — polish only, does not block this "
+    },
+    {
+      "id": "RB-9",
+      "requirement": "REQ-5",
+      "level": "essential",
+      "kind": "command",
+      "layer": "L1-function",
+      "score": 1,
+      "detail": "exit=0 (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite: |   - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest package"
+    },
+    {
+      "id": "RB-10",
+      "requirement": "REQ-5",
+      "level": "important",
+      "kind": "judge",
+      "layer": "L3-ui",
+      "score": 1,
+      "detail": "judge: Fresh-device home first paint shows ≥2 completed seeded cards («专注计时器示例» 94 分, «待办清单示例» 96 分) plus the four F2 example prompts — never a blank 我的项目 grid (RL-3). One clipped node measured at 1280px (H-UI-6.4) is minor and does not hide scores or cards."
+    },
+    {
+      "id": "RB-11",
+      "requirement": "REQ-6",
+      "level": "essential",
+      "kind": "command",
+      "layer": "L1-function",
+      "score": 1,
+      "detail": "exit=0 [WebServer] ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests. | [WebServer]  | [WebServer]"
+    },
+    {
+      "id": "RB-12",
+      "requirement": "REQ-6",
+      "level": "important",
+      "kind": "judge",
+      "layer": "L4-interaction",
+      "score": 1,
+      "detail": "judge: uiJourney: after follow-up, timeline has 2 versions; UI 恢复此版本 on v1 restores preview to «体验 Atoms Studio» and code without «优先级», while both immutable rows remain (workbench-after-rollback-*.png; E2E-8 + E2E-7 persistence reload). Visibly returns to earlier snapshot with history intact."
+    },
+    {
+      "id": "RB-13",
+      "requirement": "REQ-1",
+      "level": "pitfall",
+      "kind": "command",
+      "layer": "L2-robustness",
+      "score": 1,
+      "detail": "exit=0 (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite: |   - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest package"
+    },
+    {
+      "id": "RB-14",
+      "requirement": "REQ-2",
+      "level": "pitfall",
+      "kind": "judge",
+      "layer": "L2-robustness",
+      "score": 1,
+      "detail": "judge: Pitfall absent (RL-1): after rollback, status «已恢复所选版本»; both version rows still listed with their summaries/QA; v1 marked 当前版本 and preview/code both show the v1 snapshot («体验 Atoms Studio», no 优先级). No delete/rewrite of history; preview and code agree on the selected snapshot."
+    },
+    {
+      "id": "RB-15",
+      "requirement": "REQ-3",
+      "level": "pitfall",
+      "kind": "command",
+      "layer": "L2-robustness",
+      "score": 1,
+      "detail": "exit=0 [WebServer] ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests. | [WebServer]  | [WebServer]"
+    },
+    {
+      "id": "RB-16",
+      "requirement": "REQ-5",
+      "level": "pitfall",
+      "kind": "judge",
+      "layer": "L3-ui",
+      "score": 1,
+      "detail": "judge: Pitfall absent (RL-3): first paint for a fresh device shows two completed seeded project cards with visible QA scores (94 分, 96 分) — not an empty or ambiguous project grid. Capture + journey home screenshots confirm."
+    },
+    {
+      "id": "RB-17",
+      "requirement": "REQ-1",
+      "level": "essential",
+      "kind": "command",
+      "layer": "L2-robustness",
+      "score": 1,
+      "detail": "exit=0 (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite: |   - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest package"
+    },
+    {
+      "id": "RB-18",
+      "requirement": "REQ-2",
+      "level": "essential",
+      "kind": "judge",
+      "layer": "L3-ui",
+      "score": 1,
+      "detail": "judge: Essential 版本 tab is complete and legible: ordered rows, Chinese summaries, QA scores, and rollback/current affordances sit beside the existing preview/code tabs without competing for hierarchy (REF-1). Matches vision layout intent."
+    },
+    {
+      "id": "RB-19",
+      "requirement": "REQ-6",
+      "level": "essential",
+      "kind": "command",
+      "layer": "L4-interaction",
+      "score": 1,
+      "detail": "exit=0 [WebServer] ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests. | [WebServer]  | [WebServer]"
+    },
+    {
+      "id": "RB-20",
+      "requirement": "REQ-1",
+      "level": "pitfall",
+      "kind": "command",
+      "layer": "L1-function",
+      "score": 1,
+      "detail": "exit=0 (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite: |   - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest package"
+    },
+    {
+      "id": "RB-21",
+      "requirement": "REQ-3",
+      "level": "pitfall",
+      "kind": "judge",
+      "layer": "L4-interaction",
+      "score": 1,
+      "detail": "judge: Pitfall absent (RL-2): public share presents «只读分享», preview+code only; no restore/ZIP/share/mutation controls (hasRestoreButton=false, hasZipButton=false, mutationButtons=[]). Visitor mutation POST returned 403. Does not imply the visitor can edit the owner's project."
+    }
+  ],
+  "refinementSuggestions": {
+    "added": [
+      "RS-4",
+      "RS-5",
+      "RS-6"
+    ],
+    "pending": [
+      "RS-1",
+      "RS-2",
+      "RS-3",
+      "RS-4",
+      "RS-5",
+      "RS-6"
+    ],
+    "invalid": []
+  }
+}

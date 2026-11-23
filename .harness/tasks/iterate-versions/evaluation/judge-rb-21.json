@@ -1,0 +1,11 @@
+{
+  "score": 1,
+  "note": "Pitfall absent (RL-2): public share presents «只读分享», preview+code only; no restore/ZIP/share/mutation controls (hasRestoreButton=false, hasZipButton=false, mutationButtons=[]). Visitor mutation POST returned 403. Does not imply the visitor can edit the owner's project.",
+  "artifacts": [
+    ".harness/tasks/iterate-versions/evidence/c1-2-browser/public-read-only-share.png",
+    ".harness/tasks/iterate-versions/evidence/c1-2-browser/public-read-only-share-code.png",
+    ".harness/tasks/iterate-versions/evidence/c1-2-browser/journey-results.json"
+  ],
+  "verify": ["typecheck", "lint", "unit", "build", "e2e"],
+  "heuristics": []
+}
