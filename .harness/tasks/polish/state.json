@@ -1,0 +1,117 @@
+{
+  "version": 1,
+  "feature": "polish",
+  "title": "",
+  "phase": "implement",
+  "createdAt": 1795463253859,
+  "updatedAt": 1795463482056,
+  "macroCycle": {
+    "current": 1,
+    "max": 5
+  },
+  "consecutivePasses": 0,
+  "clarificationComplete": true,
+  "tasks": [
+    {
+      "id": "TASK-1",
+      "title": "Design-system pass, reduced-motion, and responsive card/code readability",
+      "requirements": [
+        "REQ-1",
+        "REQ-3"
+      ],
+      "status": "pending",
+      "attempts": 0,
+      "commitSha": null
+    },
+    {
+      "id": "TASK-2",
+      "title": "Follow-up UX and complete empty/loading/error/replay states",
+      "requirements": [
+        "REQ-2"
+      ],
+      "status": "pending",
+      "attempts": 0,
+      "commitSha": null
+    },
+    {
+      "id": "TASK-3",
+      "title": "Preview performance headers, idle wasm preload, and mobile width toggle",
+      "requirements": [
+        "REQ-4",
+        "REQ-5"
+      ],
+      "status": "pending",
+      "attempts": 0,
+      "commitSha": null
+    },
+    {
+      "id": "TASK-4",
+      "title": "Delivery docs and China CDN reachability audit",
+      "requirements": [
+        "REQ-6",
+        "REQ-7"
+      ],
+      "status": "pending",
+      "attempts": 0,
+      "commitSha": null
+    }
+  ],
+  "history": [
+    {
+      "at": 1795463253861,
+      "event": "prd-imported",
+      "from": "docs/prd/F5-polish.md",
+      "requirements": 7,
+      "numberingComplete": true
+    },
+    {
+      "at": 1795463482056,
+      "event": "clarify-done",
+      "tasks": 4
+    }
+  ],
+  "lastEvaluation": null,
+  "lastFailure": null,
+  "prd": {
+    "source": "imported",
+    "from": "docs/prd/F5-polish.md",
+    "importedAt": "2026-11-23T19:47:33.859Z",
+    "requirements": 7,
+    "numberingComplete": true,
+    "missingNumbers": []
+  },
+  "baseSha": "940cb14",
+  "rubricBaseline": {
+    "RB-1": "essential",
+    "RB-2": "essential",
+    "RB-3": "important",
+    "RB-4": "pitfall",
+    "RB-5": "essential",
+    "RB-6": "essential",
+    "RB-7": "pitfall",
+    "RB-8": "essential",
+    "RB-9": "important",
+    "RB-10": "pitfall",
+    "RB-11": "essential",
+    "RB-12": "essential",
+    "RB-13": "important",
+    "RB-14": "pitfall",
+    "RB-15": "essential",
+    "RB-16": "important",
+    "RB-17": "pitfall",
+    "RB-18": "essential",
+    "RB-19": "essential",
+    "RB-20": "important",
+    "RB-21": "pitfall",
+    "RB-22": "essential",
+    "RB-23": "essential",
+    "RB-24": "important",
+    "RB-25": "pitfall",
+    "RB-26": "essential",
+    "RB-27": "important",
+    "RB-28": "essential",
+    "RB-29": "pitfall",
+    "RB-30": "pitfall"
+  },
+  "rubricHash": "a6f78b2605ed3545"
+}

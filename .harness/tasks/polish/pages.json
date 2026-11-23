@@ -1,0 +1,26 @@
+{
+  "baseUrl": "http://127.0.0.1:3000",
+  "viewport": { "width": 1280, "height": 800 },
+  "fullPage": false,
+  "pages": [
+    {
+      "name": "home-visual-system",
+      "route": "/",
+      "waitFor": "main",
+      "notes": "Inspect Chinese home visual system, seeded 我的项目 cards for clipped text, light/dark via prefers-color-scheme, and focus-visible on primary prompt controls. Also capture at 375×812."
+    },
+    {
+      "name": "workbench-polish-states",
+      "route": "/projects/[projectId]",
+      "waitFor": "main",
+      "notes": "Owned project under LLM_PROVIDER=mock. Inspect follow-up input, qa_rounds / 已达修复上限 metadata, state banners (loading/error/interrupted/演示回放), preview width toggle 桌面/移动 375px, tab focus rings, and code pane long-line reachability."
+    },
+    {
+      "name": "share-read-only-polish",
+      "route": "/share/[shareSlug]",
+      "waitFor": "main",
+      "notes": "Open minted share URL without owner cookie. Confirm same visual system, labelled preview iframe, no follow-up/mutation controls, and no external CDN requests."
+    }
+  ],
+  "captureNotes": "Run with LLM_PROVIDER=mock. For CDN audit, record all document requests on the three routes. Capture reduced-motion by emulating prefers-reduced-motion: reduce on the workbench."
+}

@@ -1,0 +1,129 @@
+[
+  {
+    "id": "E2E-1",
+    "category": "core",
+    "mapsTo": "REQ-2",
+    "blocking": true,
+    "severity": "critical",
+    "route": "/projects/[projectId]",
+    "steps": [
+      "Open an owned completed project under LLM_PROVIDER=mock.",
+      "Locate the Chinese follow-up prompt in the workbench left rail and submit a follow-up that changes a visible mock marker.",
+      "Wait for the incremental run to complete."
+    ],
+    "expect": [
+      "An incremental iteration run starts from the UI and a new version/preview reflects the change.",
+      "Follow-up send is disabled while the run is active."
+    ]
+  },
+  {
+    "id": "E2E-2",
+    "category": "core",
+    "mapsTo": "REQ-7",
+    "blocking": true,
+    "severity": "critical",
+    "route": "/",
+    "steps": [
+      "With network request logging enabled, visit `/`, an owned `/projects/[projectId]`, and a `/share/[shareSlug]`.",
+      "Collect all request URLs during load and idle."
+    ],
+    "expect": [
+      "No request host matches esm.sh, unpkg, jsdelivr, cdn.tailwindcss.com, fonts.googleapis.com, or fonts.gstatic.com."
+    ]
+  },
+  {
+    "id": "E2E-3",
+    "category": "negative",
+    "mapsTo": "REQ-2",
+    "blocking": true,
+    "severity": "critical",
+    "route": "/share/[shareSlug]",
+    "steps": [
+      "Open a public share URL without the owner deviceId cookie.",
+      "Inspect the left rail / controls for follow-up, share mutation, and ZIP owner actions."
+    ],
+    "expect": [
+      "Follow-up send is absent or disabled.",
+      "No owner mutation controls are actionable."
+    ]
+  },
+  {
+    "id": "E2E-4",
+    "category": "negative",
+    "mapsTo": "REQ-5",
+    "blocking": true,
+    "severity": "high",
+    "route": "/projects/[projectId]",
+    "steps": [
+      "Open the 预览 tab and toggle `移动 375px`.",
+      "Read the preview iframe sandbox attribute."
+    ],
+    "expect": [
+      "Sandbox remains allow-scripts only (no allow-same-origin).",
+      "Mobile frame constrains preview width near 375px."
+    ]
+  },
+  {
+    "id": "E2E-5",
+    "category": "boundary",
+    "mapsTo": "REQ-1",
+    "blocking": false,
+    "severity": "medium",
+    "route": "/projects/[projectId]",
+    "steps": [
+      "Emulate prefers-reduced-motion: reduce.",
+      "Switch preview/code/version tabs and expand a timeline card while a run pulse would normally animate."
+    ],
+    "expect": [
+      "Decorative tab/timeline/running-pulse animations do not continue under reduced motion."
+    ]
+  },
+  {
+    "id": "E2E-6",
+    "category": "crossFeature",
+    "mapsTo": "REQ-2",
+    "blocking": false,
+    "severity": "medium",
+    "route": "/projects/[projectId]",
+    "steps": [
+      "Force or select replay provider mode after a Gemini-style failure path under mock/replay wiring.",
+      "Inspect workbench banners and qa_rounds metadata including the 3-round cap path."
+    ],
+    "expect": [
+      "`演示回放` banner is visible when replay fallback is active.",
+      "`已达修复上限` appears when qa_rounds hits the exhaustion cap."
+    ]
+  },
+  {
+    "id": "E2E-7",
+    "category": "persistence",
+    "mapsTo": "REQ-2",
+    "blocking": true,
+    "severity": "high",
+    "route": "/projects/[projectId]",
+    "steps": [
+      "Complete a mock follow-up that updates qa_rounds / version state.",
+      "Hard refresh the workbench in the same device context."
+    ],
+    "expect": [
+      "Persisted qa_rounds and version/preview state remain accurate after reload.",
+      "Follow-up input remains available when no run is active."
+    ]
+  },
+  {
+    "id": "E2E-8",
+    "category": "uiJourney",
+    "mapsTo": "REQ-3",
+    "blocking": true,
+    "severity": "critical",
+    "route": "/",
+    "steps": [
+      "From home at 1280×800, keyboard-tab to the prompt submit control, open a project, then tab to follow-up, timeline expanders, preview width toggle, and preview/code/version tabs.",
+      "Repeat a responsive spot-check at 375×812 for card clipping and page overflow."
+    ],
+    "expect": [
+      "Focus-visible rings appear on primary controls and all listed controls are reachable by keyboard.",
+      "Zero horizontal page overflow and zero clipped 我的项目 card text at both viewports."
+    ]
+  }
+]
