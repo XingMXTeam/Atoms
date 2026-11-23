@@ -1,0 +1,30 @@
+{
+  "$comment": "Checks that prove this project works. `fh verify` runs them and records exit code, HEAD sha and output in .harness/verify/last.json; judge evidence cites them by id (\"verify\": [\"unit\"]), and rubric items can run one with {\"kind\":\"verify\",\"check\":\"<id>\"}. Add the checks your project really has (e2e, visual, api).",
+  "checks": [
+    {
+      "id": "typecheck",
+      "command": "pnpm typecheck",
+      "description": "types compile"
+    },
+    {
+      "id": "lint",
+      "command": "pnpm lint",
+      "description": "lint is clean"
+    },
+    {
+      "id": "unit",
+      "command": "pnpm test",
+      "description": "unit tests pass"
+    },
+    {
+      "id": "e2e",
+      "command": "pnpm test:e2e",
+      "description": "end-to-end journeys pass"
+    },
+    {
+      "id": "build",
+      "command": "pnpm build",
+      "description": "production build succeeds"
+    }
+  ]
+}
