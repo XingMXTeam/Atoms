@@ -24,6 +24,31 @@ describe("AppRepository (sqlite)", () => {
     expect(otherDevice).toBeNull();
   });
 
+  it("stores a reusable share slug and resolves the shared project", async () => {
+    const repo = createSqliteRepository(":memory:");
+    const project = await repo.createProject({
+      deviceId: "device-a",
+      title: "分享项目",
+    });
+    const run = await repo.createRun({ projectId: project.id, status: "completed" });
+    const version = await repo.createVersion({
+      projectId: project.id,
+      runId: run.id,
+      files: [{ path: "src/app.tsx", content: "export default 1" }],
+      acceptance: [],
+      summary: "初始版本",
+      qaScore: 92,
+    });
+    await repo.setCurrentVersion(project.id, version.id);
+
+    expect(await repo.ensureShareSlug(project.id, "opaque-slug")).toBe("opaque-slug");
+    expect(await repo.ensureShareSlug(project.id, "another-slug")).toBe("opaque-slug");
+    const shared = await repo.getProjectByShareSlug("opaque-slug");
+    expect(shared).toMatchObject({ id: project.id, title: "分享项目" });
+    expect(await repo.getVersion(shared!.currentVersionId!)).toEqual(version);
+    expect(await repo.getProjectByShareSlug("missing-slug")).toBeNull();
+  });
+
   it("listProjects returns only this device's projects", async () => {
     const repo = createSqliteRepository(":memory:");
 

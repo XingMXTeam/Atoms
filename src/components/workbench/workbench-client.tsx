@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { AgentTimeline } from "./agent-timeline";
 import { WorkbenchPanels, type VersionSummary } from "./workbench-panels";
@@ -53,6 +54,9 @@ export function WorkbenchClient({
   const [currentVersionId, setCurrentVersionId] = useState(initialVersionId);
   const [restoringVersionId, setRestoringVersionId] = useState<string | null>(null);
   const [restoreMessage, setRestoreMessage] = useState("");
+  const [shareUrl, setShareUrl] = useState("");
+  const [shareError, setShareError] = useState("");
+  const [sharing, setSharing] = useState(false);
   const [liveRunStatus, setLiveRunStatus] = useState<RunStatus>(
     (initialRunStatus as RunStatus) || "running",
   );
@@ -93,6 +97,31 @@ export function WorkbenchClient({
       cancelled = true;
     };
   }, [liveRunStatus, projectId]);
+
+  const createShareLink = useCallback(async () => {
+    setSharing(true);
+    setShareError("");
+    try {
+      const response = await fetch(`/api/projects/${projectId}/share`, {
+        method: "POST",
+        cache: "no-store",
+      });
+      const result = (await response.json()) as {
+        shareUrl?: string;
+        messageZh?: string;
+      };
+      if (!response.ok || !result.shareUrl) {
+        throw new Error(result.messageZh ?? "创建分享链接失败，请重试");
+      }
+      setShareUrl(result.shareUrl);
+    } catch (error) {
+      setShareError(
+        error instanceof Error ? error.message : "创建分享链接失败，请重试",
+      );
+    } finally {
+      setSharing(false);
+    }
+  }, [projectId]);
 
   const restoreVersion = useCallback(async (versionId: string) => {
     setRestoringVersionId(versionId);
@@ -148,6 +177,29 @@ export function WorkbenchClient({
           >
             {qaScore} 分
           </span>
+        ) : null}
+      </div>
+      <div className="flex flex-wrap items-center gap-3">
+        <button
+          type="button"
+          onClick={createShareLink}
+          disabled={sharing || !currentVersionId}
+          className="rounded-full border border-zinc-200 px-4 py-2 text-sm text-zinc-700 transition hover:bg-zinc-50 disabled:cursor-wait disabled:opacity-60 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900"
+        >
+          {sharing ? "正在创建…" : "创建只读分享链接"}
+        </button>
+        {shareUrl ? (
+          <Link
+            href={shareUrl}
+            className="break-all text-sm text-blue-700 underline underline-offset-2 dark:text-blue-300"
+          >
+            {shareUrl}
+          </Link>
+        ) : null}
+        {shareError ? (
+          <p role="alert" className="text-sm text-red-700 dark:text-red-300">
+            {shareError}
+          </p>
         ) : null}
       </div>
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">

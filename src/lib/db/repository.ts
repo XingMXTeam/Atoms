@@ -73,6 +73,8 @@ export interface AppRepository {
   createProject(input: { deviceId: string; title: string }): Promise<Project>;
   getProject(id: string, deviceId: string): Promise<Project | null>;
   listProjects(deviceId: string): Promise<Project[]>;
+  getProjectByShareSlug(shareSlug: string): Promise<Project | null>;
+  ensureShareSlug(projectId: string, shareSlug: string): Promise<string | null>;
   updateProjectTitle(id: string, title: string): Promise<Project>;
   createRun(input: { projectId: string; status: string }): Promise<Run>;
   getRun(id: string): Promise<Run | null>;
@@ -226,6 +228,30 @@ export function createAppRepository(db: AppDb): AppRepository {
       return rows.map(({ projects: project, versions: version }) =>
         mapProject(project, version?.qaScore ?? null),
       );
+    },
+
+    async getProjectByShareSlug(shareSlug) {
+      const rows = await db
+        .select()
+        .from(projects)
+        .leftJoin(versions, eq(projects.currentVersionId, versions.id))
+        .where(eq(projects.shareSlug, shareSlug))
+        .limit(1);
+      const row = rows[0];
+      return row ? mapProject(row.projects, row.versions?.qaScore ?? null) : null;
+    },
+
+    async ensureShareSlug(projectId, shareSlug) {
+      await db
+        .update(projects)
+        .set({ shareSlug, updatedAt: new Date() })
+        .where(and(eq(projects.id, projectId), sql`${projects.shareSlug} IS NULL`));
+      const rows = await db
+        .select()
+        .from(projects)
+        .where(eq(projects.id, projectId))
+        .limit(1);
+      return rows[0]?.shareSlug ?? null;
     },
 
     async updateProjectTitle(id, title) {

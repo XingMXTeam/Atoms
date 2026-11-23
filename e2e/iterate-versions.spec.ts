@@ -1,8 +1,9 @@
 import { expect, test } from "@playwright/test";
 
 test.describe("iterate-versions workbench (REQ-2 / REQ-6)", () => {
-  test("shows version metadata and restores the current snapshot", async ({
+  test("shows version metadata, restores the snapshot, and shares read-only", async ({
     page,
+    browser,
   }) => {
     await page.goto("/");
     await page
@@ -38,5 +39,29 @@ test.describe("iterate-versions workbench (REQ-2 / REQ-6)", () => {
     await expect(page.getByTestId("code-source")).not.toBeEmpty();
     await page.getByRole("tab", { name: "预览" }).click();
     await expect(page.getByTestId("preview-pane")).toBeVisible();
+
+    await page.getByRole("button", { name: "创建只读分享链接" }).click();
+    const shareLink = page.getByRole("link", { name: /\/share\// });
+    await expect(shareLink).toBeVisible();
+    const shareUrl = await shareLink.getAttribute("href");
+    expect(shareUrl).toMatch(/^\/share\/[A-Za-z0-9_-]{43}$/);
+
+    const visitorContext = await browser.newContext();
+    const visitorPage = await visitorContext.newPage();
+    await visitorPage.goto(shareUrl!);
+    await expect(visitorPage.getByText("只读分享")).toBeVisible();
+    await expect(visitorPage.getByTestId("preview-pane")).toBeVisible();
+    await expect(
+      visitorPage.getByRole("button", { name: "恢复此版本" }),
+    ).toHaveCount(0);
+    await visitorPage.getByRole("tab", { name: "代码" }).click();
+    await expect(visitorPage.getByTestId("code-source")).not.toBeEmpty();
+
+    const deniedMutation = await visitorPage.request.post(
+      new URL(`/api/projects/${projectId}/versions`, page.url()).toString(),
+      { data: { versionId } },
+    );
+    expect([401, 403]).toContain(deniedMutation.status());
+    await visitorContext.close();
   });
 });

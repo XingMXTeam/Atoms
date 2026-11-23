@@ -35,10 +35,14 @@ export async function GET(_request: Request, context: RouteContext) {
 
 export async function POST(request: Request, context: RouteContext) {
   const { projectId } = await context.params;
-  const { deviceId, setCookie } = await getDeviceId();
+  const existingDeviceId = (await cookies()).get(DEVICE_ID_COOKIE)?.value;
+  if (!existingDeviceId) {
+    return NextResponse.json({ messageZh: "请先打开自己的项目" }, { status: 401 });
+  }
+  const { deviceId, setCookie } = getOrMintDeviceId(`${DEVICE_ID_COOKIE}=${existingDeviceId}`);
   const repo = getDb();
   const project = await repo.getProject(projectId, deviceId);
-  if (!project) return jsonWithCookie({ messageZh: "项目不存在" }, 404, setCookie);
+  if (!project) return jsonWithCookie({ messageZh: "无权修改此项目" }, 403, setCookie);
 
   let versionId: unknown;
   try {

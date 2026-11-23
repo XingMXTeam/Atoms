@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS projects (
   created_at INTEGER NOT NULL,
   updated_at INTEGER NOT NULL
 );
+CREATE UNIQUE INDEX IF NOT EXISTS projects_share_slug_unique ON projects(share_slug);
 
 CREATE TABLE IF NOT EXISTS messages (
   id TEXT PRIMARY KEY NOT NULL,
