@@ -73,6 +73,10 @@ test.describe("QA timeline (REQ-4 / REQ-6)", () => {
     await page.getByRole("link", { name: "返回首页" }).click();
     const projectCard = page.getByRole("link", { name: /中文待办清单/ });
     await expect(projectCard.getByTestId("project-score-badge")).toHaveText("100 分");
+    await page.reload();
+    await expect(
+      projectCard.getByTestId("project-score-badge"),
+    ).toHaveText("100 分");
   });
 
   test("shows exhaustion after three repairs and keeps the persisted score", async ({

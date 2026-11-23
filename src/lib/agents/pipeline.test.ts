@@ -67,6 +67,8 @@ describe("agent pipeline (REQ-3 / REQ-7 / REQ-8)", () => {
     const updatedRun = await repo.getRun(run.id);
     expect(updatedRun?.status).toBe("completed");
     expect(updatedRun?.finishedAt).toBeInstanceOf(Date);
+    expect(updatedRun?.qaScore).toBe(100);
+    expect(refreshed?.qaScore).toBe(updatedRun?.qaScore);
   });
 
   it("applies only repair deltas and stops after the preview passes", async () => {
