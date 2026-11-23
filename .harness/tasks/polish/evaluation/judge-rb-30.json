@@ -1,0 +1,19 @@
+{
+  "score": 1,
+  "note": "Pitfall absent (ANTI-1 fonts): measured font-family is system stack only; no Google Fonts / external font CDN; first-paint screenshots show no font-swap CLS.",
+  "artifacts": [
+    ".harness/tasks/polish/evidence/c1-2-browser/home-visual-system-1280.png",
+    ".harness/tasks/polish/evidence/c1-2-browser/journey-results.json"
+  ],
+  "verify": [
+    "typecheck",
+    "lint",
+    "unit",
+    "build",
+    "e2e"
+  ],
+  "heuristics": [
+    "H-UI-7.2",
+    "H-UI-6.2"
+  ]
+}

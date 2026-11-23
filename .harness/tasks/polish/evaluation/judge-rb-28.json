@@ -1,0 +1,20 @@
+{
+  "score": 1,
+  "note": "Desktop vs mobile preview frames are visually distinct (full-width vs 375px); iframe sandbox remains allow-scripts only; workbench layout holds.",
+  "artifacts": [
+    ".harness/tasks/polish/evidence/c1-2-browser/workbench-preview-desktop.png",
+    ".harness/tasks/polish/evidence/c1-2-browser/workbench-preview-mobile.png",
+    ".harness/tasks/polish/evidence/c1-2-browser/journey-results.json"
+  ],
+  "verify": [
+    "typecheck",
+    "lint",
+    "unit",
+    "build",
+    "e2e"
+  ],
+  "heuristics": [
+    "H-UI-6.6",
+    "H-UI-5.1"
+  ]
+}

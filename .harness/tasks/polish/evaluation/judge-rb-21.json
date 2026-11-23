@@ -1,0 +1,20 @@
+{
+  "score": 1,
+  "note": "Pitfall absent (RL-4): README/DELIVERY/writeup contain no GEMINI_API_KEY assignments, AIza… material, or confidential hiring-brief paste; docs explicitly state paraphrase-only.",
+  "artifacts": [
+    "README.md",
+    "docs/DELIVERY.md",
+    "docs/writeup.md"
+  ],
+  "verify": [
+    "typecheck",
+    "lint",
+    "unit",
+    "build",
+    "e2e"
+  ],
+  "heuristics": [
+    "H-PR-1.2",
+    "H-UI-7.2"
+  ]
+}

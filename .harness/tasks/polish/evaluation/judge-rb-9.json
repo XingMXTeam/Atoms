@@ -1,0 +1,30 @@
+{
+  "score": 1,
+  "note": "Primary controls expose focus-visible rings (submit and 代码 tab: outline 2px solid via atoms-focus-ring). Landmarks/main/h1 present; tablist aria-label 预览与代码; share preview iframe titled 应用预览. Light/dark screenshots remain AA-looking; automated RGB contrast helper under-reports because theme uses oklch.",
+  "artifacts": [
+    ".harness/tasks/polish/evidence/c1-2-browser/home-focus-submit.png",
+    ".harness/tasks/polish/evidence/c1-2-browser/workbench-focus-tab.png",
+    ".harness/tasks/polish/evidence/c1-2-browser/home-dark.png",
+    ".harness/tasks/polish/evidence/c1-2-browser/workbench-dark.png",
+    ".harness/tasks/polish/evidence/c1-2-browser/share-read-only-polish.png"
+  ],
+  "verify": [
+    "typecheck",
+    "lint",
+    "unit",
+    "build",
+    "e2e"
+  ],
+  "heuristics": [
+    "H-UX-6.3",
+    "H-UI-2.3"
+  ],
+  "rubricRefinementSuggestions": [
+    {
+      "type": "refine",
+      "item": "RB-9",
+      "problem": "lab()/oklch colors defeat RGB contrast evaluate helpers",
+      "suggestion": "require token-based or forced-RGB contrast probe for light+dark body/heading samples"
+    }
+  ]
+}

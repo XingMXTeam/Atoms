@@ -1,0 +1,314 @@
+{
+  "at": 1795466114697,
+  "verdict": "pass",
+  "verdictReason": "score",
+  "score": 1,
+  "passScore": 0.9,
+  "layers": {
+    "L1": {
+      "score": 1,
+      "weight": 0.4
+    },
+    "L3": {
+      "score": 1,
+      "weight": 0.2
+    },
+    "L4": {
+      "score": 1,
+      "weight": 0.15
+    },
+    "L2": {
+      "score": 1,
+      "weight": 0.25
+    }
+  },
+  "vetoed": [],
+  "results": [
+    {
+      "id": "RB-1",
+      "requirement": "REQ-1",
+      "level": "essential",
+      "kind": "command",
+      "layer": "L1-function",
+      "score": 1,
+      "detail": "exit=0 [WebServer] ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests. | [WebServer]  | [WebServer]"
+    },
+    {
+      "id": "RB-2",
+      "requirement": "REQ-1",
+      "level": "essential",
+      "kind": "judge",
+      "layer": "L3-ui",
+      "score": 1,
+      "detail": "judge: Confirm pass: home/workbench/share keep REF-1 calm Chinese zinc UI — 可验证的 AI 应用生成 heading, 我的项目 cards, Agent 时间线, 预览/代码/版本 chrome, QA badges — without marketing flash. Dark scheme (home-dark) preserves the same system."
+    },
+    {
+      "id": "RB-3",
+      "requirement": "REQ-1",
+      "level": "important",
+      "kind": "judge",
+      "layer": "L3-ui",
+      "score": 1,
+      "detail": "judge: Confirm: at 1280×800 and 375×812, 我的项目 card titles are unclipped (titleClipped=false, cardOverflowX=0, docOverflow=0). Code pane long lines remain reachable via horizontal scroll (scrollWidth 1090 > clientWidth 296) plus 自动换行 control. Generic clipped-node count=1 is sr-only/hidden, not visibl"
+    },
+    {
+      "id": "RB-4",
+      "requirement": "REQ-1",
+      "level": "pitfall",
+      "kind": "judge",
+      "layer": "L4-interaction",
+      "score": 1,
+      "detail": "judge: Pitfall absent (RL-2): with prefers-reduced-motion: reduce, atoms-running-pulse animationDuration is 0s and sampled tab/expand transitions are 0s — decorative motion fully suppressed."
+    },
+    {
+      "id": "RB-5",
+      "requirement": "REQ-2",
+      "level": "essential",
+      "kind": "command",
+      "layer": "L1-function",
+      "score": 1,
+      "detail": "exit=0 [WebServer] ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests. | [WebServer]  | [WebServer]"
+    },
+    {
+      "id": "RB-6",
+      "requirement": "REQ-2",
+      "level": "essential",
+      "kind": "judge",
+      "layer": "L4-interaction",
+      "score": 1,
+      "detail": "judge: Follow-up 后续需求 + 发送后续需求 is discoverable in the left rail; send enables with text, disables while run active (pending screenshot), and Chinese banners 演示回放 / 已达修复上限 are unambiguous."
+    },
+    {
+      "id": "RB-7",
+      "requirement": "REQ-2",
+      "level": "pitfall",
+      "kind": "command",
+      "layer": "L2-robustness",
+      "score": 1,
+      "detail": "exit=0 [WebServer] ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests. | [WebServer]  | [WebServer]"
+    },
+    {
+      "id": "RB-8",
+      "requirement": "REQ-3",
+      "level": "essential",
+      "kind": "command",
+      "layer": "L1-function",
+      "score": 1,
+      "detail": "exit=0 [WebServer] ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests. | [WebServer]  | [WebServer]"
+    },
+    {
+      "id": "RB-9",
+      "requirement": "REQ-3",
+      "level": "important",
+      "kind": "judge",
+      "layer": "L4-interaction",
+      "score": 1,
+      "detail": "judge: Primary controls expose focus-visible rings (submit and 代码 tab: outline 2px solid via atoms-focus-ring). Landmarks/main/h1 present; tablist aria-label 预览与代码; share preview iframe titled 应用预览. Light/dark screenshots remain AA-looking; automated RGB contrast helper under-reports because theme u"
+    },
+    {
+      "id": "RB-10",
+      "requirement": "REQ-3",
+      "level": "pitfall",
+      "kind": "judge",
+      "layer": "L4-interaction",
+      "score": 1,
+      "detail": "judge: Pitfall absent (ANTI-1 a11y): primary interactive controls show visible focus rings; tabs labelled; share preview iframe has title 应用预览 and sandbox allow-scripts."
+    },
+    {
+      "id": "RB-11",
+      "requirement": "REQ-4",
+      "level": "essential",
+      "kind": "command",
+      "layer": "L1-function",
+      "score": 1,
+      "detail": "exit=0 (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite: |   - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest package"
+    },
+    {
+      "id": "RB-12",
+      "requirement": "REQ-4",
+      "level": "essential",
+      "kind": "grep",
+      "layer": "L2-robustness",
+      "score": 1,
+      "detail": "pattern /fonts\\.googleapis\\.com|fonts\\.gstatic\\.com/ in src: not found, expected absent"
+    },
+    {
+      "id": "RB-13",
+      "requirement": "REQ-4",
+      "level": "important",
+      "kind": "judge",
+      "layer": "L3-ui",
+      "score": 1,
+      "detail": "judge: Shells use system font stack only (ui-sans-serif, system-ui, -apple-system, Segoe UI). /preview/esbuild.wasm returns Cache-Control: public, max-age=31536000, immutable. Idle preload covered by unit tests (requestIdleCallback). No font-CDN CLS."
+    },
+    {
+      "id": "RB-14",
+      "requirement": "REQ-4",
+      "level": "pitfall",
+      "kind": "grep",
+      "layer": "L2-robustness",
+      "score": 1,
+      "detail": "pattern /cdn\\.tailwindcss\\.com|fonts\\.googleapis\\.com/ in src/app: not found, expected absent"
+    },
+    {
+      "id": "RB-15",
+      "requirement": "REQ-5",
+      "level": "essential",
+      "kind": "command",
+      "layer": "L1-function",
+      "score": 1,
+      "detail": "exit=0 [WebServer] ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests. | [WebServer]  | [WebServer]"
+    },
+    {
+      "id": "RB-16",
+      "requirement": "REQ-5",
+      "level": "important",
+      "kind": "judge",
+      "layer": "L4-interaction",
+      "score": 1,
+      "detail": "judge: 预览 tab exposes discoverable 桌面 / 移动 375px toggle; mobile constrains frame to 375px; preview remains responsive inside the chosen width."
+    },
+    {
+      "id": "RB-17",
+      "requirement": "REQ-5",
+      "level": "pitfall",
+      "kind": "command",
+      "layer": "L2-robustness",
+      "score": 1,
+      "detail": "exit=0 (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite: |   - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest package"
+    },
+    {
+      "id": "RB-18",
+      "requirement": "REQ-6",
+      "level": "essential",
+      "kind": "command",
+      "layer": "L1-function",
+      "score": 1,
+      "detail": "exit=0 README.md:14:- **Deploy**: OpenNext → Cloudflare Workers，自定义域名 `atoms.maoxunxing.com`，Worker `placement: { region: \"aws:us-east-1\" }`（避免部分区域无法访问 Gemini）。 | README.md:44:| `pnpm run build:cf` | OpenNext Cloudflare 构建 | | README.md:54:- 详细交付说明（思路与取舍 / 完成度 / 后续规划 / Cloudflare 部署步骤）：[`docs/DELIVERY.md`]"
+    },
+    {
+      "id": "RB-19",
+      "requirement": "REQ-6",
+      "level": "essential",
+      "kind": "command",
+      "layer": "L2-robustness",
+      "score": 1,
+      "detail": "exit=0"
+    },
+    {
+      "id": "RB-20",
+      "requirement": "REQ-6",
+      "level": "important",
+      "kind": "judge",
+      "layer": "L3-ui",
+      "score": 1,
+      "detail": "judge: README + docs/DELIVERY.md (+ writeup.md symlink) are evaluator-ready: positioning 可验证的 AI 应用生成, 思路与取舍 (Plan A vs WebContainer, China reachability, harness-in-product), 完成度, 后续规划, and Cloudflare steps for atoms.maoxunxing.com / aws:us-east-1 — paraphrased only."
+    },
+    {
+      "id": "RB-21",
+      "requirement": "REQ-6",
+      "level": "pitfall",
+      "kind": "judge",
+      "layer": "L2-robustness",
+      "score": 1,
+      "detail": "judge: Pitfall absent (RL-4): README/DELIVERY/writeup contain no GEMINI_API_KEY assignments, AIza… material, or confidential hiring-brief paste; docs explicitly state paraphrase-only."
+    },
+    {
+      "id": "RB-22",
+      "requirement": "REQ-7",
+      "level": "essential",
+      "kind": "command",
+      "layer": "L1-function",
+      "score": 1,
+      "detail": "exit=0 [WebServer] ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests. | [WebServer]  | [WebServer]"
+    },
+    {
+      "id": "RB-23",
+      "requirement": "REQ-7",
+      "level": "essential",
+      "kind": "command",
+      "layer": "L2-robustness",
+      "score": 1,
+      "detail": "exit=0 README.md:14:- **Deploy**: OpenNext → Cloudflare Workers，自定义域名 `atoms.maoxunxing.com`，Worker `placement: { region: \"aws:us-east-1\" }`（避免部分区域无法访问 Gemini）。 | README.md:22:Next.js (OpenNext Worker, aws:us-east-1) | README.md:58:线上演示域名：**https://atoms.maoxunxing.com**（不要依赖 `*.workers.dev` 作为评测入口）。"
+    },
+    {
+      "id": "RB-24",
+      "requirement": "REQ-7",
+      "level": "important",
+      "kind": "judge",
+      "layer": "L4-interaction",
+      "score": 1,
+      "detail": "judge: Reachability story is credible: CDN audit recorded 0 offenders across home/workbench/share (203 requests); delivery docs document self-hosted /preview/* assets, atoms.maoxunxing.com, and aws:us-east-1 placement."
+    },
+    {
+      "id": "RB-25",
+      "requirement": "REQ-7",
+      "level": "pitfall",
+      "kind": "judge",
+      "layer": "L1-function",
+      "score": 1,
+      "detail": "judge: Pitfall absent (RL-3): zero runtime requests to esm.sh / unpkg / jsdelivr / cdn.tailwindcss.com / fonts.googleapis.com / fonts.gstatic.com on home, workbench, and share."
+    },
+    {
+      "id": "RB-26",
+      "requirement": "REQ-1",
+      "level": "essential",
+      "kind": "command",
+      "layer": "L2-robustness",
+      "score": 1,
+      "detail": "exit=0 [WebServer] ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests. | [WebServer]  | [WebServer]"
+    },
+    {
+      "id": "RB-27",
+      "requirement": "REQ-2",
+      "level": "important",
+      "kind": "judge",
+      "layer": "L3-ui",
+      "score": 1,
+      "detail": "judge: Chinese UX states are clear and calm: 演示回放 banner copy, 已达修复上限 at qa_rounds=3, follow-up pending disabled, empty-submit disabled on home. Minor: seeded reopen can briefly show planner 进行中 while header 已完成 (H-PR-2.1) — non-blocking."
+    },
+    {
+      "id": "RB-28",
+      "requirement": "REQ-5",
+      "level": "essential",
+      "kind": "judge",
+      "layer": "L3-ui",
+      "score": 1,
+      "detail": "judge: Desktop vs mobile preview frames are visually distinct (full-width vs 375px); iframe sandbox remains allow-scripts only; workbench layout holds."
+    },
+    {
+      "id": "RB-29",
+      "requirement": "REQ-3",
+      "level": "pitfall",
+      "kind": "command",
+      "layer": "L3-ui",
+      "score": 1,
+      "detail": "exit=0 [WebServer] ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests. | [WebServer]  | [WebServer]"
+    },
+    {
+      "id": "RB-30",
+      "requirement": "REQ-4",
+      "level": "pitfall",
+      "kind": "judge",
+      "layer": "L3-ui",
+      "score": 1,
+      "detail": "judge: Pitfall absent (ANTI-1 fonts): measured font-family is system stack only; no Google Fonts / external font CDN; first-paint screenshots show no font-swap CLS."
+    }
+  ],
+  "refinementSuggestions": {
+    "added": [
+      "RS-2",
+      "RS-3",
+      "RS-4",
+      "RS-5"
+    ],
+    "pending": [
+      "RS-1",
+      "RS-2",
+      "RS-3",
+      "RS-4",
+      "RS-5"
+    ],
+    "invalid": []
+  }
+}

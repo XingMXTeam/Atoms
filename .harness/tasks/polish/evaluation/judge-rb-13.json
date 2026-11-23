@@ -1,0 +1,20 @@
+{
+  "score": 1,
+  "note": "Shells use system font stack only (ui-sans-serif, system-ui, -apple-system, Segoe UI). /preview/esbuild.wasm returns Cache-Control: public, max-age=31536000, immutable. Idle preload covered by unit tests (requestIdleCallback). No font-CDN CLS.",
+  "artifacts": [
+    ".harness/tasks/polish/evidence/c1-2-browser/home-visual-system-1280.png",
+    ".harness/tasks/polish/evidence/c1-2-browser/preview-headers.txt",
+    ".harness/tasks/polish/evidence/c1-2-browser/journey-results.json"
+  ],
+  "verify": [
+    "typecheck",
+    "lint",
+    "unit",
+    "build",
+    "e2e"
+  ],
+  "heuristics": [
+    "H-UI-6.2",
+    "H-PR-1.1"
+  ]
+}

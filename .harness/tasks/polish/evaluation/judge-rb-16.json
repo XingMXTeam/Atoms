@@ -1,0 +1,20 @@
+{
+  "score": 1,
+  "note": "预览 tab exposes discoverable 桌面 / 移动 375px toggle; mobile constrains frame to 375px; preview remains responsive inside the chosen width.",
+  "artifacts": [
+    ".harness/tasks/polish/evidence/c1-2-browser/workbench-preview-desktop.png",
+    ".harness/tasks/polish/evidence/c1-2-browser/workbench-preview-mobile.png",
+    ".harness/tasks/polish/evidence/c1-2-browser/journey-results.json"
+  ],
+  "verify": [
+    "typecheck",
+    "lint",
+    "unit",
+    "build",
+    "e2e"
+  ],
+  "heuristics": [
+    "H-UX-6.1",
+    "H-UI-6.6"
+  ]
+}

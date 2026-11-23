@@ -2,14 +2,14 @@
   "version": 1,
   "feature": "polish",
   "title": "",
-  "phase": "implement",
+  "phase": "done",
   "createdAt": 1795463253859,
-  "updatedAt": 1795463482056,
+  "updatedAt": 1795466124786,
   "macroCycle": {
     "current": 1,
     "max": 5
   },
-  "consecutivePasses": 0,
+  "consecutivePasses": 2,
   "clarificationComplete": true,
   "tasks": [
     {
@@ -19,9 +19,9 @@
         "REQ-1",
         "REQ-3"
       ],
-      "status": "pending",
+      "status": "done",
       "attempts": 0,
-      "commitSha": null
+      "commitSha": "9b5342f"
     },
     {
       "id": "TASK-2",
@@ -29,9 +29,9 @@
       "requirements": [
         "REQ-2"
       ],
-      "status": "pending",
-      "attempts": 0,
-      "commitSha": null
+      "status": "done",
+      "attempts": 1,
+      "commitSha": "b24a088"
     },
     {
       "id": "TASK-3",
@@ -40,9 +40,9 @@
         "REQ-4",
         "REQ-5"
       ],
-      "status": "pending",
+      "status": "done",
       "attempts": 0,
-      "commitSha": null
+      "commitSha": "ed02152"
     },
     {
       "id": "TASK-4",
@@ -51,9 +51,9 @@
         "REQ-6",
         "REQ-7"
       ],
-      "status": "pending",
+      "status": "done",
       "attempts": 0,
-      "commitSha": null
+      "commitSha": "5ccf11a"
     }
   ],
   "history": [
@@ -68,9 +68,81 @@
       "at": 1795463482056,
       "event": "clarify-done",
       "tasks": 4
+    },
+    {
+      "at": 1795463890006,
+      "event": "task-done",
+      "task": "TASK-1",
+      "commitSha": "9b5342f"
+    },
+    {
+      "at": 1795463950140,
+      "event": "task-check-failed",
+      "task": "TASK-2",
+      "check": "LLM_PROVIDER=mock pnpm exec playwright test e2e/polish.spec.ts --grep \"follow-up|qa-rounds|演示回放|ux-states|follow-up-disabled|share-read-only\"",
+      "attempts": 1
+    },
+    {
+      "at": 1795464579853,
+      "event": "task-done",
+      "task": "TASK-2",
+      "commitSha": "b24a088"
+    },
+    {
+      "at": 1795464965521,
+      "event": "task-done",
+      "task": "TASK-3",
+      "commitSha": "ed02152"
+    },
+    {
+      "at": 1795465206789,
+      "event": "task-done",
+      "task": "TASK-4",
+      "commitSha": "5ccf11a"
+    },
+    {
+      "at": 1795465763522,
+      "event": "rubric-refinements-recorded",
+      "ids": [
+        "RS-1"
+      ]
+    },
+    {
+      "at": 1795465763523,
+      "event": "evaluation-passed",
+      "score": 1,
+      "consecutivePasses": 1,
+      "phaseAtEval": "implement"
+    },
+    {
+      "at": 1795466114700,
+      "event": "rubric-refinements-recorded",
+      "ids": [
+        "RS-2",
+        "RS-3",
+        "RS-4",
+        "RS-5"
+      ]
+    },
+    {
+      "at": 1795466124786,
+      "event": "evaluation-passed",
+      "score": 1,
+      "consecutivePasses": 2,
+      "phaseAtEval": "verify"
+    },
+    {
+      "at": 1795466124786,
+      "event": "done",
+      "score": 1
     }
   ],
-  "lastEvaluation": null,
+  "lastEvaluation": {
+    "at": 1795466114697,
+    "verdict": "pass",
+    "score": 1,
+    "vetoed": []
+  },
   "lastFailure": null,
   "prd": {
     "source": "imported",
@@ -113,5 +185,70 @@
     "RB-29": "pitfall",
     "RB-30": "pitfall"
   },
-  "rubricHash": "a6f78b2605ed3545"
+  "rubricHash": "a6f78b2605ed3545",
+  "pendingRefinements": [
+    {
+      "id": "RS-1",
+      "type": "refine",
+      "item": "RB-9",
+      "problem": "contrast check is hard when theme colors are lab()/oklch and not RGB-parsable in page.evaluate",
+      "suggestion": "require a deterministic contrast probe that reads design tokens or forces RGB fallbacks for measured selectors in light and dark",
+      "layer": null,
+      "level": null,
+      "source": ".harness/tasks/polish/evaluation/judge-rb-9.json",
+      "cycle": 1,
+      "at": 1795465763520
+    },
+    {
+      "id": "RS-2",
+      "type": "add-verification",
+      "item": "pages.json",
+      "problem": "harness capture cannot resolve /projects/[projectId] or /share/[shareSlug] placeholders",
+      "suggestion": "require seeded/demo capture hooks or concrete routes so automated capture covers workbench/share",
+      "layer": null,
+      "level": null,
+      "source": ".harness/tasks/polish/evaluation/judge-rb-2.json",
+      "cycle": 1,
+      "at": 1795466114697
+    },
+    {
+      "id": "RS-3",
+      "type": "refine",
+      "item": "RB-3",
+      "problem": "H-UI-6.4 raw clipped-node probe false-positives on sr-only labels",
+      "suggestion": "exclude aria-hidden/sr-only/visually-hidden nodes from clipped-text measurement",
+      "layer": null,
+      "level": null,
+      "source": ".harness/tasks/polish/evaluation/judge-rb-3.json",
+      "cycle": 1,
+      "at": 1795466114697
+    },
+    {
+      "id": "RS-4",
+      "type": "refine",
+      "item": "RB-9",
+      "problem": "lab()/oklch colors defeat RGB contrast evaluate helpers",
+      "suggestion": "require token-based or forced-RGB contrast probe for light+dark body/heading samples",
+      "layer": null,
+      "level": null,
+      "source": ".harness/tasks/polish/evaluation/judge-rb-9.json",
+      "cycle": 1,
+      "at": 1795466114697
+    },
+    {
+      "id": "RS-5",
+      "type": "add",
+      "item": "RB-27",
+      "problem": "seeded workbench first paint can disagree between overall completed and planner running",
+      "suggestion": "add an essential/important check that completed seeded projects hydrate timeline agent statuses consistently before first paint",
+      "layer": null,
+      "level": null,
+      "source": ".harness/tasks/polish/evaluation/judge-rb-27.json",
+      "cycle": 1,
+      "at": 1795466114697
+    }
+  ],
+  "refinementLog": [],
+  "remediationFixedAt": null,
+  "remediation": []
 }

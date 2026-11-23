@@ -1,0 +1,19 @@
+{
+  "score": 1,
+  "note": "README + docs/DELIVERY.md (+ writeup.md symlink) are evaluator-ready: positioning 可验证的 AI 应用生成, 思路与取舍 (Plan A vs WebContainer, China reachability, harness-in-product), 完成度, 后续规划, and Cloudflare steps for atoms.maoxunxing.com / aws:us-east-1 — paraphrased only.",
+  "artifacts": [
+    "README.md",
+    "docs/DELIVERY.md",
+    "docs/writeup.md"
+  ],
+  "verify": [
+    "typecheck",
+    "lint",
+    "unit",
+    "build",
+    "e2e"
+  ],
+  "heuristics": [
+    "H-PR-1.1"
+  ]
+}

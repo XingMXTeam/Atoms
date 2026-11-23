@@ -1,0 +1,3 @@
+Capture FAIL — 1/3 page(s) valid (min 2048B PNG) -> .harness/tasks/polish/evidence/20261124-043110/
+  ✗ workbench-polish-states /projects/[projectId]: page.waitForSelector: Timeout 30000ms exceeded.
+  ✗ share-read-only-polish /share/[shareSlug]: page.waitForSelector: Timeout 30000ms exceeded.

@@ -1,0 +1,20 @@
+{
+  "score": 1,
+  "note": "Reachability story is credible: CDN audit recorded 0 offenders across home/workbench/share (203 requests); delivery docs document self-hosted /preview/* assets, atoms.maoxunxing.com, and aws:us-east-1 placement.",
+  "artifacts": [
+    ".harness/tasks/polish/evidence/c1-2-browser/journey-results.json",
+    "docs/DELIVERY.md",
+    ".harness/tasks/polish/evidence/c1-2-browser/preview-headers.txt"
+  ],
+  "verify": [
+    "typecheck",
+    "lint",
+    "unit",
+    "build",
+    "e2e"
+  ],
+  "heuristics": [
+    "H-PR-1.1",
+    "H-UX-7.1"
+  ]
+}

@@ -2,12 +2,12 @@
  RUN  v5.1.1 /Users/felix/Documents/atoms-worktrees/demo
 
 
- Test Files  21 passed (21)
-      Tests  69 passed (69)
-   Start at  03:40:39
-   Duration  1.68s (environment 54%, import 31%, tests 11%, transform 3%, worker 1%)
+ Test Files  26 passed (26)
+      Tests  81 passed (81)
+   Start at  04:30:30
+   Duration  2.04s (environment 62%, import 25%, tests 9%, transform 3%, worker 1%)
 
-Environment  jsdom was created 21 times · 5.53s total, 54% of tracked time
+Environment  jsdom was created 26 times · 7.18s total, 62% of tracked time
              create it once per worker with pool: 'vmThreads' (keeps per-file isolation) or isolate: false (shares it across files)
              learn more: https://vitest.dev/guide/improving-performance#test-environments
 

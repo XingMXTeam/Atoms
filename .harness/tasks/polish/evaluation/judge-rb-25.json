@@ -1,0 +1,18 @@
+{
+  "score": 1,
+  "note": "Pitfall absent (RL-3): zero runtime requests to esm.sh / unpkg / jsdelivr / cdn.tailwindcss.com / fonts.googleapis.com / fonts.gstatic.com on home, workbench, and share.",
+  "artifacts": [
+    ".harness/tasks/polish/evidence/c1-2-browser/journey-results.json"
+  ],
+  "verify": [
+    "typecheck",
+    "lint",
+    "unit",
+    "build",
+    "e2e"
+  ],
+  "heuristics": [
+    "H-PR-1.1",
+    "H-UI-7.2"
+  ]
+}
