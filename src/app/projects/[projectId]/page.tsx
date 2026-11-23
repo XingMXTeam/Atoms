@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
-import { AgentTimeline } from "@/components/workbench/agent-timeline";
+import { WorkbenchClient } from "@/components/workbench/workbench-client";
 import { DEVICE_ID_COOKIE } from "@/lib/auth/device-id";
 import { getDb } from "@/lib/db";
 
@@ -11,6 +11,22 @@ type WorkbenchPageProps = {
   params: Promise<{ projectId: string }>;
   searchParams: Promise<{ run?: string }>;
 };
+
+type CodeFile = { path: string; content: string };
+
+function filesFromVersion(files: unknown): CodeFile[] {
+  if (!Array.isArray(files)) return [];
+  const next: CodeFile[] = [];
+  for (const item of files) {
+    if (!item || typeof item !== "object") continue;
+    const path = (item as { path?: unknown }).path;
+    const content = (item as { content?: unknown }).content;
+    if (typeof path === "string" && typeof content === "string") {
+      next.push({ path, content });
+    }
+  }
+  return next;
+}
 
 export default async function WorkbenchPage({
   params,
@@ -37,6 +53,19 @@ export default async function WorkbenchPage({
   }
 
   const runId = run?.id ?? runIdFromQuery ?? "";
+
+  let initialFiles: CodeFile[] = [];
+  if (runId) {
+    const events = await repo.listAgentEvents(runId);
+    const engineerFile = [...events]
+      .reverse()
+      .find((e) => e.agent === "engineer" && e.type === "file");
+    if (engineerFile) {
+      initialFiles = filesFromVersion(
+        (engineerFile.payload as { files?: unknown } | null)?.files,
+      );
+    }
+  }
 
   return (
     <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-6 py-10">
@@ -67,14 +96,15 @@ export default async function WorkbenchPage({
         </Link>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
-        {runId ? (
-          <AgentTimeline
-            projectId={projectId}
-            initialRunId={runId}
-            initialRunStatus={run?.status ?? "running"}
-          />
-        ) : (
+      {runId ? (
+        <WorkbenchClient
+          projectId={projectId}
+          initialRunId={runId}
+          initialRunStatus={run?.status ?? "running"}
+          initialFiles={initialFiles}
+        />
+      ) : (
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
           <aside className="min-h-64 rounded-2xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950">
             <p className="text-sm font-medium text-zinc-900 dark:text-zinc-50">
               Agent 时间线
@@ -83,16 +113,16 @@ export default async function WorkbenchPage({
               暂无运行记录。请从首页提交需求开始生成。
             </p>
           </aside>
-        )}
-        <section className="min-h-64 rounded-2xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950">
-          <p className="text-sm font-medium text-zinc-900 dark:text-zinc-50">
-            预览 · 代码
-          </p>
-          <p className="mt-2 text-sm leading-6 text-zinc-500 dark:text-zinc-400">
-            预览与代码面板将在后续任务接入。
-          </p>
-        </section>
-      </div>
+          <section className="min-h-64 rounded-2xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950">
+            <p className="text-sm font-medium text-zinc-900 dark:text-zinc-50">
+              预览 · 代码
+            </p>
+            <p className="mt-2 text-sm leading-6 text-zinc-500 dark:text-zinc-400">
+              提交需求后，这里会显示预览与代码。
+            </p>
+          </section>
+        </div>
+      )}
     </main>
   );
 }

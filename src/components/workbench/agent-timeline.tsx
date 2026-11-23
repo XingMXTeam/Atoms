@@ -10,11 +10,33 @@ import { AgentCard, type AgentCardModel, type AgentCardStatus } from "./agent-ca
 
 type RunStatus = "running" | "completed" | "interrupted" | "failed";
 
+type GeneratedFile = {
+  path: string;
+  content: string;
+};
+
 type AgentTimelineProps = {
   projectId: string;
   initialRunId: string;
   initialRunStatus?: RunStatus | string;
+  onFiles?: (files: GeneratedFile[]) => void;
 };
+
+function extractFiles(payload: unknown): GeneratedFile[] | null {
+  if (!payload || typeof payload !== "object") return null;
+  const files = (payload as { files?: unknown }).files;
+  if (!Array.isArray(files)) return null;
+  const next: GeneratedFile[] = [];
+  for (const item of files) {
+    if (!item || typeof item !== "object") continue;
+    const path = (item as { path?: unknown }).path;
+    const content = (item as { content?: unknown }).content;
+    if (typeof path === "string" && typeof content === "string") {
+      next.push({ path, content });
+    }
+  }
+  return next.length > 0 ? next : null;
+}
 
 const AGENT_ORDER: AgentName[] = ["planner", "architect", "engineer"];
 
@@ -97,6 +119,7 @@ export function AgentTimeline({
   projectId,
   initialRunId,
   initialRunStatus = "running",
+  onFiles,
 }: AgentTimelineProps) {
   const [runId, setRunId] = useState(initialRunId);
   const [runStatus, setRunStatus] = useState<RunStatus>(
@@ -107,6 +130,8 @@ export function AgentTimeline({
   const [continuePending, setContinuePending] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const sourceRef = useRef<EventSource | null>(null);
+  const onFilesRef = useRef(onFiles);
+  onFilesRef.current = onFiles;
 
   useEffect(() => {
     const id = window.setInterval(() => setNow(Date.now()), 500);
@@ -193,6 +218,8 @@ export function AgentTimeline({
         }
 
         if (event.agent === "engineer" && event.type === "file") {
+          const files = extractFiles(event.payload);
+          if (files) onFilesRef.current?.(files);
           setRunStatus("completed");
         }
       };

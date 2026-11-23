@@ -1,0 +1,115 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import {
+  buildPreviewSrcdoc,
+  bundlePreviewFiles,
+  type PreviewFile,
+} from "@/lib/preview/bundle";
+import { getPreviewSandboxAttribute } from "@/lib/preview/sandbox";
+
+type PreviewPaneProps = {
+  files: PreviewFile[];
+};
+
+type PreviewState =
+  | { status: "empty" }
+  | { status: "loading" }
+  | { status: "ready"; srcdoc: string }
+  | { status: "error"; messageZh: string };
+
+export function PreviewPane({ files }: PreviewPaneProps) {
+  const [state, setState] = useState<PreviewState>(
+    files.length === 0 ? { status: "empty" } : { status: "loading" },
+  );
+
+  useEffect(() => {
+    let cancelled = false;
+
+    if (files.length === 0) {
+      setState({ status: "empty" });
+      return;
+    }
+
+    setState({ status: "loading" });
+
+    void (async () => {
+      const result = await bundlePreviewFiles(files);
+      if (cancelled) return;
+      if (!result.ok) {
+        setState({ status: "error", messageZh: result.messageZh });
+        return;
+      }
+      setState({
+        status: "ready",
+        srcdoc: buildPreviewSrcdoc(result.js, result.css),
+      });
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [files]);
+
+  if (state.status === "empty") {
+    return (
+      <div
+        data-testid="preview-pane"
+        className="flex h-full min-h-56 flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-zinc-200 bg-zinc-50 p-6 text-center dark:border-zinc-800 dark:bg-zinc-900/40"
+      >
+        <p className="text-sm font-medium text-zinc-900 dark:text-zinc-50">
+          等待生成
+        </p>
+        <p className="text-sm text-zinc-500 dark:text-zinc-400">
+          工程师产出文件后，将在此自动打包并预览。
+        </p>
+      </div>
+    );
+  }
+
+  if (state.status === "loading") {
+    return (
+      <div
+        data-testid="preview-pane"
+        data-preview-status="loading"
+        className="flex h-full min-h-56 items-center justify-center rounded-xl border border-zinc-200 bg-white p-6 dark:border-zinc-800 dark:bg-zinc-950"
+      >
+        <p className="text-sm text-zinc-500 dark:text-zinc-400">正在打包预览…</p>
+      </div>
+    );
+  }
+
+  if (state.status === "error") {
+    return (
+      <div
+        data-testid="preview-pane"
+        data-preview-status="error"
+        role="alert"
+        className="flex h-full min-h-56 flex-col items-start justify-center gap-2 rounded-xl border border-amber-200 bg-amber-50 p-6 dark:border-amber-900/50 dark:bg-amber-950/30"
+      >
+        <p className="text-sm font-medium text-amber-900 dark:text-amber-200">
+          预览失败
+        </p>
+        <p className="text-sm text-amber-800 dark:text-amber-300">
+          {state.messageZh}
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      data-testid="preview-pane"
+      data-preview-status="ready"
+      className="h-full min-h-56 overflow-hidden rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950"
+    >
+      <iframe
+        title="应用预览"
+        data-testid="preview-iframe"
+        sandbox={getPreviewSandboxAttribute()}
+        srcDoc={state.srcdoc}
+        className="h-full min-h-56 w-full border-0 bg-white"
+      />
+    </div>
+  );
+}
