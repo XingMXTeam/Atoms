@@ -84,6 +84,39 @@ describe("AppRepository events/versions (REQ-3 / REQ-7)", () => {
     expect(await repo.getVersion("missing")).toBeNull();
   });
 
+  it("lists a project's snapshots in run order", async () => {
+    const repo = createSqliteRepository(":memory:");
+    const project = await repo.createProject({
+      deviceId: "device-a",
+      title: "版本时间线",
+    });
+    const firstRun = await repo.createRun({ projectId: project.id, status: "completed" });
+    const first = await repo.createVersion({
+      projectId: project.id,
+      runId: firstRun.id,
+      files: [],
+      acceptance: [],
+      summary: "首版",
+      qaScore: 80,
+    });
+    await new Promise((resolve) => setTimeout(resolve, 5));
+    const secondRun = await repo.createRun({ projectId: project.id, status: "completed" });
+    const second = await repo.createVersion({
+      projectId: project.id,
+      runId: secondRun.id,
+      files: [],
+      acceptance: [],
+      summary: "改进版",
+      qaScore: 95,
+    });
+
+    expect((await repo.listVersions(project.id)).map((version) => version.id)).toEqual([
+      first.id,
+      second.id,
+    ]);
+    expect(await repo.listVersions("other-project")).toEqual([]);
+  });
+
   it("getRun returns the run by id", async () => {
     const repo = createSqliteRepository(":memory:");
     const project = await repo.createProject({

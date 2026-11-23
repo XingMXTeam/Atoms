@@ -4,13 +4,31 @@ import { useState } from "react";
 import { CodePane, type CodeFile } from "./code-pane";
 import { PreviewPane } from "./preview-pane";
 
-type WorkbenchPanelsProps = {
-  files: CodeFile[];
+export type VersionSummary = {
+  id: string;
+  summary: string;
+  qaScore: number | null;
 };
 
-type TabId = "preview" | "code";
+type WorkbenchPanelsProps = {
+  files: CodeFile[];
+  versions: VersionSummary[];
+  currentVersionId: string | null;
+  restoringVersionId: string | null;
+  restoreMessage: string;
+  onRestore: (versionId: string) => void;
+};
 
-export function WorkbenchPanels({ files }: WorkbenchPanelsProps) {
+type TabId = "preview" | "code" | "versions";
+
+export function WorkbenchPanels({
+  files,
+  versions,
+  currentVersionId,
+  restoringVersionId,
+  restoreMessage,
+  onRestore,
+}: WorkbenchPanelsProps) {
   const [activeTab, setActiveTab] = useState<TabId>("preview");
 
   return (
@@ -35,6 +53,12 @@ export function WorkbenchPanels({ files }: WorkbenchPanelsProps) {
           selected={activeTab === "code"}
           onSelect={setActiveTab}
         />
+        <TabButton
+          id="versions"
+          label="版本"
+          selected={activeTab === "versions"}
+          onSelect={setActiveTab}
+        />
       </div>
 
       <div
@@ -56,7 +80,92 @@ export function WorkbenchPanels({ files }: WorkbenchPanelsProps) {
       >
         <CodePane files={files} />
       </div>
+
+      <div
+        role="tabpanel"
+        id="workbench-panel-versions"
+        aria-labelledby="workbench-tab-versions"
+        hidden={activeTab !== "versions"}
+        className="min-h-56 flex-1"
+      >
+        <VersionTimeline
+          versions={versions}
+          currentVersionId={currentVersionId}
+          restoringVersionId={restoringVersionId}
+          restoreMessage={restoreMessage}
+          onRestore={onRestore}
+        />
+      </div>
     </section>
+  );
+}
+
+function VersionTimeline({
+  versions,
+  currentVersionId,
+  restoringVersionId,
+  restoreMessage,
+  onRestore,
+}: {
+  versions: VersionSummary[];
+  currentVersionId: string | null;
+  restoringVersionId: string | null;
+  restoreMessage: string;
+  onRestore: (versionId: string) => void;
+}) {
+  return (
+    <div data-testid="version-timeline" className="flex flex-col gap-3">
+      {restoreMessage ? (
+        <p role="status" aria-live="polite" className="text-sm text-zinc-600 dark:text-zinc-300">
+          {restoreMessage}
+        </p>
+      ) : null}
+      {versions.length === 0 ? (
+        <p className="rounded-xl border border-dashed border-zinc-200 p-5 text-sm text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
+          暂无版本记录。完成一次生成后，版本会显示在这里。
+        </p>
+      ) : (
+        <ol className="flex flex-col gap-3">
+          {[...versions].reverse().map((version, index) => {
+            const isCurrent = version.id === currentVersionId;
+            const pending = restoringVersionId === version.id;
+            return (
+              <li
+                key={version.id}
+                data-testid="version-row"
+                data-version-id={version.id}
+                className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950"
+              >
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-zinc-900 dark:text-zinc-50">
+                    {version.summary}
+                  </p>
+                  <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+                    版本 {versions.length - index} · {version.qaScore === null ? "暂无评分" : `QA ${version.qaScore} 分`}
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  {isCurrent ? (
+                    <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300">
+                      当前版本
+                    </span>
+                  ) : (
+                    <button
+                      type="button"
+                      disabled={restoringVersionId !== null}
+                      onClick={() => onRestore(version.id)}
+                      className="rounded-full border border-zinc-200 px-3 py-1.5 text-xs font-medium text-zinc-700 transition hover:bg-zinc-50 disabled:cursor-wait disabled:opacity-60 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900"
+                    >
+                      {pending ? "正在恢复…" : "恢复此版本"}
+                    </button>
+                  )}
+                </div>
+              </li>
+            );
+          })}
+        </ol>
+      )}
+    </div>
   );
 }
 

@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { AgentTimeline } from "./agent-timeline";
-import { WorkbenchPanels } from "./workbench-panels";
+import { WorkbenchPanels, type VersionSummary } from "./workbench-panels";
 import type { CodeFile } from "./code-pane";
 
 type RunStatus = "running" | "completed" | "interrupted" | "failed";
@@ -18,6 +18,7 @@ type WorkbenchClientProps = {
   initialVersionQaScore: number | null;
   initialFiles?: CodeFile[];
   initialQaScore?: number | null;
+  initialVersions: VersionSummary[];
 };
 
 function statusLabelZh(status: RunStatus | string): string {
@@ -44,9 +45,14 @@ export function WorkbenchClient({
   initialVersionQaScore,
   initialFiles = [],
   initialQaScore = null,
+  initialVersions,
 }: WorkbenchClientProps) {
   const [files, setFiles] = useState<CodeFile[]>(initialFiles);
   const [qaScore, setQaScore] = useState<number | null>(initialQaScore);
+  const [versions, setVersions] = useState(initialVersions);
+  const [currentVersionId, setCurrentVersionId] = useState(initialVersionId);
+  const [restoringVersionId, setRestoringVersionId] = useState<string | null>(null);
+  const [restoreMessage, setRestoreMessage] = useState("");
   const [liveRunStatus, setLiveRunStatus] = useState<RunStatus>(
     (initialRunStatus as RunStatus) || "running",
   );
@@ -58,6 +64,66 @@ export function WorkbenchClient({
   const handleRunStatus = useCallback((status: RunStatus) => {
     setLiveRunStatus(status);
   }, []);
+
+  useEffect(() => {
+    if (liveRunStatus !== "completed") return;
+    let cancelled = false;
+    void (async () => {
+      try {
+        const response = await fetch(`/api/projects/${projectId}/versions`, {
+          cache: "no-store",
+        });
+        if (!response.ok) throw new Error("无法加载版本记录，请刷新页面重试");
+        const result = (await response.json()) as {
+          versions: VersionSummary[];
+          currentVersionId: string | null;
+        };
+        if (cancelled) return;
+        setVersions(result.versions);
+        setCurrentVersionId(result.currentVersionId);
+      } catch (error) {
+        if (!cancelled) {
+          setRestoreMessage(
+            error instanceof Error ? error.message : "无法加载版本记录，请刷新页面重试",
+          );
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [liveRunStatus, projectId]);
+
+  const restoreVersion = useCallback(async (versionId: string) => {
+    setRestoringVersionId(versionId);
+    setRestoreMessage("");
+    try {
+      const response = await fetch(`/api/projects/${projectId}/versions`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ versionId }),
+      });
+      const result = (await response.json()) as {
+        messageZh?: string;
+        versionId?: string;
+        files?: CodeFile[];
+        qaScore?: number | null;
+      };
+      if (!response.ok || !result.versionId || !Array.isArray(result.files)) {
+        throw new Error(result.messageZh ?? "恢复失败，请重试");
+      }
+      setFiles(result.files);
+      setQaScore(result.qaScore ?? null);
+      setCurrentVersionId(result.versionId);
+      setRestoreMessage("已恢复所选版本");
+    } catch (error) {
+      setRestoreMessage(
+        error instanceof Error ? error.message : "恢复失败，请重试",
+      );
+    } finally {
+      setRestoringVersionId(null);
+    }
+  }, [projectId]);
 
   return (
     <div className="flex flex-col gap-4">
@@ -93,7 +159,14 @@ export function WorkbenchClient({
           onRunStatusChange={handleRunStatus}
           onQaScoreChange={setQaScore}
         />
-        <WorkbenchPanels files={files} />
+        <WorkbenchPanels
+          files={files}
+          versions={versions}
+          currentVersionId={currentVersionId}
+          restoringVersionId={restoringVersionId}
+          restoreMessage={restoreMessage}
+          onRestore={restoreVersion}
+        />
       </div>
     </div>
   );

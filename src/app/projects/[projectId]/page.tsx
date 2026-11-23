@@ -56,6 +56,7 @@ export default async function WorkbenchPage({
     ? await repo.getVersion(project.currentVersionId)
     : null;
   const version = currentVersion?.projectId === projectId ? currentVersion : null;
+  const versions = await repo.listVersions(projectId);
   const runId = run?.id ?? runIdFromQuery ?? "";
 
   let initialFiles: CodeFile[] = [];
@@ -108,6 +109,11 @@ export default async function WorkbenchPage({
           initialVersionQaScore={version?.qaScore ?? null}
           initialFiles={initialFiles}
           initialQaScore={project.qaScore}
+          initialVersions={versions.map((item) => ({
+            id: item.id,
+            summary: item.summary ?? "版本快照",
+            qaScore: item.qaScore,
+          }))}
         />
       ) : (
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">

@@ -77,6 +77,7 @@ export interface AppRepository {
   createRun(input: { projectId: string; status: string }): Promise<Run>;
   getRun(id: string): Promise<Run | null>;
   getVersion(id: string): Promise<Version | null>;
+  listVersions(projectId: string): Promise<Version[]>;
   updateRun(
     id: string,
     patch: Partial<Pick<Run, "status" | "finishedAt" | "qaRounds" | "qaScore">>,
@@ -269,6 +270,29 @@ export function createAppRepository(db: AppDb): AppRepository {
       const rows = await db.select().from(versions).where(eq(versions.id, id)).limit(1);
       const row = rows[0];
       return row ? mapVersion(row) : null;
+    },
+
+    async listVersions(projectId) {
+      const rows = await db
+        .select()
+        .from(versions)
+        .where(eq(versions.projectId, projectId));
+      const withRunTimes = await Promise.all(
+        rows.map(async (version) => {
+          const runRows = await db
+            .select()
+            .from(runs)
+            .where(eq(runs.id, version.runId))
+            .limit(1);
+          return { version, startedAt: runRows[0]?.startedAt.getTime() ?? 0 };
+        }),
+      );
+      return withRunTimes
+        .sort(
+          (a, b) =>
+            a.startedAt - b.startedAt || a.version.id.localeCompare(b.version.id),
+        )
+        .map(({ version }) => mapVersion(version));
     },
 
     async updateRun(id, patch) {
