@@ -62,6 +62,11 @@ test.describe("QA timeline (REQ-4 / REQ-6)", () => {
       "data-preview-status",
       "ready",
     );
+    await expect(page.getByTestId("preview-pane")).toHaveAttribute(
+      "data-preview-painted",
+      "true",
+    );
+    await expect(page.getByTestId("preview-paint-probe")).toContainText("我的待办");
     await page.getByRole("tab", { name: "代码" }).click();
     await expect(page.getByTestId("code-pane")).toContainText("预览已修复");
 
@@ -74,6 +79,8 @@ test.describe("QA timeline (REQ-4 / REQ-6)", () => {
     page,
   }) => {
     await page.goto("/");
+    // Mock control: prefix with MOCK_PERSISTENT_FAILURE_TRIGGER (持续失败演示)
+    // to retain the compile error through all three repair rounds.
     await page
       .getByRole("textbox", { name: /描述你想生成的应用/ })
       .fill("持续失败演示：做一个中文待办清单");

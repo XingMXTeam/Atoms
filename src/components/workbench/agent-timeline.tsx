@@ -22,6 +22,7 @@ type AgentTimelineProps = {
   initialRunStatus?: RunStatus | string;
   onFiles?: (files: GeneratedFile[]) => void;
   onRunStatusChange?: (status: RunStatus) => void;
+  onQaScoreChange?: (score: number) => void;
 };
 
 function extractFiles(payload: unknown): GeneratedFile[] | null {
@@ -123,6 +124,7 @@ export function AgentTimeline({
   initialRunStatus = "running",
   onFiles,
   onRunStatusChange,
+  onQaScoreChange,
 }: AgentTimelineProps) {
   const [runId, setRunId] = useState(initialRunId);
   const [runStatus, setRunStatus] = useState<RunStatus>(
@@ -143,6 +145,7 @@ export function AgentTimeline({
   );
   const onFilesRef = useRef(onFiles);
   const onRunStatusChangeRef = useRef(onRunStatusChange);
+  const onQaScoreChangeRef = useRef(onQaScoreChange);
   const skippedInitialInterrupted = useRef(
     initialRunStatus === "interrupted",
   );
@@ -167,6 +170,10 @@ export function AgentTimeline({
   useEffect(() => {
     onRunStatusChangeRef.current = onRunStatusChange;
   }, [onRunStatusChange]);
+
+  useEffect(() => {
+    onQaScoreChangeRef.current = onQaScoreChange;
+  }, [onQaScoreChange]);
 
   useEffect(() => {
     onRunStatusChangeRef.current?.(runStatus);
@@ -245,6 +252,16 @@ export function AgentTimeline({
               ? prev
               : [...prev, event].sort((left, right) => left.seq - right.seq),
           );
+          if (
+            event.type === "verdict" &&
+            event.payload &&
+            typeof event.payload === "object"
+          ) {
+            const score = (event.payload as { qa_score?: unknown }).qa_score;
+            if (typeof score === "number" && Number.isInteger(score)) {
+              onQaScoreChangeRef.current?.(score);
+            }
+          }
         }
 
         setCards((prev) => {

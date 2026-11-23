@@ -12,6 +12,7 @@ type WorkbenchClientProps = {
   initialRunId: string;
   initialRunStatus?: string;
   initialFiles?: CodeFile[];
+  initialQaScore?: number | null;
 };
 
 function statusLabelZh(status: RunStatus | string): string {
@@ -32,8 +33,10 @@ export function WorkbenchClient({
   initialRunId,
   initialRunStatus,
   initialFiles = [],
+  initialQaScore = null,
 }: WorkbenchClientProps) {
   const [files, setFiles] = useState<CodeFile[]>(initialFiles);
+  const [qaScore, setQaScore] = useState<number | null>(initialQaScore);
   const [liveRunStatus, setLiveRunStatus] = useState<RunStatus>(
     (initialRunStatus as RunStatus) || "running",
   );
@@ -48,13 +51,23 @@ export function WorkbenchClient({
 
   return (
     <div className="flex flex-col gap-4">
-      <p
-        data-testid="workbench-run-status"
-        data-run-status={liveRunStatus}
-        className="text-sm text-zinc-500 dark:text-zinc-400"
-      >
-        {statusLabelZh(liveRunStatus)}
-      </p>
+      <div className="flex items-center justify-between gap-3">
+        <p
+          data-testid="workbench-run-status"
+          data-run-status={liveRunStatus}
+          className="text-sm text-zinc-500 dark:text-zinc-400"
+        >
+          {statusLabelZh(liveRunStatus)}
+        </p>
+        {qaScore !== null ? (
+          <span
+            data-testid="workbench-score-badge"
+            className="inline-flex rounded-full bg-zinc-100 px-2.5 py-1 text-xs font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
+          >
+            {qaScore} 分
+          </span>
+        ) : null}
+      </div>
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
         <AgentTimeline
           projectId={projectId}
@@ -62,6 +75,7 @@ export function WorkbenchClient({
           initialRunStatus={initialRunStatus}
           onFiles={handleFiles}
           onRunStatusChange={handleRunStatus}
+          onQaScoreChange={setQaScore}
         />
         <WorkbenchPanels files={files} />
       </div>

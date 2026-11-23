@@ -27,9 +27,16 @@ afterEach(() => {
 });
 
 describe("AgentTimeline QA stream", () => {
-  it("keeps SSE open after Engineer files and streams QA events into its card", async () => {
+  it("keeps SSE open and sends the latest QA score to the workbench header", async () => {
     vi.stubGlobal("EventSource", MockEventSource);
-    render(<AgentTimeline projectId="project-1" initialRunId="run-1" />);
+    const onQaScoreChange = vi.fn();
+    render(
+      <AgentTimeline
+        projectId="project-1"
+        initialRunId="run-1"
+        onQaScoreChange={onQaScoreChange}
+      />,
+    );
 
     await waitFor(() => expect(MockEventSource.current).toBeTruthy());
     const source = MockEventSource.current;
@@ -68,6 +75,8 @@ describe("AgentTimeline QA stream", () => {
     });
 
     const qaCard = screen.getByTestId("agent-card-qa");
+    expect(onQaScoreChange).toHaveBeenCalledWith(0);
+    expect(within(qaCard).queryByText("0 分")).toBeNull();
     fireEvent.click(within(qaCard).getByRole("button", { name: "展开质检详情" }));
     expect(within(qaCard).getByText("探测 · 第 0 轮")).toBeTruthy();
     expect(within(qaCard).getByText("显示页面")).toBeTruthy();

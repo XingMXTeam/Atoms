@@ -80,13 +80,6 @@ const STATUS_LABEL: Record<AgentCardStatus, string> = {
 export function QaTimelineCard({ events, status }: QaTimelineCardProps) {
   const [expanded, setExpanded] = useState(false);
   const histories = useMemo(() => buildCriterionHistory(events), [events]);
-  const latestScore = useMemo(() => {
-    for (let index = events.length - 1; index >= 0; index -= 1) {
-      const event = events[index];
-      if (event?.type === "verdict") return payloadOf(event).qa_score;
-    }
-    return undefined;
-  }, [events]);
   const exhaustedEvent = events.find(
     (event) => event.type === "fix" && payloadOf(event).exhausted,
   );
@@ -107,14 +100,6 @@ export function QaTimelineCard({ events, status }: QaTimelineCardProps) {
           <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
             {STATUS_LABEL[status]}
           </p>
-          {latestScore !== undefined ? (
-            <span
-              data-testid="workbench-score-badge"
-              className="mt-2 inline-flex rounded-full bg-zinc-100 px-2.5 py-1 text-xs font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
-            >
-              {latestScore} 分
-            </span>
-          ) : null}
         </div>
         {events.length > 0 ? (
           <button

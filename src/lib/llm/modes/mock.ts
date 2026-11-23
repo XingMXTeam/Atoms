@@ -10,6 +10,20 @@ import type { LlmCompletion, LlmProvider } from "../types";
 export const MOCK_COMPLETION_TEXT =
   "[mock] Atoms Studio — 固定演示输出：已根据提示生成可验证应用骨架。";
 
+/** Prefix the user prompt with this phrase to exercise all three repair rounds. */
+export const MOCK_PERSISTENT_FAILURE_TRIGGER = "持续失败演示";
+
+/** Prefix the user prompt with this phrase to exercise a successful repair. */
+export const MOCK_REPAIR_DEMO_TRIGGER = "触发修复演示";
+
+const MOCK_REPAIR_ENTRY = {
+  path: "src/main.tsx",
+  content: `import { createRoot } from "react-dom/client";
+import App from "./App";
+
+createRoot(document.getElementById("root")!).render(<App />);`,
+};
+
 type MockCompleteInput = {
   stage?: "planner" | "architect" | "engineer" | "qa" | string;
   prompt?: string;
@@ -45,10 +59,10 @@ export function createMockProvider(): LlmProvider {
       }
       if (stage === "engineer") {
         const engineer = input as MockCompleteInput;
-        const output = engineer.prompt?.includes("触发修复演示") ||
-          engineer.prompt?.includes("持续失败演示")
+        const output = engineer.prompt?.includes(MOCK_REPAIR_DEMO_TRIGGER) ||
+          engineer.prompt?.includes(MOCK_PERSISTENT_FAILURE_TRIGGER)
           ? {
-              files: [{
+              files: [MOCK_REPAIR_ENTRY, {
                 path: "src/App.tsx",
                 content: "/* MOCK_COMPILE_ERROR */\nexport default function App() { return <main><h1>我的待办</h1>; }",
               }],
@@ -62,7 +76,7 @@ export function createMockProvider(): LlmProvider {
       }
       if (stage === "engineer-repair") {
         const repair = input as MockCompleteInput;
-        const stillBroken = repair.prompt?.includes("持续失败演示");
+        const stillBroken = repair.prompt?.includes(MOCK_PERSISTENT_FAILURE_TRIGGER);
         if (stillBroken) persistentRepairAttempt += 1;
         return {
           text: JSON.stringify({
