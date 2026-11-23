@@ -9,7 +9,7 @@ export const dynamic = "force-dynamic";
 
 type WorkbenchPageProps = {
   params: Promise<{ projectId: string }>;
-  searchParams: Promise<{ run?: string }>;
+  searchParams: Promise<{ run?: string; provider?: string }>;
 };
 
 type CodeFile = { path: string; content: string };
@@ -33,7 +33,9 @@ export default async function WorkbenchPage({
   searchParams,
 }: WorkbenchPageProps) {
   const { projectId } = await params;
-  const { run: runIdFromQuery } = await searchParams;
+  const { run: runIdFromQuery, provider: providerFromQuery } = await searchParams;
+  const initialProviderLabel =
+    providerFromQuery === "replay" ? "演示回放" : null;
   const cookieStore = await cookies();
   const deviceId = cookieStore.get(DEVICE_ID_COOKIE)?.value;
 
@@ -113,6 +115,7 @@ export default async function WorkbenchPage({
           initialVersionQaScore={version?.qaScore ?? null}
           initialFiles={initialFiles}
           initialQaScore={project.qaScore}
+          initialProviderLabel={initialProviderLabel}
           initialVersions={versions.map((item) => ({
             id: item.id,
             summary: item.summary ?? "版本快照",

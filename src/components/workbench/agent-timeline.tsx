@@ -7,6 +7,7 @@ import {
   type AgentName,
 } from "@/lib/agents/events";
 import { AgentCard, type AgentCardModel, type AgentCardStatus } from "./agent-card";
+import { FollowUpForm } from "./follow-up-form";
 import { QaTimelineCard } from "./qa-timeline-card";
 
 type RunStatus = "running" | "completed" | "interrupted" | "failed";
@@ -20,9 +21,14 @@ type AgentTimelineProps = {
   projectId: string;
   initialRunId: string;
   initialRunStatus?: RunStatus | string;
+  /** When false, omit the follow-up affordance (read-only share). */
+  allowFollowUp?: boolean;
   onFiles?: (files: GeneratedFile[]) => void;
   onRunStatusChange?: (status: RunStatus) => void;
   onQaScoreChange?: (score: number) => void;
+  onQaRoundsChange?: (rounds: number) => void;
+  onProviderLabel?: (label: string | null) => void;
+  onRunIdChange?: (runId: string) => void;
 };
 
 function extractFiles(payload: unknown): GeneratedFile[] | null {
@@ -122,9 +128,13 @@ export function AgentTimeline({
   projectId,
   initialRunId,
   initialRunStatus = "running",
+  allowFollowUp = true,
   onFiles,
   onRunStatusChange,
   onQaScoreChange,
+  onQaRoundsChange,
+  onProviderLabel,
+  onRunIdChange,
 }: AgentTimelineProps) {
   const [runId, setRunId] = useState(initialRunId);
   const [runStatus, setRunStatus] = useState<RunStatus>(
@@ -134,6 +144,7 @@ export function AgentTimeline({
   const [qaEvents, setQaEvents] = useState<AgentEventRecord[]>([]);
   const [now, setNow] = useState(() => Date.now());
   const [continuePending, setContinuePending] = useState(false);
+  const [followUpPending, setFollowUpPending] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(() =>
     initialRunStatus === "interrupted"
       ? "连接已中断。可点击「继续」重新生成。"
@@ -146,6 +157,9 @@ export function AgentTimeline({
   const onFilesRef = useRef(onFiles);
   const onRunStatusChangeRef = useRef(onRunStatusChange);
   const onQaScoreChangeRef = useRef(onQaScoreChange);
+  const onQaRoundsChangeRef = useRef(onQaRoundsChange);
+  const onProviderLabelRef = useRef(onProviderLabel);
+  const onRunIdChangeRef = useRef(onRunIdChange);
   const skippedInitialInterrupted = useRef(
     initialRunStatus === "interrupted",
   );
@@ -174,6 +188,18 @@ export function AgentTimeline({
   useEffect(() => {
     onQaScoreChangeRef.current = onQaScoreChange;
   }, [onQaScoreChange]);
+
+  useEffect(() => {
+    onQaRoundsChangeRef.current = onQaRoundsChange;
+  }, [onQaRoundsChange]);
+
+  useEffect(() => {
+    onProviderLabelRef.current = onProviderLabel;
+  }, [onProviderLabel]);
+
+  useEffect(() => {
+    onRunIdChangeRef.current = onRunIdChange;
+  }, [onRunIdChange]);
 
   useEffect(() => {
     onRunStatusChangeRef.current?.(runStatus);
@@ -252,14 +278,32 @@ export function AgentTimeline({
               ? prev
               : [...prev, event].sort((left, right) => left.seq - right.seq),
           );
-          if (
-            event.type === "verdict" &&
-            event.payload &&
-            typeof event.payload === "object"
-          ) {
-            const score = (event.payload as { qa_score?: unknown }).qa_score;
-            if (typeof score === "number" && Number.isInteger(score)) {
-              onQaScoreChangeRef.current?.(score);
+          if (event.payload && typeof event.payload === "object") {
+            const payload = event.payload as {
+              qa_score?: unknown;
+              round?: unknown;
+              exhausted?: unknown;
+              messageZh?: unknown;
+            };
+            if (
+              event.type === "verdict" &&
+              typeof payload.qa_score === "number" &&
+              Number.isInteger(payload.qa_score)
+            ) {
+              onQaScoreChangeRef.current?.(payload.qa_score);
+            }
+            if (
+              typeof payload.round === "number" &&
+              Number.isInteger(payload.round)
+            ) {
+              onQaRoundsChangeRef.current?.(payload.round);
+            }
+            if (
+              event.type === "fix" &&
+              payload.exhausted === true &&
+              typeof payload.messageZh === "string"
+            ) {
+              setErrorMessage(payload.messageZh);
             }
           }
         }
@@ -289,12 +333,17 @@ export function AgentTimeline({
           (event.agent === "engineer" && event.type === "file") ||
           (event.agent === "qa" && event.type === "fix")
         ) {
-          const payload = event.payload as { currentFiles?: unknown } | null;
+          const payload = event.payload as {
+            currentFiles?: unknown;
+            exhausted?: unknown;
+          } | null;
           const files = event.agent === "qa"
             ? extractFiles({ files: payload?.currentFiles })
             : extractFiles(event.payload);
           if (files) onFilesRef.current?.(files);
-          setErrorMessage(null);
+          if (payload?.exhausted !== true) {
+            setErrorMessage(null);
+          }
         }
       };
 
@@ -373,25 +422,37 @@ export function AgentTimeline({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [runId]);
 
-  const handleContinue = async () => {
-    // Known limitation (REQ-9): 「继续」 starts a fresh run for this project;
-    // it does not resume from an exact checkpoint.
-    setContinuePending(true);
-    setErrorMessage(null);
-    try {
+  const startNextRun = useCallback(
+    async (body?: { prompt: string }) => {
+      // Known limitation (REQ-9): starts a fresh run for this project;
+      // it does not resume from an exact checkpoint.
       const response = await fetch(
         `/api/projects/${projectId}/runs/${runId}/continue`,
-        { method: "POST" },
+        {
+          method: "POST",
+          ...(body
+            ? {
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(body),
+              }
+            : {}),
+        },
       );
       const data = (await response.json()) as {
         runId?: string;
         messageZh?: string;
+        label?: string;
+        mode?: string;
       };
       if (!response.ok || !data.runId) {
-        setErrorMessage(data.messageZh ?? "无法继续，请稍后重试");
-        setContinuePending(false);
-        return;
+        throw new Error(data.messageZh ?? "无法继续，请稍后重试");
       }
+
+      onProviderLabelRef.current?.(
+        data.label === "演示回放" || data.mode === "replay"
+          ? "演示回放"
+          : null,
+      );
 
       const url = new URL(window.location.href);
       url.searchParams.set("run", data.runId);
@@ -399,12 +460,40 @@ export function AgentTimeline({
 
       setCards(emptyCards());
       setQaEvents([]);
+      setErrorMessage(null);
+      onQaRoundsChangeRef.current?.(0);
       sawTerminalRef.current = false;
+      onRunIdChangeRef.current?.(data.runId);
       setRunId(data.runId);
+    },
+    [projectId, runId],
+  );
+
+  const handleContinue = async () => {
+    setContinuePending(true);
+    setErrorMessage(null);
+    try {
+      await startNextRun();
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error ? error.message : "网络异常，请检查连接后重试",
+      );
+    } finally {
       setContinuePending(false);
-    } catch {
-      setErrorMessage("网络异常，请检查连接后重试");
-      setContinuePending(false);
+    }
+  };
+
+  const handleFollowUp = async (prompt: string) => {
+    setFollowUpPending(true);
+    setErrorMessage(null);
+    try {
+      await startNextRun({ prompt });
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error ? error.message : "网络异常，请检查连接后重试",
+      );
+    } finally {
+      setFollowUpPending(false);
     }
   };
 
@@ -422,6 +511,10 @@ export function AgentTimeline({
       : showContinue
         ? "连接已中断。可点击「继续」重新生成。"
         : null;
+  const exhaustedBanner =
+    !showContinue && errorMessage === "已达修复上限" ? errorMessage : null;
+  const followUpDisabled =
+    runStatus === "running" || continuePending || followUpPending;
 
   return (
     <aside
@@ -462,8 +555,22 @@ export function AgentTimeline({
       </div>
 
       {interruptCopy ? (
-        <p className="text-sm text-amber-700 dark:text-amber-300" role="status">
+        <p
+          data-testid="ux-banner-interrupted"
+          className="text-sm text-amber-700 dark:text-amber-300"
+          role="status"
+        >
           {interruptCopy}
+        </p>
+      ) : null}
+
+      {exhaustedBanner ? (
+        <p
+          data-testid="ux-banner-qa-cap"
+          className="text-sm text-amber-700 dark:text-amber-300"
+          role="status"
+        >
+          {exhaustedBanner}
         </p>
       ) : null}
 
@@ -476,6 +583,14 @@ export function AgentTimeline({
         >
           {continuePending ? "继续中…" : "继续"}
         </button>
+      ) : null}
+
+      {allowFollowUp ? (
+        <FollowUpForm
+          disabled={followUpDisabled}
+          pending={followUpPending}
+          onSubmit={handleFollowUp}
+        />
       ) : null}
     </aside>
   );

@@ -20,6 +20,7 @@ type WorkbenchClientProps = {
   initialFiles?: CodeFile[];
   initialQaScore?: number | null;
   initialVersions: VersionSummary[];
+  initialProviderLabel?: string | null;
 };
 
 function statusLabelZh(status: RunStatus | string): string {
@@ -47,9 +48,15 @@ export function WorkbenchClient({
   initialFiles = [],
   initialQaScore = null,
   initialVersions,
+  initialProviderLabel = null,
 }: WorkbenchClientProps) {
   const [files, setFiles] = useState<CodeFile[]>(initialFiles);
   const [qaScore, setQaScore] = useState<number | null>(initialQaScore);
+  const [qaRounds, setQaRounds] = useState(initialRunQaRounds);
+  const [activeRunId, setActiveRunId] = useState(initialRunId);
+  const [providerLabel, setProviderLabel] = useState<string | null>(
+    initialProviderLabel,
+  );
   const [versions, setVersions] = useState(initialVersions);
   const [currentVersionId, setCurrentVersionId] = useState(initialVersionId);
   const [restoringVersionId, setRestoringVersionId] = useState<string | null>(null);
@@ -184,9 +191,21 @@ export function WorkbenchClient({
     }
   }, [projectId]);
 
+  const hitQaCap = qaRounds >= 3;
+
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between gap-3">
+      {providerLabel === "演示回放" ? (
+        <p
+          data-testid="ux-banner-replay"
+          role="status"
+          className="rounded-xl border border-violet-200 bg-violet-50 px-4 py-3 text-sm text-violet-900 dark:border-violet-900/60 dark:bg-violet-950/40 dark:text-violet-100"
+        >
+          演示回放 — 当前使用预录演示结果，便于在额度或上游不可用时继续体验。
+        </p>
+      ) : null}
+
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <p
           data-testid="workbench-run-status"
           data-run-status={liveRunStatus}
@@ -194,21 +213,42 @@ export function WorkbenchClient({
         >
           {statusLabelZh(liveRunStatus)}
         </p>
-        {qaScore !== null ? (
+        <div className="flex flex-wrap items-center gap-2">
           <span
-            data-testid="workbench-score-badge"
-            data-run-id={initialRunId}
-            data-run-qa-rounds={initialRunQaRounds}
-            data-run-qa-score={initialRunQaScore ?? ""}
-            data-version-id={initialVersionId ?? ""}
-            data-version-run-id={initialVersionRunId ?? ""}
-            data-version-qa-score={initialVersionQaScore ?? ""}
+            data-testid="workbench-qa-rounds"
+            data-run-qa-rounds={qaRounds}
             className="inline-flex rounded-full bg-zinc-100 px-2.5 py-1 text-xs font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
           >
-            {qaScore} 分
+            质检轮次 {qaRounds}
+            {hitQaCap ? " · 已达修复上限" : ""}
           </span>
-        ) : null}
+          {qaScore !== null ? (
+            <span
+              data-testid="workbench-score-badge"
+              data-run-id={activeRunId}
+              data-run-qa-rounds={qaRounds}
+              data-run-qa-score={qaScore}
+              data-version-id={currentVersionId ?? initialVersionId ?? ""}
+              data-version-run-id={initialVersionRunId ?? ""}
+              data-version-qa-score={initialVersionQaScore ?? ""}
+              className="inline-flex rounded-full bg-zinc-100 px-2.5 py-1 text-xs font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
+            >
+              {qaScore} 分
+            </span>
+          ) : null}
+        </div>
       </div>
+
+      {hitQaCap ? (
+        <p
+          data-testid="ux-banner-qa-cap-meta"
+          role="status"
+          className="text-sm text-amber-700 dark:text-amber-300"
+        >
+          已达修复上限
+        </p>
+      ) : null}
+
       <div className="flex flex-wrap items-center gap-3">
         <button
           type="button"
@@ -253,6 +293,9 @@ export function WorkbenchClient({
           onFiles={handleFiles}
           onRunStatusChange={handleRunStatus}
           onQaScoreChange={setQaScore}
+          onQaRoundsChange={setQaRounds}
+          onProviderLabel={setProviderLabel}
+          onRunIdChange={setActiveRunId}
         />
         <WorkbenchPanels
           files={files}

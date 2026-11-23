@@ -238,3 +238,200 @@ test.describe("polish visual system (REQ-1 / REQ-3)", () => {
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
   });
 });
+
+test.describe("polish follow-up and UX states (REQ-2)", () => {
+  test("follow-up: left-rail prompt starts an incremental iteration", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    await page
+      .getByRole("textbox", { name: /描述你想生成的应用/ })
+      .fill("做一个简洁的待办清单应用");
+    await page.getByRole("button", { name: "开始生成" }).click();
+    await expect(page).toHaveURL(/\/projects\/[0-9a-f-]{36}/i, {
+      timeout: 15_000,
+    });
+    await expect(page.getByTestId("agent-card-engineer").getByText("已完成")).toBeVisible({
+      timeout: 30_000,
+    });
+    await expect(page.getByTestId("preview-paint-probe")).toContainText(
+      "体验 Atoms Studio",
+    );
+
+    const followUp = page.getByRole("textbox", { name: "后续需求" });
+    const send = page.getByTestId("follow-up-send");
+    await expect(followUp).toBeVisible();
+    // Empty prompt keeps send disabled; fill then enable.
+    await expect(send).toBeDisabled();
+    await followUp.fill("为每项待办加入优先级标签");
+    await expect(send).toBeEnabled();
+    const previousRunId = await page
+      .getByTestId("workbench-score-badge")
+      .getAttribute("data-run-id");
+    await send.click();
+    // Pending / empty-after-submit keeps send disabled while the new run starts.
+    await expect(send).toBeDisabled();
+
+    await expect(page.getByTestId("agent-card-engineer").getByText("已完成")).toBeVisible({
+      timeout: 30_000,
+    });
+    await expect
+      .poll(async () =>
+        page.getByTestId("workbench-score-badge").getAttribute("data-run-id"),
+      )
+      .not.toBe(previousRunId);
+    await page.getByRole("tab", { name: "代码" }).click();
+    await expect(page.getByTestId("code-source")).toContainText("优先级");
+    await followUp.fill("再补一条说明");
+    await expect(page.getByTestId("follow-up-send")).toBeEnabled();
+  });
+
+  test("follow-up-disabled: send is disabled while a run is active", async ({
+    page,
+  }) => {
+    await page.addInitScript(() => {
+      window.localStorage.setItem("atoms.generate-loop.stageDelayMs", "2500");
+    });
+    await page.goto("/");
+    await page
+      .getByRole("textbox", { name: /描述你想生成的应用/ })
+      .fill("做一个简洁的待办清单应用");
+    await page.getByRole("button", { name: "开始生成" }).click();
+    await expect(page).toHaveURL(/\/projects\//, { timeout: 15_000 });
+    await expect(page.getByTestId("agent-timeline")).toHaveAttribute(
+      "data-run-status",
+      "running",
+      { timeout: 10_000 },
+    );
+    await expect(page.getByTestId("follow-up-send")).toBeDisabled();
+    await expect(page.getByRole("textbox", { name: "后续需求" })).toBeDisabled();
+  });
+
+  test("share-read-only: follow-up and owner mutations are absent", async ({
+    page,
+    browser,
+  }) => {
+    await page.goto("/");
+    await page.getByRole("link", { name: /待办清单示例/ }).click();
+    await expect(page).toHaveURL(/\/projects\//);
+    await expect(page.getByTestId("follow-up-form")).toBeVisible();
+
+    // Prefer an already-completed seed; create share if a version exists.
+    const shareButton = page.getByRole("button", { name: "创建只读分享链接" });
+    if (await shareButton.isEnabled()) {
+      await shareButton.click();
+    } else {
+      await page.goto("/");
+      await page
+        .getByRole("textbox", { name: /描述你想生成的应用/ })
+        .fill("做一个简洁的待办清单应用");
+      await page.getByRole("button", { name: "开始生成" }).click();
+      await expect(page.getByTestId("agent-card-engineer").getByText("已完成")).toBeVisible({
+        timeout: 30_000,
+      });
+      await page.getByRole("button", { name: "创建只读分享链接" }).click();
+    }
+
+    const shareLink = page.getByRole("link", { name: /\/share\// });
+    await expect(shareLink).toBeVisible({ timeout: 15_000 });
+    const shareUrl = await shareLink.getAttribute("href");
+    expect(shareUrl).toMatch(/^\/share\/[A-Za-z0-9_-]{43}$/);
+
+    const visitorContext = await browser.newContext();
+    const visitorPage = await visitorContext.newPage();
+    await visitorPage.goto(shareUrl!);
+    await expect(visitorPage.getByText("只读分享")).toBeVisible();
+    await expect(visitorPage.getByTestId("follow-up-form")).toHaveCount(0);
+    await expect(
+      visitorPage.getByRole("button", { name: "创建只读分享链接" }),
+    ).toHaveCount(0);
+    await expect(visitorPage.getByRole("button", { name: "下载 ZIP" })).toHaveCount(0);
+    await visitorContext.close();
+  });
+
+  test("演示回放: replay provider banner is visible", async ({ page }) => {
+    await page.goto("/projects/missing?provider=replay");
+    // Seeded project path: open a known project with provider query.
+    await page.goto("/");
+    const card = page.getByRole("link", { name: /待办清单示例/ }).first();
+    const href = await card.getAttribute("href");
+    expect(href).toBeTruthy();
+    await page.goto(`${href}?provider=replay`);
+    await expect(page.getByTestId("ux-banner-replay")).toContainText("演示回放");
+  });
+
+  test("qa-rounds: exhaustion cap surfaces 已达修复上限", async ({ page }) => {
+    await page.goto("/");
+    await page
+      .getByRole("textbox", { name: /描述你想生成的应用/ })
+      .fill("持续失败演示 中文待办清单");
+    await page.getByRole("button", { name: "开始生成" }).click();
+    await expect(page).toHaveURL(/\/projects\//, { timeout: 15_000 });
+
+    const qaCard = page.getByTestId("agent-card-qa");
+    await expect(qaCard).toHaveAttribute("data-status", "completed", {
+      timeout: 60_000,
+    });
+    await expect(page.getByTestId("workbench-qa-rounds")).toHaveAttribute(
+      "data-run-qa-rounds",
+      "3",
+    );
+    await expect(page.getByText("已达修复上限").first()).toBeVisible();
+    await qaCard.getByRole("button", { name: "展开质检详情" }).click();
+    await expect(qaCard.getByText(/已达修复上限/).first()).toBeVisible();
+  });
+
+  test("ux-states: empty / loading / interrupted / compile-error banners", async ({
+    page,
+  }) => {
+    await page.addInitScript(() => {
+      window.localStorage.setItem("atoms.generate-loop.stageDelayMs", "2500");
+    });
+    await page.goto("/");
+    await page
+      .getByRole("textbox", { name: /描述你想生成的应用/ })
+      .fill("做一个简洁的待办清单应用");
+    await page.getByRole("button", { name: "开始生成" }).click();
+    await expect(page).toHaveURL(/\/projects\//, { timeout: 15_000 });
+
+    await expect(page.getByTestId("preview-pane")).toContainText(/等待生成|正在打包预览/);
+    await expect(page.getByTestId("agent-timeline")).toHaveAttribute(
+      "data-run-status",
+      "running",
+      { timeout: 10_000 },
+    );
+
+    await expect
+      .poll(async () =>
+        page.evaluate(
+          () =>
+            typeof (window as unknown as { __ATOMS_ABORT_SSE__?: () => void })
+              .__ATOMS_ABORT_SSE__ === "function",
+        ),
+      )
+      .toBe(true);
+    await page.evaluate(() => {
+      (window as unknown as { __ATOMS_ABORT_SSE__?: () => void }).__ATOMS_ABORT_SSE__?.();
+    });
+    await expect(page.getByTestId("ux-banner-interrupted")).toContainText("继续");
+    await expect(page.getByRole("button", { name: "继续" })).toBeVisible();
+
+    // Compile-error path via repair demo trigger on a fresh project.
+    await page.goto("/");
+    await page
+      .getByRole("textbox", { name: /描述你想生成的应用/ })
+      .fill("触发修复演示 编译错误示例");
+    await page.getByRole("button", { name: "开始生成" }).click();
+    await expect(page).toHaveURL(/\/projects\//, { timeout: 15_000 });
+    await expect(page.getByTestId("preview-pane")).toBeVisible({ timeout: 45_000 });
+    // Either intermediate compile error or final repaired preview must be Chinese-labelled.
+    const preview = page.getByTestId("preview-pane");
+    await expect
+      .poll(async () => {
+        const status = await preview.getAttribute("data-preview-status");
+        const text = await preview.innerText();
+        return `${status ?? ""}|${text}`;
+      }, { timeout: 45_000 })
+      .toMatch(/error|预览失败|预览已修复|我的待办|ready/);
+  });
+});

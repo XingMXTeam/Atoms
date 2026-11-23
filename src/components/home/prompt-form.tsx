@@ -35,6 +35,8 @@ export function PromptForm({ initialPrompt = "" }: PromptFormProps) {
         projectId?: string;
         runId?: string;
         messageZh?: string;
+        label?: string;
+        mode?: string;
       };
 
       if (!response.ok || !data.projectId || !data.runId) {
@@ -43,7 +45,11 @@ export function PromptForm({ initialPrompt = "" }: PromptFormProps) {
         return;
       }
 
-      router.push(`/projects/${data.projectId}?run=${data.runId}`);
+      const params = new URLSearchParams({ run: data.runId });
+      if (data.label === "演示回放" || data.mode === "replay") {
+        params.set("provider", "replay");
+      }
+      router.push(`/projects/${data.projectId}?${params.toString()}`);
     } catch {
       setError("网络异常，请检查连接后重试");
       setPending(false);

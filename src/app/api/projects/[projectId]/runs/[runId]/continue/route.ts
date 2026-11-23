@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { DEVICE_ID_COOKIE, getOrMintDeviceId } from "@/lib/auth/device-id";
 import { getDb } from "@/lib/db";
+import { assertRateLimit, utcDay } from "@/lib/limits/rate-limit";
 import { z } from "zod";
 
 export const runtime = "nodejs";
@@ -16,7 +17,7 @@ type RouteContext = {
 };
 
 /**
- * 「继续」 after an interrupted/failed run (REQ-9).
+ * 「继续」 after an interrupted/failed run (REQ-9), or follow-up iteration (F5 REQ-2).
  * Known limitation: starts a fresh run for the same project — not an exact
  * checkpoint resume from the last agent_event.
  */
@@ -65,6 +66,24 @@ export async function POST(request: Request, context: RouteContext) {
     return response;
   }
 
+  const day = utcDay();
+  const decision = await assertRateLimit(deviceId, {
+    getDeviceUsage: async (id, d) => {
+      const row = await repo.getUsage(id, d);
+      return row ? { runs: row.runs, tokens: row.tokens } : null;
+    },
+    getGlobalTokens: async () => 0,
+  });
+
+  if (!decision.ok && "refuse" in decision && decision.refuse) {
+    const response = NextResponse.json(
+      { messageZh: decision.messageZh },
+      { status: 429 },
+    );
+    if (setCookie) response.headers.append("Set-Cookie", setCookie);
+    return response;
+  }
+
   if (previous.status === "running") {
     await repo.updateRun(runId, {
       status: "interrupted",
@@ -79,8 +98,19 @@ export async function POST(request: Request, context: RouteContext) {
   if (followUpPrompt) {
     await repo.addMessage({ projectId, role: "user", content: followUpPrompt });
   }
+  await repo.incrementUsage(deviceId, day, { runs: 1 });
 
-  const response = NextResponse.json({ runId: nextRun.id });
+  const payload = decision.ok
+    ? { runId: nextRun.id, mode: decision.mode }
+    : "mode" in decision
+      ? {
+          runId: nextRun.id,
+          mode: decision.mode,
+          label: decision.label,
+        }
+      : { runId: nextRun.id };
+
+  const response = NextResponse.json(payload);
   if (setCookie) response.headers.append("Set-Cookie", setCookie);
   return response;
 }
