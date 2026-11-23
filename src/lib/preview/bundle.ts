@@ -348,7 +348,7 @@ export function buildPreviewSrcdoc(
 
   // Wait for React to commit visible text into #root, then report that text
   // to the host (the opaque iframe prevents the host from reading its DOM).
-  const paintBeacon = `try{(function(){var r=document.getElementById("root");if(!r)return;function done(){var text=(r.innerText||r.textContent||"").trim();if(!text)return false;document.documentElement.setAttribute("data-atoms-painted","1");if(window.parent&&window.parent!==window){window.parent.postMessage({source:"atoms-preview",type:"painted",text:text},"*");}return true;}if(done())return;var n=0;var id=setInterval(function(){n++;if(done()){clearInterval(id);}else if(n>100){clearInterval(id);}},50);})();}catch(e){}`;
+  const paintBeacon = `try{(function(){var r=document.getElementById("root");if(!r)return;var observer;var timer;function done(){var text=(r.innerText||r.textContent||"").trim();if(!text)return false;document.documentElement.setAttribute("data-atoms-painted","1");if(window.parent&&window.parent!==window){window.parent.postMessage({source:"atoms-preview",type:"painted",text:text},"*");}if(observer)observer.disconnect();if(timer)clearInterval(timer);return true;}if(done())return;if(typeof MutationObserver!=="undefined"){observer=new MutationObserver(done);observer.observe(r,{childList:true,subtree:true,characterData:true});}var n=0;timer=setInterval(function(){n++;if(done()||n>600){clearInterval(timer);if(observer)observer.disconnect();}},50);})();}catch(e){}`;
 
   return `<!doctype html>
 <html lang="zh-CN">

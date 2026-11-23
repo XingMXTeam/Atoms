@@ -76,6 +76,7 @@ export interface AppRepository {
   updateProjectTitle(id: string, title: string): Promise<Project>;
   createRun(input: { projectId: string; status: string }): Promise<Run>;
   getRun(id: string): Promise<Run | null>;
+  getVersion(id: string): Promise<Version | null>;
   updateRun(
     id: string,
     patch: Partial<Pick<Run, "status" | "finishedAt" | "qaRounds" | "qaScore">>,
@@ -261,6 +262,12 @@ export function createAppRepository(db: AppDb): AppRepository {
       const rows = await db.select().from(runs).where(eq(runs.id, id)).limit(1);
       const row = rows[0];
       return row ? mapRun(row) : null;
+    },
+
+    async getVersion(id) {
+      const rows = await db.select().from(versions).where(eq(versions.id, id)).limit(1);
+      const row = rows[0];
+      return row ? mapVersion(row) : null;
     },
 
     async updateRun(id, patch) {

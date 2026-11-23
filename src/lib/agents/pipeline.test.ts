@@ -65,10 +65,13 @@ describe("agent pipeline (REQ-3 / REQ-7 / REQ-8)", () => {
     expect(refreshed?.currentVersionId).toBe(result.versionId);
 
     const updatedRun = await repo.getRun(run.id);
+    const persistedVersion = await repo.getVersion(result.versionId);
     expect(updatedRun?.status).toBe("completed");
     expect(updatedRun?.finishedAt).toBeInstanceOf(Date);
     expect(updatedRun?.qaScore).toBe(100);
     expect(refreshed?.qaScore).toBe(updatedRun?.qaScore);
+    expect(persistedVersion?.runId).toBe(run.id);
+    expect(persistedVersion?.qaScore).toBe(updatedRun?.qaScore);
   });
 
   it("applies only repair deltas and stops after the preview passes", async () => {
@@ -215,9 +218,12 @@ describe("agent pipeline (REQ-3 / REQ-7 / REQ-8)", () => {
     expect(result.versionId).toBeTruthy();
     const storedRun = await repo.getRun(run.id);
     const storedProject = await repo.getProject(project.id, "device-a");
+    const storedVersion = await repo.getVersion(result.versionId);
     expect(storedRun?.qaRounds).toBe(3);
     expect(storedRun?.qaScore).toBe(0);
     expect(storedProject?.qaScore).toBe(storedRun?.qaScore);
+    expect(storedVersion?.runId).toBe(run.id);
+    expect(storedVersion?.qaScore).toBe(storedRun?.qaScore);
     const events = await repo.listAgentEvents(run.id);
     expect(events.filter((event) => event.type === "fix")).toHaveLength(4);
     expect(events.at(-1)?.payload).toMatchObject({ exhausted: true, messageZh: "已达修复上限" });

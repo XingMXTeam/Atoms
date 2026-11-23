@@ -11,6 +11,11 @@ type WorkbenchClientProps = {
   projectId: string;
   initialRunId: string;
   initialRunStatus?: string;
+  initialRunQaRounds: number;
+  initialRunQaScore: number | null;
+  initialVersionId: string | null;
+  initialVersionRunId: string | null;
+  initialVersionQaScore: number | null;
   initialFiles?: CodeFile[];
   initialQaScore?: number | null;
 };
@@ -32,6 +37,11 @@ export function WorkbenchClient({
   projectId,
   initialRunId,
   initialRunStatus,
+  initialRunQaRounds,
+  initialRunQaScore,
+  initialVersionId,
+  initialVersionRunId,
+  initialVersionQaScore,
   initialFiles = [],
   initialQaScore = null,
 }: WorkbenchClientProps) {
@@ -62,6 +72,12 @@ export function WorkbenchClient({
         {qaScore !== null ? (
           <span
             data-testid="workbench-score-badge"
+            data-run-id={initialRunId}
+            data-run-qa-rounds={initialRunQaRounds}
+            data-run-qa-score={initialRunQaScore ?? ""}
+            data-version-id={initialVersionId ?? ""}
+            data-version-run-id={initialVersionRunId ?? ""}
+            data-version-qa-score={initialVersionQaScore ?? ""}
             className="inline-flex rounded-full bg-zinc-100 px-2.5 py-1 text-xs font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
           >
             {qaScore} 分

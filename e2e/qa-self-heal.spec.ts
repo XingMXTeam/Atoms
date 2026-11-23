@@ -46,6 +46,7 @@ test.describe("QA timeline (REQ-4 / REQ-6)", () => {
     await expect(page).toHaveURL(/\/projects\/[0-9a-f-]{36}/i, {
       timeout: 15_000,
     });
+    const completedWorkbenchUrl = page.url();
 
     const qaCard = page.getByTestId("agent-card-qa");
     await expect(qaCard).toHaveAttribute("data-status", "completed", {
@@ -70,6 +71,21 @@ test.describe("QA timeline (REQ-4 / REQ-6)", () => {
     await page.getByRole("tab", { name: "代码" }).click();
     await expect(page.getByTestId("code-pane")).toContainText("预览已修复");
 
+    await page.goto(completedWorkbenchUrl);
+    const persistedRecoveryScore = page.getByTestId("workbench-score-badge");
+    await expect(persistedRecoveryScore).toHaveText("100 分");
+    await expect(persistedRecoveryScore).toHaveAttribute("data-run-qa-score", "100");
+    await expect(persistedRecoveryScore).toHaveAttribute("data-version-qa-score", "100");
+    await expect(persistedRecoveryScore).toHaveAttribute("data-version-id", /.+/);
+    await expect(persistedRecoveryScore).toHaveAttribute(
+      "data-version-run-id",
+      await persistedRecoveryScore.getAttribute("data-run-id") ?? "",
+    );
+    await expect(page.getByTestId("preview-pane")).toHaveAttribute(
+      "data-preview-painted",
+      "true",
+    );
+
     await page.getByRole("link", { name: "返回首页" }).click();
     const projectCard = page.getByRole("link", { name: /中文待办清单/ });
     await expect(projectCard.getByTestId("project-score-badge")).toHaveText("100 分");
@@ -93,6 +109,7 @@ test.describe("QA timeline (REQ-4 / REQ-6)", () => {
     await expect(page).toHaveURL(/\/projects\/[0-9a-f-]{36}/i, {
       timeout: 15_000,
     });
+    const completedWorkbenchUrl = page.url();
 
     const qaCard = page.getByTestId("agent-card-qa");
     await expect(qaCard).toHaveAttribute("data-status", "completed", {
@@ -105,6 +122,21 @@ test.describe("QA timeline (REQ-4 / REQ-6)", () => {
     await expect(qaCard.getByText("修复 · 第 2 轮")).toBeVisible();
     await expect(qaCard.getByText("修复 · 第 3 轮")).toBeVisible();
     await expect(qaCard.getByText("修复上限 · 第 3 轮")).toBeVisible();
+
+    await page.goto(completedWorkbenchUrl);
+    const persistedFailureScore = page.getByTestId("workbench-score-badge");
+    await expect(persistedFailureScore).toHaveText("0 分");
+    await expect(persistedFailureScore).toHaveAttribute("data-run-qa-rounds", "3");
+    await expect(persistedFailureScore).toHaveAttribute("data-run-qa-score", "0");
+    await expect(persistedFailureScore).toHaveAttribute("data-version-qa-score", "0");
+    await expect(persistedFailureScore).toHaveAttribute("data-version-id", /.+/);
+    await expect(persistedFailureScore).toHaveAttribute(
+      "data-version-run-id",
+      await persistedFailureScore.getAttribute("data-run-id") ?? "",
+    );
+    const persistedQaCard = page.getByTestId("agent-card-qa");
+    await persistedQaCard.getByRole("button", { name: "展开质检详情" }).click();
+    await expect(persistedQaCard.getByText("已达修复上限（第 3 轮）").first()).toBeVisible();
 
     await page.getByRole("link", { name: "返回首页" }).click();
     const projectCard = page.getByRole("link", { name: /中文待办清单/ });

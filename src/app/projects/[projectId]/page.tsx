@@ -52,10 +52,16 @@ export default async function WorkbenchPage({
     notFound();
   }
 
+  const currentVersion = project.currentVersionId
+    ? await repo.getVersion(project.currentVersionId)
+    : null;
+  const version = currentVersion?.projectId === projectId ? currentVersion : null;
   const runId = run?.id ?? runIdFromQuery ?? "";
 
   let initialFiles: CodeFile[] = [];
-  if (runId) {
+  if (runId && version?.runId === runId) {
+    initialFiles = filesFromVersion(version.files);
+  } else if (runId) {
     const events = await repo.listAgentEvents(runId);
     const engineerFile = [...events]
       .reverse()
@@ -95,6 +101,11 @@ export default async function WorkbenchPage({
           projectId={projectId}
           initialRunId={runId}
           initialRunStatus={run?.status ?? "running"}
+          initialRunQaRounds={run?.qaRounds ?? 0}
+          initialRunQaScore={run?.qaScore ?? null}
+          initialVersionId={version?.id ?? null}
+          initialVersionRunId={version?.runId ?? null}
+          initialVersionQaScore={version?.qaScore ?? null}
           initialFiles={initialFiles}
           initialQaScore={project.qaScore}
         />

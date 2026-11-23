@@ -51,6 +51,9 @@ describe("preview bundle (REQ-5 / REQ-6)", () => {
     expect(srcdoc).toContain('source:"atoms-preview"');
     expect(srcdoc).toContain('(r.innerText||r.textContent||"").trim()');
     expect(srcdoc).toContain('type:"painted",text:text');
+    expect(srcdoc).toContain('new MutationObserver(done)');
+    expect(srcdoc).toContain('observer.observe(r,{childList:true,subtree:true,characterData:true})');
+    expect(srcdoc).toContain('n>600');
     expect(srcdoc).toContain('type:"probe",compileErrors:[]');
     expect(srcdoc).toContain('runtimeErrors:window.__atomsProbeErrors.slice(0,20)');
     expect(srcdoc).toContain('blankScreen:!text');

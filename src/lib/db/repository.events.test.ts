@@ -76,6 +76,12 @@ describe("AppRepository events/versions (REQ-3 / REQ-7)", () => {
     const refreshed = await repo.getProject(project.id, "device-a");
     expect(refreshed?.currentVersionId).toBe(version.id);
     expect(refreshed?.qaScore).toBe(85);
+    expect(await repo.getVersion(version.id)).toMatchObject({
+      id: version.id,
+      runId: run.id,
+      qaScore: 85,
+    });
+    expect(await repo.getVersion("missing")).toBeNull();
   });
 
   it("getRun returns the run by id", async () => {
