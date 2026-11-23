@@ -20,6 +20,7 @@ type AgentTimelineProps = {
   initialRunId: string;
   initialRunStatus?: RunStatus | string;
   onFiles?: (files: GeneratedFile[]) => void;
+  onRunStatusChange?: (status: RunStatus) => void;
 };
 
 function extractFiles(payload: unknown): GeneratedFile[] | null {
@@ -120,6 +121,7 @@ export function AgentTimeline({
   initialRunId,
   initialRunStatus = "running",
   onFiles,
+  onRunStatusChange,
 }: AgentTimelineProps) {
   const [runId, setRunId] = useState(initialRunId);
   const [runStatus, setRunStatus] = useState<RunStatus>(
@@ -134,14 +136,39 @@ export function AgentTimeline({
       : null,
   );
   const sourceRef = useRef<EventSource | null>(null);
+  const runStatusRef = useRef<RunStatus>(
+    (initialRunStatus as RunStatus) || "running",
+  );
   const onFilesRef = useRef(onFiles);
+  const onRunStatusChangeRef = useRef(onRunStatusChange);
   const skippedInitialInterrupted = useRef(
     initialRunStatus === "interrupted",
   );
+  // Once we observe a terminal engineer file / failure, ignore late SSE onerror
+  // so a clean stream close cannot flip a completed run back to interrupted.
+  const sawTerminalRef = useRef(
+    initialRunStatus === "completed" || initialRunStatus === "failed",
+  );
+
+  const updateRunStatus = useCallback((next: RunStatus) => {
+    runStatusRef.current = next;
+    setRunStatus(next);
+    if (next === "completed" || next === "failed") {
+      sawTerminalRef.current = true;
+    }
+  }, []);
 
   useEffect(() => {
     onFilesRef.current = onFiles;
   }, [onFiles]);
+
+  useEffect(() => {
+    onRunStatusChangeRef.current = onRunStatusChange;
+  }, [onRunStatusChange]);
+
+  useEffect(() => {
+    onRunStatusChangeRef.current?.(runStatus);
+  }, [runStatus]);
 
   useEffect(() => {
     const id = window.setInterval(() => setNow(Date.now()), 500);
@@ -161,7 +188,10 @@ export function AgentTimeline({
     (nextRunId: string) => {
       closeSource();
       setErrorMessage(null);
-      setRunStatus("running");
+      // Replaying a finished run must not flash 「运行中」 / interrupt chrome.
+      if (!sawTerminalRef.current) {
+        updateRunStatus("running");
+      }
 
       const delayRaw =
         typeof window !== "undefined"
@@ -184,7 +214,7 @@ export function AgentTimeline({
         // Documented test hook (REQ-9): force client-side SSE disconnect.
         source.close();
         sourceRef.current = null;
-        setRunStatus("interrupted");
+        updateRunStatus("interrupted");
         setCards((prev) =>
           prev.map((card) =>
             card.status === "running"
@@ -224,13 +254,18 @@ export function AgentTimeline({
         if (event.type === "error") {
           const payload = event.payload as { messageZh?: string } | null;
           setErrorMessage(payload?.messageZh ?? "生成失败，请稍后重试");
-          setRunStatus("failed");
+          updateRunStatus("failed");
+          closeSource();
+          return;
         }
 
         if (event.agent === "engineer" && event.type === "file") {
           const files = extractFiles(event.payload);
           if (files) onFilesRef.current?.(files);
-          setRunStatus("completed");
+          setErrorMessage(null);
+          updateRunStatus("completed");
+          // Intentional close so the browser's follow-up onerror is ignored.
+          closeSource();
         }
       };
 
@@ -243,15 +278,34 @@ export function AgentTimeline({
         const win = window as unknown as { __ATOMS_ABORT_SSE__?: () => void };
         delete win.__ATOMS_ABORT_SSE__;
 
-        setRunStatus((prev) => {
-          if (prev === "completed" || prev === "failed") return prev;
-          return "interrupted";
-        });
+        const current = runStatusRef.current;
+        if (
+          sawTerminalRef.current ||
+          current === "completed" ||
+          current === "failed"
+        ) {
+          return;
+        }
+
+        // Decide from the latest cards snapshot without side effects in setState.
         setCards((prev) => {
           const hasOpen = prev.some(
             (card) => card.status === "running" || card.status === "pending",
           );
-          if (!hasOpen) return prev;
+          if (!hasOpen) {
+            // Clean EOF after every agent finished — success, not interrupt.
+            queueMicrotask(() => {
+              setErrorMessage(null);
+              updateRunStatus("completed");
+            });
+            return prev;
+          }
+          queueMicrotask(() => {
+            updateRunStatus("interrupted");
+            setErrorMessage(
+              (msg) => msg ?? "连接已中断。可点击「继续」重新生成。",
+            );
+          });
           return prev.map((card) =>
             card.status === "running" || card.status === "pending"
               ? {
@@ -264,10 +318,9 @@ export function AgentTimeline({
               : card,
           );
         });
-        setErrorMessage((prev) => prev ?? "连接已中断。可点击「继续」重新生成。");
       };
     },
-    [closeSource, projectId],
+    [closeSource, projectId, updateRunStatus],
   );
 
   useEffect(() => {
@@ -316,6 +369,7 @@ export function AgentTimeline({
       window.history.replaceState({}, "", url.toString());
 
       setCards(emptyCards());
+      sawTerminalRef.current = false;
       setRunId(data.runId);
       setContinuePending(false);
     } catch {
@@ -329,10 +383,15 @@ export function AgentTimeline({
     [cards, now],
   );
 
+  // Interrupt / failure recovery chrome only — never on completed success.
   const showContinue =
-    runStatus === "interrupted" ||
-    runStatus === "failed" ||
-    Boolean(errorMessage && runStatus !== "completed" && runStatus !== "running");
+    runStatus === "interrupted" || runStatus === "failed";
+  const interruptCopy =
+    showContinue && errorMessage
+      ? errorMessage
+      : showContinue
+        ? "连接已中断。可点击「继续」重新生成。"
+        : null;
 
   return (
     <aside
@@ -362,9 +421,9 @@ export function AgentTimeline({
         ))}
       </div>
 
-      {errorMessage ? (
+      {interruptCopy ? (
         <p className="text-sm text-amber-700 dark:text-amber-300" role="status">
-          {errorMessage}
+          {interruptCopy}
         </p>
       ) : null}
 

@@ -1,9 +1,15 @@
-import * as esbuild from "esbuild-wasm";
+import type {
+  Loader,
+  Plugin,
+} from "esbuild-wasm";
 import {
   PREVIEW_TAILWIND_PATH,
   PREVIEW_VENDOR_MAP,
+  PREVIEW_VENDOR_MODULE_ID,
+  PREVIEW_VENDOR_RUNTIME_PATH,
   PREVIEW_WASM_PATH,
   containsBlockedCdnUrl,
+  isPreviewVendorSpecifier,
   type PreviewVendorSpecifier,
 } from "./vendor";
 
@@ -13,12 +19,44 @@ export type PreviewFile = {
 };
 
 export type BundleResult =
-  | { ok: true; js: string; css: string }
+  | { ok: true; js: string; css: string; vendorJs: string }
   | { ok: false; messageZh: string };
 
+type EsbuildApi = typeof import("esbuild-wasm");
+
+let esbuildApi: EsbuildApi | null = null;
 let initPromise: Promise<void> | null = null;
-let vendorCache: Map<string, string> | null = null;
+let vendorIifeCache: string | null = null;
 let cssCache: string | null = null;
+
+async function loadEsbuildApi(): Promise<EsbuildApi> {
+  if (esbuildApi) return esbuildApi;
+  // Browser/client: explicit browser entry so Turbopack never follows Node
+  // `main` (child_process spawn of bin/esbuild). Node tests: default entry.
+  if (typeof window !== "undefined") {
+    esbuildApi = (await import(
+      /* webpackIgnore: true */ "esbuild-wasm/lib/browser.js"
+    )) as EsbuildApi;
+  } else {
+    esbuildApi = await import("esbuild-wasm");
+  }
+  return esbuildApi;
+}
+
+/** Tiny ESM shim over the global vendor IIFE (single React instance). */
+const VENDOR_SHIM = `const v = globalThis.__ATOMS_PREVIEW_VENDOR__;
+if (!v) throw new Error("Atoms preview vendor missing");
+export default v.default ?? v;
+export const {
+  Children, Component, Fragment, Profiler, PureComponent, StrictMode, Suspense,
+  cloneElement, createContext, createElement, createRef, forwardRef, isValidElement,
+  lazy, memo, startTransition, unstable_act, use, useActionState, useCallback,
+  useContext, useDebugValue, useDeferredValue, useEffect, useId, useImperativeHandle,
+  useInsertionEffect, useLayoutEffect, useMemo, useOptimistic, useReducer, useRef,
+  useState, useSyncExternalStore, useTransition, version,
+  jsx, jsxs, jsxDEV, createRoot, hydrateRoot,
+} = v;
+`;
 
 function normalizePath(path: string): string {
   return path.replace(/^\.\//, "").replace(/^\/+/, "");
@@ -85,19 +123,20 @@ function pickEntry(files: Map<string, string>): string | null {
 
 export async function ensureEsbuildInitialized(
   wasmURL: string = PREVIEW_WASM_PATH,
-): Promise<void> {
+): Promise<EsbuildApi> {
   if (!initPromise) {
     initPromise = (async () => {
-      // Node's esbuild-wasm entry auto-starts a service and rejects wasmURL.
-      // Browser entry requires wasmURL pointing at our self-hosted asset.
+      const api = await loadEsbuildApi();
       if (typeof window === "undefined") {
-        await esbuild.initialize({});
-        return;
+        // Node's default entry auto-starts a service and rejects wasmURL.
+        await api.initialize({});
+      } else {
+        await api.initialize({ wasmURL, worker: false });
       }
-      await esbuild.initialize({ wasmURL, worker: false });
     })();
   }
   await initPromise;
+  return loadEsbuildApi();
 }
 
 async function fetchText(url: string): Promise<string> {
@@ -113,19 +152,24 @@ async function fetchText(url: string): Promise<string> {
   return response.text();
 }
 
+export async function loadVendorIife(
+  fetchImpl: (url: string) => Promise<string> = fetchText,
+): Promise<string> {
+  if (vendorIifeCache) return vendorIifeCache;
+  vendorIifeCache = await fetchImpl(PREVIEW_VENDOR_RUNTIME_PATH);
+  return vendorIifeCache;
+}
+
+/** @deprecated Prefer loadVendorIife — kept for older call sites/tests. */
 export async function loadVendorSources(
   fetchImpl: (url: string) => Promise<string> = fetchText,
 ): Promise<Map<string, string>> {
-  if (vendorCache) return vendorCache;
+  const source = await loadVendorIife(fetchImpl);
   const map = new Map<string, string>();
-  for (const [specifier, url] of Object.entries(PREVIEW_VENDOR_MAP) as [
-    PreviewVendorSpecifier,
-    string,
-  ][]) {
-    map.set(specifier, await fetchImpl(url));
+  map.set(PREVIEW_VENDOR_MODULE_ID, source);
+  for (const specifier of Object.keys(PREVIEW_VENDOR_MAP) as PreviewVendorSpecifier[]) {
+    map.set(specifier, source);
   }
-  // react-dom/client bundle still imports "react" as external — already covered.
-  vendorCache = map;
   return map;
 }
 
@@ -139,14 +183,11 @@ export async function loadPreviewCss(
 
 /** Test-only: reset caches between cases. */
 export function resetPreviewAssetCaches(): void {
-  vendorCache = null;
+  vendorIifeCache = null;
   cssCache = null;
 }
 
-function createVirtualPlugin(
-  files: Map<string, string>,
-  vendors: Map<string, string>,
-): esbuild.Plugin {
+function createVirtualPlugin(files: Map<string, string>): Plugin {
   return {
     name: "atoms-virtual-fs",
     setup(build) {
@@ -155,8 +196,9 @@ function createVirtualPlugin(
           return { path: normalizePath(args.path), namespace: "virtual" };
         }
 
-        if (vendors.has(args.path)) {
-          return { path: args.path, namespace: "vendor" };
+        if (isPreviewVendorSpecifier(args.path)) {
+          // Shim only — real React lives in the preloaded vendor IIFE.
+          return { path: args.path, namespace: "vendor-shim" };
         }
 
         if (args.path.startsWith(".") || args.path.startsWith("/")) {
@@ -188,7 +230,7 @@ function createVirtualPlugin(
         if (contents == null) {
           return { errors: [{ text: `虚拟文件系统中缺少：${args.path}` }] };
         }
-        const loader: esbuild.Loader = args.path.endsWith(".tsx")
+        const loader: Loader = args.path.endsWith(".tsx")
           ? "tsx"
           : args.path.endsWith(".ts")
             ? "ts"
@@ -200,13 +242,10 @@ function createVirtualPlugin(
         return { contents, loader };
       });
 
-      build.onLoad({ filter: /.*/, namespace: "vendor" }, (args) => {
-        const contents = vendors.get(args.path);
-        if (contents == null) {
-          return { errors: [{ text: `缺少自托管依赖：${args.path}` }] };
-        }
-        return { contents, loader: "js", resolveDir: "/" };
-      });
+      build.onLoad({ filter: /.*/, namespace: "vendor-shim" }, () => ({
+        contents: VENDOR_SHIM,
+        loader: "js",
+      }));
     },
   };
 }
@@ -239,21 +278,24 @@ export async function bundlePreviewFiles(
 
   try {
     const fetchAsset = options?.fetchAsset ?? fetchText;
-    const [vendors, css] = await Promise.all([
-      loadVendorSources(fetchAsset),
+    const [vendorJs, css] = await Promise.all([
+      loadVendorIife(fetchAsset),
       loadPreviewCss(fetchAsset),
     ]);
 
-    await ensureEsbuildInitialized(options?.wasmURL ?? PREVIEW_WASM_PATH);
-    const result = await esbuild.build({
+    const api = await ensureEsbuildInitialized(
+      options?.wasmURL ?? PREVIEW_WASM_PATH,
+    );
+    const result = await api.build({
       entryPoints: [entry],
       bundle: true,
       write: false,
-      format: "esm",
+      // IIFE + classic script: opaque sandboxed iframes block module scripts.
+      format: "iife",
       platform: "browser",
       jsx: "automatic",
       target: ["es2020"],
-      plugins: [createVirtualPlugin(files, vendors)],
+      plugins: [createVirtualPlugin(files)],
       logLevel: "silent",
     });
 
@@ -261,14 +303,14 @@ export async function bundlePreviewFiles(
     if (!js) {
       return { ok: false, messageZh: "打包结果为空，请检查生成的源码。" };
     }
-    if (containsBlockedCdnUrl(js)) {
+    if (containsBlockedCdnUrl(js) || containsBlockedCdnUrl(vendorJs)) {
       return {
         ok: false,
         messageZh: "打包产物包含外部 CDN 引用，已阻止预览。",
       };
     }
 
-    return { ok: true, js, css };
+    return { ok: true, js, css, vendorJs };
   } catch (error) {
     const detail =
       error instanceof Error ? error.message : "未知打包错误";
@@ -280,12 +322,24 @@ export async function bundlePreviewFiles(
 }
 
 /**
- * Fully inlined srcdoc so a sandboxed iframe (opaque origin, no
- * allow-same-origin) never needs to fetch host or CDN assets.
+ * Fully inlined srcdoc so a sandboxed iframe (opaque origin; no same-origin
+ * grant) never needs to fetch host or remote assets. Classic scripts only —
+ * module scripts do not execute under an opaque iframe origin.
+ *
+ * Order: vendor IIFE (installs global) → app IIFE (shim imports) → paint beacon.
  */
-export function buildPreviewSrcdoc(js: string, css: string): string {
+export function buildPreviewSrcdoc(
+  js: string,
+  css: string,
+  vendorJs = "",
+): string {
+  const escapedVendor = vendorJs.replace(/<\/script/gi, "<\\/script");
   const escapedJs = js.replace(/<\/script/gi, "<\\/script");
   const escapedCss = css.replace(/<\/style/gi, "<\\/style");
+
+  // Wait for React to commit visible text into #root, then report that text
+  // to the host (the opaque iframe prevents the host from reading its DOM).
+  const paintBeacon = `try{(function(){var r=document.getElementById("root");if(!r)return;function done(){var text=(r.innerText||r.textContent||"").trim();if(!text)return false;document.documentElement.setAttribute("data-atoms-painted","1");if(window.parent&&window.parent!==window){window.parent.postMessage({source:"atoms-preview",type:"painted",text:text},"*");}return true;}if(done())return;var n=0;var id=setInterval(function(){n++;if(done()){clearInterval(id);}else if(n>100){clearInterval(id);}},50);})();}catch(e){}`;
 
   return `<!doctype html>
 <html lang="zh-CN">
@@ -297,7 +351,9 @@ export function buildPreviewSrcdoc(js: string, css: string): string {
 </head>
 <body class="atoms-preview-root">
   <div id="root"></div>
-  <script type="module">${escapedJs}</script>
+  <script>${escapedVendor}</script>
+  <script>${escapedJs}</script>
+  <script>${paintBeacon}</script>
 </body>
 </html>`;
 }

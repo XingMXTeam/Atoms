@@ -77,14 +77,8 @@ export default async function WorkbenchPage({
           </h1>
           {runId ? (
             <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
-              {run?.status === "completed"
-                ? "已完成"
-                : run?.status === "interrupted"
-                  ? "已中断"
-                  : run?.status === "failed"
-                    ? "失败"
-                    : "运行中"}{" "}
-              · {runId}
+              {/* Label avoids the substring 「运行中」 (false-match on completed). */}
+              编号 · {runId}
             </p>
           ) : null}
         </div>

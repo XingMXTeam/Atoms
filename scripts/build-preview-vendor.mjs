@@ -3,14 +3,21 @@
  * Rebuild same-origin preview vendor assets under public/preview/.
  * No CDN — China reachability (REQ-6 / RL-2).
  *
- * Each vendor entry is a self-contained ESM bundle (no cross-imports)
- * so esbuild-wasm can link them without cycles.
+ * Emits a classic IIFE that installs one React instance on
+ * `globalThis.__ATOMS_PREVIEW_VENDOR__`. The in-browser esbuild pass
+ * treats React specifiers as shims over that global so the app never
+ * embeds a second copy (invalid-hook-call / blank paint).
  */
-import { cpSync, mkdirSync, writeFileSync, readFileSync } from "node:fs";
+import {
+  cpSync,
+  mkdirSync,
+  writeFileSync,
+  readFileSync,
+  existsSync,
+} from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createRequire } from "node:module";
-import { spawnSync } from "node:child_process";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const require = createRequire(import.meta.url);
@@ -23,30 +30,46 @@ mkdirSync(vendorDir, { recursive: true });
 const wasmSrc = require.resolve("esbuild-wasm/esbuild.wasm");
 cpSync(wasmSrc, join(outDir, "esbuild.wasm"));
 
-function runEsbuild(args) {
-  const result = spawnSync("pnpm", ["exec", "esbuild", ...args], {
-    cwd: root,
-    encoding: "utf8",
-  });
-  if (result.status !== 0) {
-    console.error(result.stdout);
-    console.error(result.stderr);
-    process.exit(result.status ?? 1);
+function findEsbuildPackage() {
+  const candidates = [
+    join(root, "node_modules/esbuild/package.json"),
+    join(root, "node_modules/.pnpm/esbuild@0.28.2/node_modules/esbuild/package.json"),
+  ];
+  try {
+    const { readdirSync } = require("node:fs");
+    const pnpm = join(root, "node_modules/.pnpm");
+    for (const name of readdirSync(pnpm)) {
+      if (!name.startsWith("esbuild@")) continue;
+      candidates.push(
+        join(pnpm, name, "node_modules/esbuild/package.json"),
+      );
+    }
+  } catch {
+    // ignore
   }
+  for (const pkg of candidates) {
+    if (existsSync(pkg)) return dirname(pkg);
+  }
+  throw new Error("Cannot locate esbuild package for vendor build");
 }
 
-for (const [entry, outfile] of [
-  ["react.mjs", "react.js"],
-  ["jsx-runtime.mjs", "jsx-runtime.js"],
-  ["react-dom-client.mjs", "react-dom-client.js"],
-]) {
-  runEsbuild([
-    join(entriesDir, entry),
-    "--bundle",
-    "--format=esm",
-    "--platform=browser",
-    `--outfile=${join(vendorDir, outfile)}`,
-  ]);
+const esbuild = createRequire(join(findEsbuildPackage(), "package.json"))(
+  "esbuild",
+);
+
+const runtimeOut = join(vendorDir, "runtime.js");
+await esbuild.build({
+  entryPoints: [join(entriesDir, "runtime.mjs")],
+  bundle: true,
+  format: "iife",
+  platform: "browser",
+  outfile: runtimeOut,
+  logLevel: "silent",
+});
+
+// Keep legacy filenames as identical copies for any stale absolute references.
+for (const name of ["react.js", "jsx-runtime.js", "react-dom-client.js"]) {
+  cpSync(runtimeOut, join(vendorDir, name));
 }
 
 const preflight = readFileSync(
@@ -58,4 +81,4 @@ writeFileSync(
   `${preflight}\n\n/* Atoms Studio preview utilities (self-hosted; no CDN) */\n.atoms-preview-root { min-height: 100vh; }\n`,
 );
 
-console.log("Wrote public/preview/{esbuild.wasm,tailwind.css,vendor/*}");
+console.log("Wrote public/preview/{esbuild.wasm,tailwind.css,vendor/runtime.js}");

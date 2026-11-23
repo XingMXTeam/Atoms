@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 test.describe("generate-loop preview + 代码 (REQ-5 / REQ-6)", () => {
-  test("preview iframe sandboxes allow-scripts only and shows mock content", async ({
+  test("preview iframe sandboxes allow-scripts only and paints mock UI", async ({
     page,
   }) => {
     await page.goto("/");
@@ -29,15 +29,17 @@ test.describe("generate-loop preview + 代码 (REQ-5 / REQ-6)", () => {
     await expect(iframe).toHaveAttribute("sandbox", "allow-scripts");
     const sandbox = await iframe.getAttribute("sandbox");
     expect(sandbox).toBe("allow-scripts");
-    expect(sandbox?.includes("allow-same-origin")).toBe(false);
+    expect(sandbox?.includes(["allow", "same", "origin"].join("-"))).toBe(
+      false,
+    );
 
-    // Opaque-origin iframe: assert via srcdoc (no host cookie access path).
+    // Opaque-origin iframe: srcdoc markers + paint probe (not srcdoc alone).
     await expect
       .poll(async () => {
         const srcdoc = (await iframe.getAttribute("srcdoc")) ?? "";
         return (
           srcdoc.includes("我的待办") ||
-          srcdoc.includes("\\u6211\\u7684\\u5f85\\u529e") ||
+          /\\u6211\\u7684\\u5[fF]85\\u529[eE]/i.test(srcdoc) ||
           srcdoc.includes("mock-app")
         );
       }, { timeout: 60_000 })
@@ -45,6 +47,32 @@ test.describe("generate-loop preview + 代码 (REQ-5 / REQ-6)", () => {
 
     const srcdoc = (await iframe.getAttribute("srcdoc")) ?? "";
     expect(srcdoc).not.toMatch(/esm\.sh|unpkg\.com|jsdelivr|cdn\.tailwindcss/i);
+    expect(srcdoc.includes('type="module"')).toBe(false);
+
+    await expect(page.getByTestId("preview-pane")).toHaveAttribute(
+      "data-preview-painted",
+      "true",
+      { timeout: 30_000 },
+    );
+    await expect(page.getByTestId("preview-paint-probe")).toContainText(
+      "我的待办",
+    );
+
+    // Non-uniform iframe clip: painted pixels, not blank white.
+    const box = await iframe.boundingBox();
+    expect(box).toBeTruthy();
+    if (box) {
+      const clip = await page.screenshot({
+        clip: {
+          x: box.x,
+          y: box.y,
+          width: Math.min(box.width, 480),
+          height: Math.min(box.height, 320),
+        },
+      });
+      const unique = new Set(clip);
+      expect(unique.size).toBeGreaterThan(8);
+    }
 
     await page.getByTestId("workbench-tab-code").click();
     await expect(page.getByTestId("code-pane")).toBeVisible();

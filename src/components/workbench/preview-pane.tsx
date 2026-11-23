@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   buildPreviewSrcdoc,
   bundlePreviewFiles,
@@ -16,8 +16,16 @@ type BundleResult =
   | { status: "ready"; srcdoc: string; filesRef: PreviewFile[] }
   | { status: "error"; messageZh: string; filesRef: PreviewFile[] };
 
+type PreviewPaintMessage = {
+  source?: string;
+  type?: string;
+  text?: string;
+};
+
 export function PreviewPane({ files }: PreviewPaneProps) {
   const [bundle, setBundle] = useState<BundleResult | null>(null);
+  const [paintedText, setPaintedText] = useState("");
+  const iframeRef = useRef<HTMLIFrameElement>(null);
 
   useEffect(() => {
     if (files.length === 0) {
@@ -30,6 +38,7 @@ export function PreviewPane({ files }: PreviewPaneProps) {
       const result = await bundlePreviewFiles(files);
       if (cancelled) return;
       if (!result.ok) {
+        setPaintedText("");
         setBundle({
           status: "error",
           messageZh: result.messageZh,
@@ -37,9 +46,10 @@ export function PreviewPane({ files }: PreviewPaneProps) {
         });
         return;
       }
+      setPaintedText("");
       setBundle({
         status: "ready",
-        srcdoc: buildPreviewSrcdoc(result.js, result.css),
+        srcdoc: buildPreviewSrcdoc(result.js, result.css, result.vendorJs),
         filesRef: files,
       });
     })();
@@ -48,6 +58,30 @@ export function PreviewPane({ files }: PreviewPaneProps) {
       cancelled = true;
     };
   }, [files]);
+
+  useEffect(() => {
+    function onMessage(event: MessageEvent) {
+      const data = event.data;
+      if (
+        event.source !== iframeRef.current?.contentWindow ||
+        !data ||
+        typeof data !== "object"
+      ) {
+        return;
+      }
+      const message = data as PreviewPaintMessage;
+      const text = message.text?.trim();
+      if (
+        message.source === "atoms-preview" &&
+        message.type === "painted" &&
+        text
+      ) {
+        setPaintedText(text);
+      }
+    }
+    window.addEventListener("message", onMessage);
+    return () => window.removeEventListener("message", onMessage);
+  }, []);
 
   if (files.length === 0) {
     return (
@@ -101,9 +135,17 @@ export function PreviewPane({ files }: PreviewPaneProps) {
     <div
       data-testid="preview-pane"
       data-preview-status="ready"
+      data-preview-painted={paintedText ? "true" : "false"}
       className="h-full min-h-56 overflow-hidden rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950"
     >
+      {/* Accessible paint probe for e2e when iframe content is opaque-origin. */}
+      {paintedText ? (
+        <span className="sr-only" data-testid="preview-paint-probe">
+          {paintedText}
+        </span>
+      ) : null}
       <iframe
+        ref={iframeRef}
         title="应用预览"
         data-testid="preview-iframe"
         sandbox={getPreviewSandboxAttribute()}

@@ -36,20 +36,30 @@ test.describe("generate-loop core journey (REQ-10 / E2E-1)", () => {
       page.getByTestId("agent-card-engineer").getByText("已完成"),
     ).toBeVisible({ timeout: 30_000 });
 
+    await expect(timeline).toHaveAttribute("data-run-status", "completed", {
+      timeout: 15_000,
+    });
+    await expect(page.getByTestId("workbench-run-status")).toHaveAttribute(
+      "data-run-status",
+      "completed",
+    );
+    await expect(page.getByRole("button", { name: "继续" })).toHaveCount(0);
+    await expect(timeline.getByText(/连接已中断/)).toHaveCount(0);
+    await expect(page.getByText("运行中")).toHaveCount(0);
+
     await page.getByTestId("workbench-tab-preview").click();
 
     const iframe = page.getByTestId("preview-iframe");
     await expect(iframe).toBeVisible({ timeout: 60_000 });
     await expect(iframe).toHaveAttribute("sandbox", "allow-scripts");
 
-    // Opaque-origin iframe: assert mock marker via srcdoc (REQ-10).
     await expect
       .poll(
         async () => {
           const srcdoc = (await iframe.getAttribute("srcdoc")) ?? "";
           return (
             srcdoc.includes("我的待办") ||
-            srcdoc.includes("\\u6211\\u7684\\u5f85\\u529e") ||
+            /\\u6211\\u7684\\u5[fF]85\\u529[eE]/i.test(srcdoc) ||
             srcdoc.includes("mock-app")
           );
         },
@@ -60,5 +70,14 @@ test.describe("generate-loop core journey (REQ-10 / E2E-1)", () => {
     const srcdoc = (await iframe.getAttribute("srcdoc")) ?? "";
     expect(srcdoc.length).toBeGreaterThan(0);
     expect(srcdoc).not.toMatch(/esm\.sh|unpkg\.com|jsdelivr|cdn\.tailwindcss/i);
+
+    await expect(page.getByTestId("preview-pane")).toHaveAttribute(
+      "data-preview-painted",
+      "true",
+      { timeout: 30_000 },
+    );
+    await expect(page.getByTestId("preview-paint-probe")).toContainText(
+      "我的待办",
+    );
   });
 });

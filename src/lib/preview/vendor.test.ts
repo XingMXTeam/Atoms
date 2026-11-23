@@ -2,19 +2,23 @@ import { describe, expect, it } from "vitest";
 import {
   CDN_HOST_BLOCKLIST,
   PREVIEW_VENDOR_MAP,
+  PREVIEW_VENDOR_RUNTIME_PATH,
   containsBlockedCdnUrl,
   listVendorPaths,
   vendorUrl,
 } from "./vendor";
 
 describe("preview vendor map (REQ-6 / RL-2)", () => {
-  it("maps React entrypoints to same-origin /preview paths", () => {
-    expect(PREVIEW_VENDOR_MAP.react).toBe("/preview/vendor/react.js");
+  it("maps every React specifier to the combined same-origin runtime", () => {
+    expect(PREVIEW_VENDOR_MAP.react).toBe(PREVIEW_VENDOR_RUNTIME_PATH);
+    expect(PREVIEW_VENDOR_MAP["react/jsx-runtime"]).toBe(
+      PREVIEW_VENDOR_RUNTIME_PATH,
+    );
     expect(PREVIEW_VENDOR_MAP["react-dom/client"]).toBe(
-      "/preview/vendor/react-dom-client.js",
+      PREVIEW_VENDOR_RUNTIME_PATH,
     );
     expect(vendorUrl("react", "https://atoms.example")).toBe(
-      "https://atoms.example/preview/vendor/react.js",
+      `https://atoms.example${PREVIEW_VENDOR_RUNTIME_PATH}`,
     );
   });
 
@@ -22,6 +26,7 @@ describe("preview vendor map (REQ-6 / RL-2)", () => {
     const paths = listVendorPaths();
     expect(paths).toContain("/preview/esbuild.wasm");
     expect(paths).toContain("/preview/tailwind.css");
+    expect(paths).toContain(PREVIEW_VENDOR_RUNTIME_PATH);
     for (const path of paths) {
       expect(path.startsWith("/preview/")).toBe(true);
       expect(containsBlockedCdnUrl(path)).toBe(false);
