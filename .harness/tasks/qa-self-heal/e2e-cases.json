@@ -1,0 +1,138 @@
+[
+  {
+    "id": "E2E-1",
+    "category": "core",
+    "mapsTo": "REQ-7",
+    "blocking": true,
+    "severity": "critical",
+    "route": "/",
+    "steps": [
+      "Start the app with LLM_PROVIDER=mock and open /.",
+      "Submit a prompt that creates a project in the current deviceId browser context.",
+      "Configure the deterministic first Engineer output to contain a compile error.",
+      "Wait for the probe, failed QA verdict, Engineer patch, preview rebuild, and final QA judgment."
+    ],
+    "expect": [
+      "The initial probe reports the compile error and QA marks at least one acceptance criterion fail with a reason.",
+      "Engineer repair returns and applies a files delta, and the rebuilt preview is healthy.",
+      "The run completes with runs.qa_rounds at most 3 and a visible final score badge."
+    ]
+  },
+  {
+    "id": "E2E-2",
+    "category": "core",
+    "mapsTo": "REQ-2",
+    "blocking": true,
+    "severity": "critical",
+    "route": "/",
+    "steps": [
+      "Complete a deterministic mock generation and QA run.",
+      "Inspect the QA result in the workbench timeline."
+    ],
+    "expect": [
+      "Every Planner acceptance criterion has a pass or fail verdict and a reason.",
+      "The overall qa_score is an integer from 0 through 100 and is shown in the QA result."
+    ]
+  },
+  {
+    "id": "E2E-3",
+    "category": "negative",
+    "mapsTo": "REQ-3",
+    "blocking": true,
+    "severity": "critical",
+    "route": "/",
+    "steps": [
+      "Run a mock project through a configured persistent failure that still fails after three repair attempts.",
+      "Wait for the repair limit to be reached and inspect the persisted run and version."
+    ],
+    "expect": [
+      "No fourth Engineer repair request is made and runs.qa_rounds does not exceed 3.",
+      "A clear Chinese 「已达修复上限」 state is shown.",
+      "The last version and final score remain persisted and visible."
+    ]
+  },
+  {
+    "id": "E2E-4",
+    "category": "negative",
+    "mapsTo": "REQ-1",
+    "blocking": true,
+    "severity": "high",
+    "route": "/projects/[projectId]",
+    "steps": [
+      "Open a workbench with its preview iframe loaded.",
+      "Send a malformed probe payload and a probe message from an unexpected source.",
+      "Observe the timeline and repair-call count."
+    ],
+    "expect": [
+      "Malformed or unexpected messages do not become accepted probe reports.",
+      "No QA repair is triggered by the rejected message."
+    ]
+  },
+  {
+    "id": "E2E-5",
+    "category": "boundary",
+    "mapsTo": "REQ-3",
+    "blocking": false,
+    "severity": "medium",
+    "route": "/",
+    "steps": [
+      "Run a mock scenario where the first or second repair resolves the failure.",
+      "Inspect qa_rounds and the final QA judgment."
+    ],
+    "expect": [
+      "qa_rounds counts actual fix attempts and remains within 0–3.",
+      "The loop stops after a passing judgment and does not issue an unnecessary additional fix."
+    ]
+  },
+  {
+    "id": "E2E-6",
+    "category": "persistence",
+    "mapsTo": "REQ-5",
+    "blocking": true,
+    "severity": "critical",
+    "route": "/",
+    "steps": [
+      "Complete the mock compile-error recovery path.",
+      "Record the final score from the run and version.",
+      "Navigate home, hard refresh, and inspect the matching project card."
+    ],
+    "expect": [
+      "The run and version store the same final qa_score.",
+      "The project card shows that score after navigation and refresh."
+    ]
+  },
+  {
+    "id": "E2E-7",
+    "category": "uiJourney",
+    "mapsTo": "REQ-6",
+    "blocking": true,
+    "severity": "high",
+    "route": "/projects/[projectId]",
+    "steps": [
+      "Complete the mock negative recovery journey from the home page.",
+      "Expand the QA card in the workbench timeline.",
+      "Inspect one repaired criterion and, in the exhaustion scenario, one unresolved criterion."
+    ],
+    "expect": [
+      "The expanded card shows per-AC verdicts and reasons.",
+      "The repaired criterion identifies the fix round that resolved it.",
+      "The exhausted criterion identifies that the repair limit was reached."
+    ]
+  },
+  {
+    "id": "E2E-8",
+    "category": "crossFeature",
+    "mapsTo": "REQ-4",
+    "blocking": false,
+    "severity": "medium",
+    "route": "/projects/[projectId]",
+    "steps": [
+      "Start a generation through the existing generate-loop flow using LLM_PROVIDER=mock.",
+      "Observe the run SSE stream and persisted agent_events while QA probes and repairs the generated preview."
+    ],
+    "expect": [
+      "QA probe, verdict, fix, and error events use the existing run's event sequence and timeline.",
+      "Existing Planner, Architect, and Engineer progress remains visible alongside QA events."
+    ]
+  }
+]

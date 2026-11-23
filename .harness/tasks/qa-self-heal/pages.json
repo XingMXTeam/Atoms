@@ -1,0 +1,20 @@
+{
+  "baseUrl": "http://127.0.0.1:3000",
+  "viewport": { "width": 1280, "height": 800 },
+  "fullPage": false,
+  "pages": [
+    {
+      "name": "home-project-cards-qa-score",
+      "route": "/",
+      "waitFor": "main",
+      "notes": "Inspect a completed project card and its persisted QA score. Create the project in this browser context first if needed."
+    },
+    {
+      "name": "workbench-qa-timeline-and-score",
+      "route": "/projects/[projectId]",
+      "waitFor": "main",
+      "notes": "Requires a real project created in the same deviceId browser context. Run the mock negative-path journey, then inspect the QA score badge and expanded per-AC verdict/fix-round history."
+    }
+  ],
+  "captureNotes": "Use LLM_PROVIDER=mock. Workbench capture requires a same-context project and deviceId cookie; do not capture a bare placeholder project URL."
+}

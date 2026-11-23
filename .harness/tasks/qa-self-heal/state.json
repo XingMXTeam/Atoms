@@ -1,0 +1,117 @@
+{
+  "version": 1,
+  "feature": "qa-self-heal",
+  "title": "",
+  "phase": "implement",
+  "createdAt": 1795447703633,
+  "updatedAt": 1795448039438,
+  "macroCycle": {
+    "current": 1,
+    "max": 5
+  },
+  "consecutivePasses": 0,
+  "clarificationComplete": true,
+  "tasks": [
+    {
+      "id": "TASK-1",
+      "title": "Validate sandbox preview probe reports",
+      "requirements": [
+        "REQ-1"
+      ],
+      "status": "pending",
+      "attempts": 0,
+      "commitSha": null
+    },
+    {
+      "id": "TASK-2",
+      "title": "Add structured QA verdicts and score aggregation",
+      "requirements": [
+        "REQ-2"
+      ],
+      "status": "pending",
+      "attempts": 0,
+      "commitSha": null
+    },
+    {
+      "id": "TASK-3",
+      "title": "Implement delta-only self-heal loop with three-round cap",
+      "requirements": [
+        "REQ-3"
+      ],
+      "status": "pending",
+      "attempts": 0,
+      "commitSha": null
+    },
+    {
+      "id": "TASK-4",
+      "title": "Stream and expand persisted QA timeline events",
+      "requirements": [
+        "REQ-4",
+        "REQ-6"
+      ],
+      "status": "pending",
+      "attempts": 0,
+      "commitSha": null
+    },
+    {
+      "id": "TASK-5",
+      "title": "Persist score badges and verify mock recovery journeys",
+      "requirements": [
+        "REQ-5",
+        "REQ-7"
+      ],
+      "status": "pending",
+      "attempts": 0,
+      "commitSha": null
+    }
+  ],
+  "history": [
+    {
+      "at": 1795447703637,
+      "event": "prd-imported",
+      "from": "docs/prd/F3-qa-self-heal.md",
+      "requirements": 7,
+      "numberingComplete": true
+    },
+    {
+      "at": 1795448039438,
+      "event": "clarify-done",
+      "tasks": 5
+    }
+  ],
+  "lastEvaluation": null,
+  "lastFailure": null,
+  "prd": {
+    "source": "imported",
+    "from": "docs/prd/F3-qa-self-heal.md",
+    "importedAt": "2026-11-23T15:28:23.633Z",
+    "requirements": 7,
+    "numberingComplete": true,
+    "missingNumbers": []
+  },
+  "baseSha": "59625e8",
+  "rubricBaseline": {
+    "RB-1": "essential",
+    "RB-2": "important",
+    "RB-3": "essential",
+    "RB-4": "important",
+    "RB-5": "essential",
+    "RB-6": "essential",
+    "RB-7": "pitfall",
+    "RB-8": "important",
+    "RB-9": "essential",
+    "RB-10": "important",
+    "RB-11": "essential",
+    "RB-12": "essential",
+    "RB-13": "essential",
+    "RB-14": "important",
+    "RB-15": "essential",
+    "RB-16": "important",
+    "RB-17": "pitfall",
+    "RB-18": "pitfall",
+    "RB-19": "pitfall",
+    "RB-20": "essential",
+    "RB-21": "pitfall"
+  },
+  "rubricHash": "367273a0d80cb1ae"
+}
