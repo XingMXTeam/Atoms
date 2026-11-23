@@ -18,12 +18,18 @@
       "custom_domain": true
     }
   ],
+  "vars": {
+    "LLM_PROVIDER": "gemini",
+    "DEVICE_DAILY_RUN_LIMIT": "20",
+    "DAILY_TOKEN_CAP": "500000"
+  },
   "d1_databases": [
     {
       "binding": "DB",
       "database_name": "atoms-demo",
       // Placeholder — replace after `wrangler d1 create atoms-demo`.
-      "database_id": "00000000-0000-0000-0000-000000000000"
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations"
     }
   ]
 }

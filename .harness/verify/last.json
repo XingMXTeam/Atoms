@@ -5,9 +5,9 @@
       "command": "pnpm typecheck",
       "status": "passed",
       "exitCode": 0,
-      "durationMs": 1272,
-      "at": 1795465827912,
-      "sha": "5ccf11a",
+      "durationMs": 1258,
+      "at": 1795466498143,
+      "sha": "41f0ceb",
       "tail": "$ tsc --noEmit",
       "log": ".harness/verify/typecheck.log"
     },
@@ -16,9 +16,9 @@
       "command": "pnpm lint",
       "status": "passed",
       "exitCode": 0,
-      "durationMs": 2468,
-      "at": 1795465830418,
-      "sha": "5ccf11a",
+      "durationMs": 2473,
+      "at": 1795466500653,
+      "sha": "41f0ceb",
       "tail": "  44:3  warning  'initialRunQaScore' is defined but never used  @typescript-eslint/no-unused-vars\n\n✖ 2 problems (0 errors, 2 warnings)\n\n$ eslint",
       "log": ".harness/verify/lint.log"
     },
@@ -27,9 +27,9 @@
       "command": "pnpm test",
       "status": "passed",
       "exitCode": 0,
-      "durationMs": 2448,
-      "at": 1795465832902,
-      "sha": "5ccf11a",
+      "durationMs": 2498,
+      "at": 1795466503186,
+      "sha": "41f0ceb",
       "tail": "\n$ vitest run\n(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:\n  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest package.json\nSet `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.",
       "log": ".harness/verify/unit.log"
     },
@@ -38,10 +38,10 @@
       "command": "pnpm test:e2e",
       "status": "passed",
       "exitCode": 0,
-      "durationMs": 19566,
-      "at": 1795465856110,
-      "sha": "5ccf11a",
-      "tail": "  32 passed (19.1s)\n$ playwright test\n[WebServer] ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.\n[WebServer] \n[WebServer]",
+      "durationMs": 19271,
+      "at": 1795466165046,
+      "sha": "41f0ceb",
+      "tail": "  32 passed (18.8s)\n$ playwright test\n[WebServer] ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.\n[WebServer] \n[WebServer]",
       "log": ".harness/verify/e2e.log"
     },
     "build": {
@@ -49,12 +49,12 @@
       "command": "pnpm build",
       "status": "passed",
       "exitCode": 0,
-      "durationMs": 3572,
-      "at": 1795465836507,
-      "sha": "5ccf11a",
+      "durationMs": 4272,
+      "at": 1795466507491,
+      "sha": "41f0ceb",
       "tail": "  #3 [App Route]:\n    ./src/lib/db/adapters/sqlite.ts\n    ./src/lib/db/adapters/sqlite.ts\n    ./src/lib/db/index.ts\n    ./src/app/api/projects/[projectId]/runs/[runId]/continue/route.ts",
       "log": ".harness/verify/build.log"
     }
   },
-  "updatedAt": 1795465856110
+  "updatedAt": 1795466507491
 }

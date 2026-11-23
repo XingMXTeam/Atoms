@@ -4,8 +4,18 @@ export const providerModeSchema = z.enum(["gemini", "mock", "replay"]);
 export type ProviderMode = z.infer<typeof providerModeSchema>;
 
 /** Defaults track currently available Flash/Pro-class Gemini ids (REQ-8). */
-export const DEFAULT_GEMINI_MODEL_FLASH = "gemini-2.0-flash";
-export const DEFAULT_GEMINI_MODEL_PRO = "gemini-2.0-pro";
+export const DEFAULT_GEMINI_MODEL_FLASH = "gemini-2.5-flash";
+export const DEFAULT_GEMINI_MODEL_PRO = "gemini-2.5-pro";
+
+const CLOUDFLARE_CONTEXT_SYMBOL = Symbol.for("__cloudflare-context__");
+const ENV_KEYS = [
+  "LLM_PROVIDER",
+  "GEMINI_API_KEY",
+  "GEMINI_MODEL_FLASH",
+  "GEMINI_MODEL_PRO",
+  "DEVICE_DAILY_RUN_LIMIT",
+  "DAILY_TOKEN_CAP",
+] as const;
 
 const envSchema = z.object({
   LLM_PROVIDER: providerModeSchema.default("mock"),
@@ -18,16 +28,41 @@ const envSchema = z.object({
 
 export type AppEnv = z.infer<typeof envSchema>;
 
-/** Parse server env with defaults matching `.env.example`. */
-export function getEnv(
-  source: Record<string, string | undefined> = process.env,
-): AppEnv {
+function readCloudflareEnv(): Record<string, unknown> | undefined {
+  const ctx = (globalThis as Record<symbol, unknown>)[
+    CLOUDFLARE_CONTEXT_SYMBOL
+  ] as { env?: Record<string, unknown> } | undefined;
+  return ctx?.env;
+}
+
+function buildDefaultEnvSource(): Record<string, string | undefined> {
+  const cfEnv = readCloudflareEnv();
+  const merged: Record<string, string | undefined> = {};
+
+  for (const key of ENV_KEYS) {
+    const cfValue = cfEnv?.[key];
+    if (typeof cfValue === "string" && cfValue.length > 0) {
+      merged[key] = cfValue;
+    }
+    const processValue =
+      typeof process !== "undefined" ? process.env?.[key] : undefined;
+    if (processValue !== undefined) {
+      merged[key] = processValue;
+    }
+  }
+
+  return merged;
+}
+
+/** Parse server env from Cloudflare bindings + process.env with `.env.example` defaults. */
+export function getEnv(source?: Record<string, string | undefined>): AppEnv {
+  const effective = source ?? buildDefaultEnvSource();
   return envSchema.parse({
-    LLM_PROVIDER: source.LLM_PROVIDER,
-    GEMINI_API_KEY: source.GEMINI_API_KEY,
-    GEMINI_MODEL_FLASH: source.GEMINI_MODEL_FLASH,
-    GEMINI_MODEL_PRO: source.GEMINI_MODEL_PRO,
-    DEVICE_DAILY_RUN_LIMIT: source.DEVICE_DAILY_RUN_LIMIT,
-    DAILY_TOKEN_CAP: source.DAILY_TOKEN_CAP,
+    LLM_PROVIDER: effective.LLM_PROVIDER,
+    GEMINI_API_KEY: effective.GEMINI_API_KEY,
+    GEMINI_MODEL_FLASH: effective.GEMINI_MODEL_FLASH,
+    GEMINI_MODEL_PRO: effective.GEMINI_MODEL_PRO,
+    DEVICE_DAILY_RUN_LIMIT: effective.DEVICE_DAILY_RUN_LIMIT,
+    DAILY_TOKEN_CAP: effective.DAILY_TOKEN_CAP,
   });
 }

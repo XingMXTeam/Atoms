@@ -95,17 +95,13 @@ npx wrangler d1 create atoms-demo
 
 ### 3. 迁移 schema
 
-本地 schema 源：`src/lib/db/schema.ts`（Drizzle）。生成并应用到远程 D1：
+仓库已包含初始化迁移 `migrations/0000_init.sql`（与 `src/lib/db/schema.ts` 一致，并在 `wrangler.jsonc` 中配好 `migrations_dir`）。直接应用到远程 D1：
 
 ```bash
-pnpm exec drizzle-kit generate
-# 审阅 drizzle/ 下 SQL 后：
 npx wrangler d1 migrations apply atoms-demo --remote
-# 若尚未配置 migrations 目录，也可将审阅后的 SQL 经：
-#   npx wrangler d1 execute atoms-demo --remote --file=./path/to/schema.sql
 ```
 
-本地开发库（better-sqlite3）仍由应用启动路径初始化；勿把生产密钥写入 SQLite 文件。
+如需在后续修改 `src/lib/db/schema.ts` 后生成新迁移，可执行 `pnpm exec drizzle-kit generate`。本地开发与 E2E（better-sqlite3）由应用启动路径自动建表；勿把生产密钥写入 SQLite 文件。
 
 ### 4. 配置密钥与变量
 

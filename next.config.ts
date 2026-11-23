@@ -5,6 +5,7 @@ import { previewAssetHeaderRules } from "./src/lib/preview/cache-headers";
 initOpenNextCloudflareForDev();
 
 const nextConfig: NextConfig = {
+  serverExternalPackages: ["better-sqlite3"],
   turbopack: {
     rules: {
       "*.css": {
