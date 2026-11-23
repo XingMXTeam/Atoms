@@ -1,0 +1,26 @@
+[
+  {
+    "probe": "malformed/untrusted host-window probe messages",
+    "before": 0,
+    "after": 0,
+    "outcome": "no timeline event added"
+  },
+  {
+    "probe": "layout and status measurement",
+    "viewport": [
+      1280,
+      800
+    ],
+    "clippedTextNodes": 0,
+    "horizontalOverflow": false,
+    "score": "100 分",
+    "previewStatus": "loading",
+    "previewPainted": null
+  },
+  {
+    "probe": "back/forward and reload persistence",
+    "homeBadgesAfterReload": [
+      "100 分"
+    ]
+  }
+]

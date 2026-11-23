@@ -1,0 +1,10 @@
+{
+  "score": 1,
+  "note": "The full-page exhaustion screenshot is scannable and connects all three failed acceptance criteria to the exhausted third round. The recovery screenshot and passing focused E2E assertions also show the criterion resolved in round one.",
+  "artifacts": [".harness/tasks/qa-self-heal/evidence/c3-confirm-20261124/workbench-exhausted.png", ".harness/tasks/qa-self-heal/evidence/c3-confirm-20261124/workbench-browser-journey.png", ".harness/tasks/qa-self-heal/evidence/c3-confirm-20261124/e2e-run.md"],
+  "verify": ["typecheck", "lint", "unit", "e2e", "build"],
+  "heuristics": [],
+  "rubricRefinementSuggestions": [
+    { "type": "add-verification", "item": "RB-14", "problem": "The pages.json workbench path is a literal template and harness capture's browser has no same-context project, so official capture failed for this page even though a separate real browser journey produced a screenshot.", "suggestion": "Have capture create a project in its browser context, navigate to its real workbench URL, and require a successful workbench PNG in the capture manifest." }
+  ]
+}

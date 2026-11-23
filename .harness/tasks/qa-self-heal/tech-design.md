@@ -50,7 +50,9 @@ Add QA to the existing workbench agent timeline rather than introducing a separa
 ## 6. Verification strategy
 
 - Unit: validate probe message schema/source handling, blank-screen and report aggregation, criterion verdict/score aggregation, delta-only repair shape, and strict three-round cap including the no-fourth-call case.
-- E2E (`LLM_PROVIDER=mock`): deliberately make first Engineer output fail compilation; observe probe and failed criterion; observe patch/rebuild/re-judge; assert healthy final preview within three rounds and visible score. Cover exhaustion path, timeline expansion, and persistence/navigation of the badge.
+- E2E (`LLM_PROVIDER=mock`): deliberately make first Engineer output fail compilation; observe probe and failed criterion; observe patch/rebuild/re-judge; assert non-empty visible final preview content within three rounds, ready status, and visible score. Cover exhaustion after exactly three fix attempts, no fourth Engineer call, the Chinese exhausted state, and retained score/version.
+- Persistence verification reads the run and resulting version through the test repository interface and compares both stored `qa_score` values with the score shown on the project card after reload; do not add a production diagnostic route.
+- Run the timeline journeys at the configured multi-worker concurrency to verify each browser context and persistence state stay isolated.
 - Run the repository's `fh verify` gates: typecheck, lint, unit, E2E, and build; E2E uses mock provider.
 
 ## 7. Route capture

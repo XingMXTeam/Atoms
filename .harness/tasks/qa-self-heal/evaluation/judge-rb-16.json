@@ -1,0 +1,7 @@
+{
+  "score": 1,
+  "note": "The mock compile-error recovery journey completed within one fix round, the preview was painted with non-empty repaired content, and the final 100-point badge was visible. Focused recovery and persisted-score browser assertions passed.",
+  "artifacts": [".harness/tasks/qa-self-heal/evidence/c3-confirm-20261124/workbench-browser-journey.png", ".harness/tasks/qa-self-heal/evidence/c3-confirm-20261124/home-after-recovery.png", ".harness/tasks/qa-self-heal/evidence/c3-confirm-20261124/e2e-run.md"],
+  "verify": ["typecheck", "lint", "unit", "e2e", "build"],
+  "heuristics": []
+}

@@ -1,0 +1,7 @@
+{
+  "score": 1,
+  "note": "The workbench visibly streams Chinese probe, verdict, and repair events in order without replacing the completed run status. The focused suite passed with three parallel workers, and fh verify recorded the full E2E check passing.",
+  "artifacts": [".harness/tasks/qa-self-heal/evidence/c3-confirm-20261124/workbench-browser-journey.png", ".harness/tasks/qa-self-heal/evidence/c3-confirm-20261124/e2e-run.md"],
+  "verify": ["typecheck", "lint", "unit", "e2e", "build"],
+  "heuristics": []
+}

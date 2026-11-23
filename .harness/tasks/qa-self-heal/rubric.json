@@ -118,7 +118,7 @@
       "kind": "judge",
       "anchor": "RL-2",
       "evidence": ".harness/tasks/qa-self-heal/evaluation/judge-rb-8.json",
-      "description": "The user can see the bounded repair lifecycle and a clear Chinese exhausted state.",
+      "description": "A deterministic persistent-failure mock journey reaches exhaustion after exactly three fix rounds; a test-only assertion records exactly three Engineer repair calls and verifies the final run and version rows retain the same qa_score, alongside the clear Chinese exhausted state and retained score/version UI.",
       "weight": 2
     },
     {
@@ -139,7 +139,7 @@
       "kind": "judge",
       "anchor": "REF-1",
       "evidence": ".harness/tasks/qa-self-heal/evaluation/judge-rb-10.json",
-      "description": "QA and repair events appear in order in the Chinese timeline without hiding the current run status.",
+      "description": "QA and repair events appear in order in the Chinese timeline without hiding the current run status, and the streamed timeline journey remains stable when the configured E2E worker concurrency runs multiple journeys in parallel.",
       "weight": 2
     },
     {
@@ -160,7 +160,7 @@
       "kind": "judge",
       "anchor": "REF-1",
       "evidence": ".harness/tasks/qa-self-heal/evaluation/judge-rb-12.json",
-      "description": "The completed workbench header and home project card show the same persisted score badge.",
+      "description": "A deterministic repository-level verification artifact reports one identical qa_score for the completed run row, resulting version row, completed workbench badge, and reloaded home project-card badge.",
       "weight": 3
     },
     {
@@ -202,7 +202,7 @@
       "kind": "judge",
       "anchor": "RL-3",
       "evidence": ".harness/tasks/qa-self-heal/evaluation/judge-rb-16.json",
-      "description": "After mock self-heal, the workbench communicates a healthy preview, final score, and inspectable repair history.",
+      "description": "The mock recovery journey passes repeatedly at configured E2E worker concurrency; completion waits for ready status and non-empty painted preview content, and the workbench shows the final score and inspectable repair history.",
       "weight": 2
     },
     {

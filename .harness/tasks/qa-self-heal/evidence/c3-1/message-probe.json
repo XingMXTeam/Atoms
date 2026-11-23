@@ -1,0 +1,13 @@
+{
+  "scenario": "mock generated project; active preview tab; malformed messages sent from host window and preview iframe",
+  "sandbox": "allow-scripts",
+  "iframeCount": 1,
+  "malformedUnexpectedSourceSent": true,
+  "malformedIframePayloadSent": true,
+  "acceptedProbeCountBefore": 1,
+  "acceptedProbeCountAfter": 1,
+  "repairCountBefore": 0,
+  "repairCountAfter": 0,
+  "timelineChanged": false,
+  "result": "Neither message became an accepted probe or triggered a repair."
+}

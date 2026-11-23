@@ -2,14 +2,14 @@
   "version": 1,
   "feature": "qa-self-heal",
   "title": "",
-  "phase": "implement",
+  "phase": "done",
   "createdAt": 1795447703633,
-  "updatedAt": 1795448039438,
+  "updatedAt": 1795458311769,
   "macroCycle": {
-    "current": 1,
+    "current": 3,
     "max": 5
   },
-  "consecutivePasses": 0,
+  "consecutivePasses": 2,
   "clarificationComplete": true,
   "tasks": [
     {
@@ -18,9 +18,9 @@
       "requirements": [
         "REQ-1"
       ],
-      "status": "pending",
+      "status": "done",
       "attempts": 0,
-      "commitSha": null
+      "commitSha": "b82d0ab"
     },
     {
       "id": "TASK-2",
@@ -28,9 +28,9 @@
       "requirements": [
         "REQ-2"
       ],
-      "status": "pending",
+      "status": "done",
       "attempts": 0,
-      "commitSha": null
+      "commitSha": "f0b6c11"
     },
     {
       "id": "TASK-3",
@@ -38,9 +38,9 @@
       "requirements": [
         "REQ-3"
       ],
-      "status": "pending",
+      "status": "done",
       "attempts": 0,
-      "commitSha": null
+      "commitSha": "f02c1e2"
     },
     {
       "id": "TASK-4",
@@ -49,9 +49,9 @@
         "REQ-4",
         "REQ-6"
       ],
-      "status": "pending",
-      "attempts": 0,
-      "commitSha": null
+      "status": "done",
+      "attempts": 1,
+      "commitSha": "e485c22"
     },
     {
       "id": "TASK-5",
@@ -60,9 +60,34 @@
         "REQ-5",
         "REQ-7"
       ],
-      "status": "pending",
+      "status": "done",
       "attempts": 0,
-      "commitSha": null
+      "commitSha": "5eed925"
+    },
+    {
+      "id": "TASK-6",
+      "title": "Cover exhaustion, persisted score consistency, and parallel journeys",
+      "requirements": [
+        "REQ-3",
+        "REQ-4",
+        "REQ-5",
+        "REQ-7"
+      ],
+      "status": "done",
+      "attempts": 0,
+      "commitSha": "f6f1af0"
+    },
+    {
+      "id": "TASK-7",
+      "title": "Add deterministic persistence assertions and repeat parallel recovery journey",
+      "requirements": [
+        "REQ-3",
+        "REQ-5",
+        "REQ-7"
+      ],
+      "status": "done",
+      "attempts": 0,
+      "commitSha": "d532edf"
     }
   ],
   "history": [
@@ -77,10 +102,189 @@
       "at": 1795448039438,
       "event": "clarify-done",
       "tasks": 5
+    },
+    {
+      "at": 1795448356525,
+      "event": "task-done",
+      "task": "TASK-1",
+      "commitSha": "b82d0ab"
+    },
+    {
+      "at": 1795448590330,
+      "event": "task-done",
+      "task": "TASK-2",
+      "commitSha": "f0b6c11"
+    },
+    {
+      "at": 1795449090120,
+      "event": "task-done",
+      "task": "TASK-3",
+      "commitSha": "f02c1e2"
+    },
+    {
+      "at": 1795449525401,
+      "event": "task-check-failed",
+      "task": "TASK-4",
+      "check": "pnpm exec playwright test e2e/qa-self-heal.spec.ts",
+      "attempts": 1
+    },
+    {
+      "at": 1795449849104,
+      "event": "task-done",
+      "task": "TASK-4",
+      "commitSha": "e485c22"
+    },
+    {
+      "at": 1795450680132,
+      "event": "task-done",
+      "task": "TASK-5",
+      "commitSha": "5eed925"
+    },
+    {
+      "at": 1795451485419,
+      "event": "rubric-refinements-recorded",
+      "ids": [
+        "RS-1",
+        "RS-2",
+        "RS-3",
+        "RS-4"
+      ]
+    },
+    {
+      "at": 1795451485421,
+      "event": "evaluation-failed",
+      "score": 0.857,
+      "vetoed": [],
+      "nextMacroCycle": 2
+    },
+    {
+      "at": 1795451586366,
+      "event": "replanned",
+      "accepted": [
+        "RS-1",
+        "RS-2",
+        "RS-3",
+        "RS-4"
+      ],
+      "rejected": [],
+      "newTasks": [
+        "TASK-6"
+      ]
+    },
+    {
+      "at": 1795452078253,
+      "event": "task-done",
+      "task": "TASK-6",
+      "commitSha": "f6f1af0"
+    },
+    {
+      "at": 1795452576489,
+      "event": "remediation-fixed",
+      "items": [
+        "RB-8",
+        "RB-12",
+        "RB-16"
+      ],
+      "commitSha": "674253f"
+    },
+    {
+      "at": 1795453064358,
+      "event": "rubric-refinements-recorded",
+      "ids": [
+        "RS-5",
+        "RS-6",
+        "RS-7"
+      ]
+    },
+    {
+      "at": 1795453064360,
+      "event": "evaluation-failed",
+      "score": 0.879,
+      "vetoed": [],
+      "nextMacroCycle": 3
+    },
+    {
+      "at": 1795453156257,
+      "event": "replanned",
+      "accepted": [
+        "RS-5",
+        "RS-6",
+        "RS-7"
+      ],
+      "rejected": [],
+      "newTasks": [
+        "TASK-7"
+      ]
+    },
+    {
+      "at": 1795453351852,
+      "event": "task-done",
+      "task": "TASK-7",
+      "commitSha": "d532edf"
+    },
+    {
+      "at": 1795453960724,
+      "event": "remediation-fixed",
+      "items": [
+        "RB-8",
+        "RB-12",
+        "RB-16"
+      ],
+      "commitSha": "04d41e0"
+    },
+    {
+      "at": 1795455016543,
+      "event": "rubric-refinements-recorded",
+      "ids": [
+        "RS-8",
+        "RS-9"
+      ]
+    },
+    {
+      "at": 1795455016544,
+      "event": "evaluation-passed",
+      "score": 0.989,
+      "consecutivePasses": 1,
+      "phaseAtEval": "implement"
+    },
+    {
+      "at": 1795458302575,
+      "event": "rubric-refinements-recorded",
+      "ids": [
+        "RS-10",
+        "RS-11",
+        "RS-12"
+      ]
+    },
+    {
+      "at": 1795458311769,
+      "event": "evaluation-passed",
+      "score": 0.989,
+      "consecutivePasses": 2,
+      "phaseAtEval": "verify"
+    },
+    {
+      "at": 1795458311769,
+      "event": "done",
+      "score": 0.989
     }
   ],
-  "lastEvaluation": null,
-  "lastFailure": null,
+  "lastEvaluation": {
+    "at": 1795458302573,
+    "verdict": "pass",
+    "score": 0.989,
+    "vetoed": []
+  },
+  "lastFailure": {
+    "at": 1795453064356,
+    "kind": "evaluation",
+    "vetoed": [],
+    "openItems": [
+      "RB-8",
+      "RB-12",
+      "RB-16"
+    ]
+  },
   "prd": {
     "source": "imported",
     "from": "docs/prd/F3-qa-self-heal.md",
@@ -113,5 +317,176 @@
     "RB-20": "essential",
     "RB-21": "pitfall"
   },
-  "rubricHash": "367273a0d80cb1ae"
+  "rubricHash": "66768da9d28e2730",
+  "pendingRefinements": [
+    {
+      "id": "RS-8",
+      "type": "refine",
+      "item": "RB-10",
+      "problem": "The concurrency statement does not specify whether it covers the isolated QA suite or the complete configured E2E suite; the QA suite passes at three workers while the five-worker full suite fails across QA and generate-loop cases.",
+      "suggestion": "Require the complete `pnpm test:e2e` suite to pass at its configured worker count and report per-worker deviceId/project isolation.",
+      "layer": null,
+      "level": null,
+      "source": ".harness/tasks/qa-self-heal/evaluation/judge-rb-10.json",
+      "cycle": 3,
+      "at": 1795455016541
+    },
+    {
+      "id": "RS-9",
+      "type": "add-verification",
+      "item": "RB-17",
+      "problem": "The tech design has no endpoint method, payload, malformed-input or ownership-failure contract, so API behavior cannot be independently checked outside the browser.",
+      "suggestion": "Document the run/SSE and probe-facing endpoint contracts and add real-request checks for success, malformed payload and deviceId ownership denial.",
+      "layer": null,
+      "level": null,
+      "source": ".harness/tasks/qa-self-heal/evaluation/judge-rb-17.json",
+      "cycle": 3,
+      "at": 1795455016541
+    },
+    {
+      "id": "RS-10",
+      "type": "add-verification",
+      "item": "RB-8",
+      "problem": "The live exhaustion view showed three repair rounds while data-run-qa-rounds was 0, and the current test pass did not prevent that discrepancy in this browser run.",
+      "suggestion": "Assert that the persisted run qa_rounds equals the visible fix-event count (three on exhaustion) after a fresh workbench reload, in addition to asserting no fourth Engineer call.",
+      "layer": null,
+      "level": null,
+      "source": ".harness/tasks/qa-self-heal/evaluation/judge-rb-8.json",
+      "cycle": 3,
+      "at": 1795458302573
+    },
+    {
+      "id": "RS-11",
+      "type": "add-verification",
+      "item": "RB-14",
+      "problem": "The pages.json workbench path is a literal template and harness capture's browser has no same-context project, so official capture failed for this page even though a separate real browser journey produced a screenshot.",
+      "suggestion": "Have capture create a project in its browser context, navigate to its real workbench URL, and require a successful workbench PNG in the capture manifest.",
+      "layer": null,
+      "level": null,
+      "source": ".harness/tasks/qa-self-heal/evaluation/judge-rb-14.json",
+      "cycle": 3,
+      "at": 1795458302573
+    },
+    {
+      "id": "RS-12",
+      "type": "add-verification",
+      "item": "RB-17",
+      "problem": "The independent browser probe covers malformed and unexpected-source postMessages, but the rubric has no deterministic assertion that separately counts rejected probe, verdict, and fix events.",
+      "suggestion": "Add an explicit browser or unit check for each message class and assert rejected messages add no probe/verdict/fix event and do not invoke Engineer repair.",
+      "layer": null,
+      "level": null,
+      "source": ".harness/tasks/qa-self-heal/evaluation/judge-rb-17.json",
+      "cycle": 3,
+      "at": 1795458302573
+    }
+  ],
+  "refinementLog": [
+    {
+      "id": "RS-1",
+      "type": "add-verification",
+      "item": "RB-8",
+      "problem": "There is no documented deterministic way to trigger a persistent mock failure and inspect exhaustion.",
+      "suggestion": "Provide a mock scenario that fails through three fix rounds and assert no fourth repair call, the Chinese exhausted state, and the retained score/version.",
+      "layer": null,
+      "level": null,
+      "source": ".harness/tasks/qa-self-heal/evaluation/judge-rb-8.json",
+      "cycle": 1,
+      "at": 1795451485417,
+      "decision": "accepted",
+      "note": "The failed evaluation could not observe the exhaustion state. RB-8 now requires a deterministic persistent-failure journey that proves exactly three repair attempts, no fourth call, the Chinese exhausted state, and retained score/version. TASK-6 covers this verification.",
+      "decidedAt": 1795451586366
+    },
+    {
+      "id": "RS-2",
+      "type": "add-verification",
+      "item": "RB-10",
+      "problem": "The full E2E check runs five workers and fails stateful generation journeys, while the QA spec passes serially.",
+      "suggestion": "Add an explicit multi-worker run check or isolate per-worker browser and persistence state so streamed timeline journeys are stable under the configured suite concurrency.",
+      "layer": null,
+      "level": null,
+      "source": ".harness/tasks/qa-self-heal/evaluation/judge-rb-10.json",
+      "cycle": 1,
+      "at": 1795451485417,
+      "decision": "accepted",
+      "note": "The timeline journey should remain reliable at the suite's configured parallelism. RB-10 now requires multi-worker coverage, and TASK-6 runs the mock E2E at five workers.",
+      "decidedAt": 1795451586366
+    },
+    {
+      "id": "RS-3",
+      "type": "add-verification",
+      "item": "RB-12",
+      "problem": "The browser-visible values can be compared, but the contract also requires the run and version rows to contain the same score and the tech design does not document a read API for checking them.",
+      "suggestion": "Document a read-only verification route or a deterministic check that compares the persisted run and version scores with the visible project-card score.",
+      "layer": null,
+      "level": null,
+      "source": ".harness/tasks/qa-self-heal/evaluation/judge-rb-12.json",
+      "cycle": 1,
+      "at": 1795451485417,
+      "decision": "accepted",
+      "note": "REQ-5 requires the displayed score to match both persisted records. RB-12 now requires a deterministic repository-level comparison of run and version scores against the project-card score; the tech design specifies this check without adding a production diagnostic route.",
+      "decidedAt": 1795451586366
+    },
+    {
+      "id": "RS-4",
+      "type": "refine",
+      "item": "RB-16",
+      "problem": "A ready status and passing QA verdict do not prove that the preview visibly rendered content; the observed iframe was blank.",
+      "suggestion": "Require non-empty visible preview content after recovery, along with a ready status and inspectable repair history.",
+      "layer": null,
+      "level": null,
+      "source": ".harness/tasks/qa-self-heal/evaluation/judge-rb-16.json",
+      "cycle": 1,
+      "at": 1795451485417,
+      "decision": "accepted",
+      "note": "A ready state and passing verdict did not establish that users could see a rendered preview. RB-16 now requires non-empty visible preview content alongside ready status, final score, and inspectable repair history. TASK-6 covers this assertion.",
+      "decidedAt": 1795451586366
+    },
+    {
+      "id": "RS-5",
+      "type": "add-verification",
+      "item": "RB-8",
+      "problem": "The browser-visible exhausted state does not prove that a fourth Engineer call was not made or that the final version row remains persisted.",
+      "suggestion": "Expose a deterministic test-only assertion for Engineer repair call count and persisted final run/version values, and cite its output alongside the browser journey.",
+      "layer": null,
+      "level": null,
+      "source": ".harness/tasks/qa-self-heal/evaluation/judge-rb-8.json",
+      "cycle": 2,
+      "at": 1795453064356,
+      "decision": "accepted",
+      "note": "The exhausted browser state alone cannot prove the backend call limit or persisted result. RB-8 now requires deterministic assertions for exactly three repair calls and the final run/version qa_score values; TASK-7 adds the verification work.",
+      "decidedAt": 1795453156257
+    },
+    {
+      "id": "RS-6",
+      "type": "add-verification",
+      "item": "RB-12",
+      "problem": "The visible badge and reload prove UI persistence but do not compare the value against both the run and version database rows.",
+      "suggestion": "Provide a deterministic repository-level verification artifact that reports the same qa_score from the completed run, resulting version, workbench badge, and reloaded project card.",
+      "layer": null,
+      "level": null,
+      "source": ".harness/tasks/qa-self-heal/evaluation/judge-rb-12.json",
+      "cycle": 2,
+      "at": 1795453064356,
+      "decision": "accepted",
+      "note": "Matching badges do not independently prove consistency with persisted records. RB-12 now requires one artifact comparing the completed run, resulting version, workbench badge, and reloaded project card; TASK-7 adds the repository assertion.",
+      "decidedAt": 1795453156257
+    },
+    {
+      "id": "RS-7",
+      "type": "refine",
+      "item": "RB-16",
+      "problem": "The criterion is binary in spirit but does not distinguish a passing focused run from an intermittent paint failure under the configured parallel E2E suite.",
+      "suggestion": "Require the recovery journey to pass repeatedly at configured E2E worker concurrency and wait for both ready status and non-empty painted preview content before scoring complete.",
+      "layer": null,
+      "level": null,
+      "source": ".harness/tasks/qa-self-heal/evaluation/judge-rb-16.json",
+      "cycle": 2,
+      "at": 1795453064356,
+      "decision": "accepted",
+      "note": "The recovery journey intermittently failed to paint under parallel execution. RB-16 now requires ready status and non-empty painted preview content, repeatedly passing at configured concurrency; TASK-7 repeats the five-worker E2E journey three times.",
+      "decidedAt": 1795453156257
+    }
+  ],
+  "remediationFixedAt": null,
+  "remediation": []
 }

@@ -1,0 +1,7 @@
+{
+  "score": 1,
+  "note": "The screenshots keep the score in the workbench header while the expanded QA card separately exposes the verdict and repair history. The project card shows the same persisted score after returning Home.",
+  "artifacts": [".harness/tasks/qa-self-heal/evidence/c3-confirm-20261124/workbench-browser-journey.png", ".harness/tasks/qa-self-heal/evidence/c3-confirm-20261124/workbench-exhausted.png", ".harness/tasks/qa-self-heal/evidence/c3-confirm-20261124/home-after-recovery.png"],
+  "verify": ["typecheck", "lint", "unit", "e2e", "build"],
+  "heuristics": []
+}

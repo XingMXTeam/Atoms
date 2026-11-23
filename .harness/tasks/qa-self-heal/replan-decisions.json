@@ -1,0 +1,37 @@
+[
+  {
+    "id": "RS-1",
+    "decision": "accepted",
+    "note": "The failed evaluation could not observe the exhaustion state. RB-8 requires exactly three repair attempts, no fourth call, retained final run/version scores, and the Chinese exhausted state; TASK-6 covers the exhaustion verification."
+  },
+  {
+    "id": "RS-2",
+    "decision": "accepted",
+    "note": "The timeline journey must remain reliable at configured parallelism. RB-10 requires multi-worker coverage, and TASK-6 runs the mock E2E suite at five workers."
+  },
+  {
+    "id": "RS-3",
+    "decision": "accepted",
+    "note": "REQ-5 requires the displayed score to match both persisted records. RB-12 requires a deterministic repository-level comparison against run and version scores; the tech design prohibits adding a production diagnostic route."
+  },
+  {
+    "id": "RS-4",
+    "decision": "accepted",
+    "note": "A ready state and passing verdict did not establish that users could see a rendered preview. RB-16 requires non-empty visible preview content with ready status, score, and inspectable repair history; TASK-6 covers the assertion."
+  },
+  {
+    "id": "RS-5",
+    "decision": "accepted",
+    "note": "The exhausted browser state alone cannot prove the backend call limit or persisted result. RB-8 now requires deterministic assertions for exactly three repair calls and the final run/version qa_score values; TASK-7 adds the verification work."
+  },
+  {
+    "id": "RS-6",
+    "decision": "accepted",
+    "note": "Matching badges do not independently prove consistency with persisted records. RB-12 now requires one artifact comparing the completed run, resulting version, workbench badge, and reloaded project card; TASK-7 adds the repository assertion."
+  },
+  {
+    "id": "RS-7",
+    "decision": "accepted",
+    "note": "The recovery journey intermittently failed to paint under parallel execution. RB-16 now requires ready status and non-empty painted preview content, repeatedly passing at configured concurrency; TASK-7 repeats the five-worker E2E journey three times."
+  }
+]

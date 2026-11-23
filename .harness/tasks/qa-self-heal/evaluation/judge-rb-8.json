@@ -1,0 +1,10 @@
+{
+  "score": 0.5,
+  "note": "The live exhaustion journey visibly produced three repair events, a Chinese repair-limit state, and a retained 0-point score; the focused exhaustion browser test passed. However, in that same live run the workbench badge reported data-run-qa-rounds=0 despite showing rounds 1–3, so persisted round accounting is not consistent with the visible history.",
+  "artifacts": [".harness/tasks/qa-self-heal/evidence/c3-confirm-20261124/workbench-exhausted.png", ".harness/tasks/qa-self-heal/evidence/c3-confirm-20261124/browser-checks.md", ".harness/tasks/qa-self-heal/evidence/c3-confirm-20261124/e2e-run.md"],
+  "verify": ["typecheck", "lint", "unit", "e2e", "build"],
+  "heuristics": ["H-PR-2.1", "H-UX-2.3"],
+  "rubricRefinementSuggestions": [
+    { "type": "add-verification", "item": "RB-8", "problem": "The live exhaustion view showed three repair rounds while data-run-qa-rounds was 0, and the current test pass did not prevent that discrepancy in this browser run.", "suggestion": "Assert that the persisted run qa_rounds equals the visible fix-event count (three on exhaustion) after a fresh workbench reload, in addition to asserting no fourth Engineer call." }
+  ]
+}

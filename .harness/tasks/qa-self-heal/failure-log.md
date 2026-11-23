@@ -1,0 +1,2 @@
+- 2026-11-23T16:31:25.420Z evaluation failed score=0.857 vetoed=none open=RB-8,RB-12,RB-16
+- 2026-11-23T16:57:44.359Z evaluation failed score=0.879 vetoed=none open=RB-8,RB-12,RB-16

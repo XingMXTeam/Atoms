@@ -1,0 +1,23 @@
+{
+  "frames": [
+    {
+      "url": "http://127.0.0.1:3000/projects/eb27ec57-7398-4489-b704-de972f21ddbf?run=9119dbdd-7ef1-4dd1-9b29-dae7b516589b",
+      "title": "Atoms Studio — 可验证的 AI 应用生成",
+      "text": "工作台\n\n触发修复演示：做一个中文待办清单\n\n编号 · 9119dbdd-7ef1-4dd1-9b29-dae7b516589b\n\n返回首页\n\n已完成\n\nAgent 时间线\n\n已完成\n\n规划师\n\n已完成 · 0s\n\n展开详情\n架构师\n\n已完成 · 0s\n\n展开详情\n工程师\n\n已完成 · 0s\n\n展开详情\n质检\n\n已完成\n\n100 分\n展开质检详情\n预览\n代码",
+      "elements": 67,
+      "width": 1280,
+      "height": 800,
+      "background": "rgb(255, 255, 255)"
+    },
+    {
+      "url": "about:srcdoc",
+      "title": "Atoms Preview",
+      "text": "",
+      "elements": 6,
+      "width": 488,
+      "height": 308,
+      "background": "rgba(0, 0, 0, 0)"
+    }
+  ],
+  "previewStatus": "ready"
+}
