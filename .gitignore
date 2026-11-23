@@ -16,3 +16,4 @@ test-results/
 *.tsbuildinfo
 .harness/runs/
 .turbo/
+.vitest/
