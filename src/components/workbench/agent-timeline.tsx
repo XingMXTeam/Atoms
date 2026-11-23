@@ -7,6 +7,7 @@ import {
   type AgentName,
 } from "@/lib/agents/events";
 import { AgentCard, type AgentCardModel, type AgentCardStatus } from "./agent-card";
+import { QaTimelineCard } from "./qa-timeline-card";
 
 type RunStatus = "running" | "completed" | "interrupted" | "failed";
 
@@ -128,6 +129,7 @@ export function AgentTimeline({
     (initialRunStatus as RunStatus) || "running",
   );
   const [cards, setCards] = useState<AgentCardModel[]>(emptyCards);
+  const [qaEvents, setQaEvents] = useState<AgentEventRecord[]>([]);
   const [now, setNow] = useState(() => Date.now());
   const [continuePending, setContinuePending] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(() =>
@@ -237,6 +239,13 @@ export function AgentTimeline({
         const event = parseSseChunk(`data: ${message.data}`);
         if (!event) return;
         const stamp = Date.now();
+        if (event.agent === "qa") {
+          setQaEvents((prev) =>
+            prev.some((existing) => existing.id === event.id)
+              ? prev
+              : [...prev, event].sort((left, right) => left.seq - right.seq),
+          );
+        }
 
         setCards((prev) => {
           let next = applyEvent(prev, event, stamp);
@@ -263,9 +272,6 @@ export function AgentTimeline({
           const files = extractFiles(event.payload);
           if (files) onFilesRef.current?.(files);
           setErrorMessage(null);
-          updateRunStatus("completed");
-          // Intentional close so the browser's follow-up onerror is ignored.
-          closeSource();
         }
       };
 
@@ -369,6 +375,7 @@ export function AgentTimeline({
       window.history.replaceState({}, "", url.toString());
 
       setCards(emptyCards());
+      setQaEvents([]);
       sawTerminalRef.current = false;
       setRunId(data.runId);
       setContinuePending(false);
@@ -419,6 +426,16 @@ export function AgentTimeline({
         {visibleCards.map((card) => (
           <AgentCard key={card.agent} card={card} />
         ))}
+        <QaTimelineCard
+          events={qaEvents}
+          status={
+            runStatus === "running" && qaEvents.length > 0
+              ? "running"
+              : runStatus === "failed"
+                ? "error"
+                : runStatus
+          }
+        />
       </div>
 
       {interruptCopy ? (
