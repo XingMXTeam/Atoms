@@ -51,6 +51,10 @@ describe("preview bundle (REQ-5 / REQ-6)", () => {
     expect(srcdoc).toContain('source:"atoms-preview"');
     expect(srcdoc).toContain('(r.innerText||r.textContent||"").trim()');
     expect(srcdoc).toContain('type:"painted",text:text');
+    expect(srcdoc).toContain('type:"probe",compileErrors:[]');
+    expect(srcdoc).toContain('runtimeErrors:window.__atomsProbeErrors.slice(0,20)');
+    expect(srcdoc).toContain('blankScreen:!text');
+    expect(srcdoc).toContain('elementCount:count');
     const srcdocHasMarker =
       srcdoc.includes("我的待办") ||
       /\\u6211\\u7684\\u5[fF]85\\u529[eE]/i.test(srcdoc) ||

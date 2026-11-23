@@ -343,6 +343,8 @@ export function buildPreviewSrcdoc(
   const escapedVendor = vendorJs.replace(/<\/script/gi, "<\\/script");
   const escapedJs = js.replace(/<\/script/gi, "<\\/script");
   const escapedCss = css.replace(/<\/style/gi, "<\\/style");
+  const probeCapture = `window.__atomsProbeErrors=[];window.addEventListener("error",function(e){var errors=window.__atomsProbeErrors;if(errors.length<20){errors.push(String(e.message||"Runtime error").slice(0,500));}});window.addEventListener("unhandledrejection",function(e){var errors=window.__atomsProbeErrors;if(errors.length<20){var reason=e.reason;errors.push(String(reason&&reason.message||reason||"Unhandled rejection").slice(0,500));}});`;
+  const probeBeacon = `try{setTimeout(function(){var r=document.getElementById("root");if(!r)return;var text=(r.innerText||r.textContent||"").trim().slice(0,2000);var count=Math.min(r.querySelectorAll("*").length,10000);if(window.parent&&window.parent!==window){window.parent.postMessage({source:"atoms-preview",type:"probe",compileErrors:[],runtimeErrors:window.__atomsProbeErrors.slice(0,20),blankScreen:!text,domSummary:{title:String(document.title||"").slice(0,200),text:text,elementCount:count}},"*");}},500);}catch(e){}`;
 
   // Wait for React to commit visible text into #root, then report that text
   // to the host (the opaque iframe prevents the host from reading its DOM).
@@ -358,9 +360,11 @@ export function buildPreviewSrcdoc(
 </head>
 <body class="atoms-preview-root">
   <div id="root"></div>
+  <script>${probeCapture}</script>
   <script>${escapedVendor}</script>
   <script>${escapedJs}</script>
   <script>${paintBeacon}</script>
+  <script>${probeBeacon}</script>
 </body>
 </html>`;
 }

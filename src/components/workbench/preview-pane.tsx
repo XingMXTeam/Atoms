@@ -7,9 +7,15 @@ import {
   type PreviewFile,
 } from "@/lib/preview/bundle";
 import { getPreviewSandboxAttribute } from "@/lib/preview/sandbox";
+import {
+  createCompileErrorProbeReport,
+  isPreviewProbeMessage,
+  type PreviewProbeReport,
+} from "@/lib/preview/probe";
 
 type PreviewPaneProps = {
   files: PreviewFile[];
+  onProbeReport?: (report: PreviewProbeReport) => void;
 };
 
 type BundleResult =
@@ -22,7 +28,7 @@ type PreviewPaintMessage = {
   text?: string;
 };
 
-export function PreviewPane({ files }: PreviewPaneProps) {
+export function PreviewPane({ files, onProbeReport }: PreviewPaneProps) {
   const [bundle, setBundle] = useState<BundleResult | null>(null);
   const [paintedText, setPaintedText] = useState("");
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -39,6 +45,7 @@ export function PreviewPane({ files }: PreviewPaneProps) {
       if (cancelled) return;
       if (!result.ok) {
         setPaintedText("");
+        onProbeReport?.(createCompileErrorProbeReport(result.messageZh));
         setBundle({
           status: "error",
           messageZh: result.messageZh,
@@ -57,18 +64,15 @@ export function PreviewPane({ files }: PreviewPaneProps) {
     return () => {
       cancelled = true;
     };
-  }, [files]);
+  }, [files, onProbeReport]);
 
   useEffect(() => {
     function onMessage(event: MessageEvent) {
       const data = event.data;
-      if (
-        event.source !== iframeRef.current?.contentWindow ||
-        !data ||
-        typeof data !== "object"
-      ) {
-        return;
-      }
+      if (event.source !== iframeRef.current?.contentWindow) return;
+      const report = isPreviewProbeMessage(event, iframeRef.current?.contentWindow);
+      if (report) onProbeReport?.(report);
+      if (!data || typeof data !== "object") return;
       const message = data as PreviewPaintMessage;
       const text = message.text?.trim();
       if (
@@ -81,7 +85,7 @@ export function PreviewPane({ files }: PreviewPaneProps) {
     }
     window.addEventListener("message", onMessage);
     return () => window.removeEventListener("message", onMessage);
-  }, []);
+  }, [onProbeReport]);
 
   if (files.length === 0) {
     return (
