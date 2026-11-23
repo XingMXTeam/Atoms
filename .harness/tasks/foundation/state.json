@@ -2,14 +2,14 @@
   "version": 1,
   "feature": "foundation",
   "title": "",
-  "phase": "implement",
+  "phase": "done",
   "createdAt": 1795422439188,
-  "updatedAt": 1795422785015,
+  "updatedAt": 1795426758376,
   "macroCycle": {
     "current": 1,
     "max": 5
   },
-  "consecutivePasses": 0,
+  "consecutivePasses": 2,
   "clarificationComplete": true,
   "tasks": [
     {
@@ -20,9 +20,9 @@
         "REQ-2",
         "REQ-7"
       ],
-      "status": "pending",
+      "status": "done",
       "attempts": 0,
-      "commitSha": null
+      "commitSha": "3f81432"
     },
     {
       "id": "TASK-2",
@@ -30,9 +30,9 @@
       "requirements": [
         "REQ-3"
       ],
-      "status": "pending",
+      "status": "done",
       "attempts": 0,
-      "commitSha": null
+      "commitSha": "b02c3d9"
     },
     {
       "id": "TASK-3",
@@ -40,9 +40,9 @@
       "requirements": [
         "REQ-4"
       ],
-      "status": "pending",
+      "status": "done",
       "attempts": 0,
-      "commitSha": null
+      "commitSha": "51712a5"
     },
     {
       "id": "TASK-4",
@@ -51,9 +51,9 @@
         "REQ-5",
         "REQ-6"
       ],
-      "status": "pending",
+      "status": "done",
       "attempts": 0,
-      "commitSha": null
+      "commitSha": "76252a0"
     },
     {
       "id": "TASK-5",
@@ -63,9 +63,9 @@
         "REQ-1",
         "REQ-4"
       ],
-      "status": "pending",
+      "status": "done",
       "attempts": 0,
-      "commitSha": null
+      "commitSha": "ca82e23"
     }
   ],
   "history": [
@@ -80,9 +80,79 @@
       "at": 1795422785015,
       "event": "clarify-done",
       "tasks": 5
+    },
+    {
+      "at": 1795423027838,
+      "event": "task-done",
+      "task": "TASK-1",
+      "commitSha": "3f81432"
+    },
+    {
+      "at": 1795423186862,
+      "event": "task-done",
+      "task": "TASK-2",
+      "commitSha": "b02c3d9"
+    },
+    {
+      "at": 1795423299650,
+      "event": "task-done",
+      "task": "TASK-3",
+      "commitSha": "51712a5"
+    },
+    {
+      "at": 1795423444584,
+      "event": "task-done",
+      "task": "TASK-4",
+      "commitSha": "76252a0"
+    },
+    {
+      "at": 1795423571765,
+      "event": "task-done",
+      "task": "TASK-5",
+      "commitSha": "ca82e23"
+    },
+    {
+      "at": 1795425137121,
+      "event": "rubric-refinements-recorded",
+      "ids": [
+        "RS-1",
+        "RS-2"
+      ]
+    },
+    {
+      "at": 1795425137122,
+      "event": "evaluation-passed",
+      "score": 1,
+      "consecutivePasses": 1,
+      "phaseAtEval": "implement"
+    },
+    {
+      "at": 1795426751350,
+      "event": "rubric-refinements-recorded",
+      "ids": [
+        "RS-3",
+        "RS-4"
+      ]
+    },
+    {
+      "at": 1795426758376,
+      "event": "evaluation-passed",
+      "score": 1,
+      "consecutivePasses": 2,
+      "phaseAtEval": "verify"
+    },
+    {
+      "at": 1795426758376,
+      "event": "done",
+      "score": 1
     }
   ],
-  "lastEvaluation": null,
+  "lastEvaluation": {
+    "at": 1795426751350,
+    "verdict": "pass",
+    "score": 1,
+    "vetoed": []
+  },
   "lastFailure": null,
   "prd": {
     "source": "imported",
@@ -121,5 +191,58 @@
     "RB-24": "important",
     "RB-25": "pitfall"
   },
-  "rubricHash": "60ca6df818503472"
+  "rubricHash": "60ca6df818503472",
+  "pendingRefinements": [
+    {
+      "id": "RS-1",
+      "type": "add-verification",
+      "item": "RB-12",
+      "problem": "No browser-visible 「演示回放」 badge on / yet (F1 shell is static)",
+      "suggestion": "Once generate-loop paints a run/system label, add a Playwright assertion that 「演示回放」 is visible when meta.mode=replay",
+      "layer": null,
+      "level": null,
+      "source": ".harness/tasks/foundation/evaluation/judge-rb-12.json",
+      "cycle": 1,
+      "at": 1795425137121
+    },
+    {
+      "id": "RS-2",
+      "type": "add-verification",
+      "item": "RB-14",
+      "problem": "Over-cap Chinese copy is not screenshotable on the foundation home",
+      "suggestion": "Add a test route or fixture page that renders refuse/replay decisions so L4 can be screenshot-checked",
+      "layer": null,
+      "level": null,
+      "source": ".harness/tasks/foundation/evaluation/judge-rb-14.json",
+      "cycle": 1,
+      "at": 1795425137121
+    },
+    {
+      "id": "RS-3",
+      "type": "refine",
+      "item": "RB-12",
+      "problem": "F1 has no browser-visible run chrome, so 演示回放 can only be proven via meta/helpers; item wording mixes meta and UI",
+      "suggestion": "Split: keep F1 essential on meta.label === 演示回放; add a later L4 item that the generate-loop run timeline shows a visible 演示回放 badge when mode is replay",
+      "layer": null,
+      "level": null,
+      "source": ".harness/tasks/foundation/evaluation/judge-rb-12.json",
+      "cycle": 1,
+      "at": 1795426751350
+    },
+    {
+      "id": "RS-4",
+      "type": "add-verification",
+      "item": "RB-14",
+      "problem": "E2E-3/E2E-5 describe over-cap journeys but no Playwright route exercises them; confirmation relied on a Vitest helper probe",
+      "suggestion": "Add a Playwright (or route-handler) fixture that seeds usage at the cap and asserts the Chinese 演示回放/refuse payload is returned over HTTP",
+      "layer": null,
+      "level": null,
+      "source": ".harness/tasks/foundation/evaluation/judge-rb-14.json",
+      "cycle": 1,
+      "at": 1795426751350
+    }
+  ],
+  "refinementLog": [],
+  "remediationFixedAt": null,
+  "remediation": []
 }

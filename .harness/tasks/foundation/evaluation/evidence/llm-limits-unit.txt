@@ -1,0 +1,19 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v5.1.1 /Users/felix/Documents/atoms-worktrees/demo
+
+ ✓ src/lib/limits/rate-limit.test.ts > assertRateLimit (REQ-6) > allows when under device run and global token caps 3ms
+ ✓ src/lib/limits/rate-limit.test.ts > assertRateLimit (REQ-6) > degrades to replay with 演示回放 when DEVICE_DAILY_RUN_LIMIT is exceeded 0ms
+ ✓ src/lib/limits/rate-limit.test.ts > assertRateLimit (REQ-6) > degrades to replay with 演示回放 when DAILY_TOKEN_CAP is exceeded 0ms
+ ✓ src/lib/limits/rate-limit.test.ts > assertRateLimit (REQ-6) > refuses with a Chinese message when replay cannot run 0ms
+ ✓ src/lib/llm/provider.test.ts > LLM provider (REQ-5) > mock.complete returns a deterministic fixed payload 65ms
+ ✓ src/lib/llm/provider.test.ts > LLM provider (REQ-5) > selects provider mode from LLM_PROVIDER env 2ms
+ ✓ src/lib/llm/provider.test.ts > LLM provider (REQ-5) > gemini mode falls back to replay with 演示回放 when key is missing 2ms
+
+ Test Files  2 passed (2)
+      Tests  7 passed (7)
+   Start at  17:20:28
+   Duration  242ms (tests 45%, import 40%, transform 11%, worker 4%)
+

@@ -1,0 +1,11 @@
+
+Running 2 tests using 2 workers
+
+  ✓  1 [chromium] › e2e/smoke.spec.ts:7:1 › home page shows Chinese product title (400ms)
+  ✓  2 [chromium] › e2e/smoke.spec.ts:15:1 › first visit mints HttpOnly deviceId cookie that persists across reload (483ms)
+
+  2 passed (4.8s)
+$ playwright test
+[WebServer] ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.
+[WebServer] 
+[WebServer] 

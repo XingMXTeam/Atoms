@@ -1,0 +1,77 @@
+{
+  "lang": "zh-CN",
+  "title": "Atoms Studio — 可验证的 AI 应用生成",
+  "clippedCount": 0,
+  "horizontalOverflow": false,
+  "viewport": {
+    "w": 1280,
+    "h": 800
+  },
+  "bodyBg": "rgb(255, 255, 255)",
+  "main": {
+    "text": "Atoms Studio可验证的 AI 应用生成需求 → 验收标准 → QA 评分与自修复。脚手架已就绪，后续功能按 F1–F5 逐步接入。",
+    "fontSize": 16,
+    "fontWeight": "400",
+    "color": "rgb(23, 23, 23)",
+    "backgroundColor": "rgba(0, 0, 0, 0)",
+    "top": 0,
+    "left": 0,
+    "width": 1280,
+    "height": 800,
+    "centerX": 640
+  },
+  "eyebrow": {
+    "text": "Atoms Studio",
+    "fontSize": 14,
+    "fontWeight": "500",
+    "color": "lab(47.8878 1.65477 -5.77283)",
+    "backgroundColor": "rgba(0, 0, 0, 0)",
+    "top": 328,
+    "left": 352,
+    "width": 576,
+    "height": 20,
+    "centerX": 640
+  },
+  "h1": {
+    "text": "可验证的 AI 应用生成",
+    "fontSize": 36,
+    "fontWeight": "600",
+    "color": "lab(8.30603 0.618205 -2.16572)",
+    "backgroundColor": "rgba(0, 0, 0, 0)",
+    "top": 360,
+    "left": 352,
+    "width": 576,
+    "height": 40,
+    "centerX": 640
+  },
+  "body": {
+    "text": "需求 → 验收标准 → QA 评分与自修复。脚手架已就绪，后续功能按 F1–F5 逐步接入。",
+    "fontSize": 16,
+    "fontWeight": "400",
+    "color": "lab(35.1166 1.78212 -6.1173)",
+    "backgroundColor": "rgba(0, 0, 0, 0)",
+    "top": 416,
+    "left": 352,
+    "width": 576,
+    "height": 56,
+    "centerX": 640
+  },
+  "landmarkMain": true,
+  "largestTextIsH1": true,
+  "featureGridCount": 0,
+  "gradientMeshLike": false,
+  "contrast": {
+    "h1": 21,
+    "eyebrow": 21,
+    "body": 21
+  },
+  "centering": {
+    "h1OffsetFromCenter": 0,
+    "eyebrowOffsetFromCenter": 0
+  },
+  "mobile375": {
+    "clippedCount": 0,
+    "horizontalOverflow": false,
+    "h1": "可验证的 AI 应用生成"
+  }
+}

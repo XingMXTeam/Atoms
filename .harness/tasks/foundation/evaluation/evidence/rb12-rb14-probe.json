@@ -1,0 +1,40 @@
+{
+  "replayLabelConstant": "演示回放",
+  "replayCompletion": {
+    "text": "[replay] 这是预录的演示运行结果，用于在额度或上游故障时继续体验。",
+    "meta": {
+      "mode": "replay",
+      "label": "演示回放"
+    }
+  },
+  "mockCompletion": {
+    "text": "[mock] Atoms Studio — 固定演示输出：已根据提示生成可验证应用骨架。",
+    "meta": {
+      "mode": "mock"
+    }
+  },
+  "overRun": {
+    "ok": false,
+    "mode": "replay",
+    "label": "演示回放"
+  },
+  "overToken": {
+    "ok": false,
+    "mode": "replay",
+    "label": "演示回放"
+  },
+  "refuse": {
+    "ok": false,
+    "refuse": true,
+    "messageZh": "今日体验额度已用完，且演示回放暂不可用。请明天再试，或稍后再来。"
+  },
+  "checks": {
+    "replayLabelIsChineseDemo": true,
+    "replayMetaLabel": true,
+    "overRunUsesReplayLabel": true,
+    "overTokenUsesReplayLabel": true,
+    "refuseIsChinese": true,
+    "mockDeterministic": true,
+    "noSilentEnglishOnlyFailure": true
+  }
+}

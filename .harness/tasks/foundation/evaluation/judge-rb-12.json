@@ -1,0 +1,18 @@
+{
+  "score": 1,
+  "note": "Replay activation exposes explicit label 演示回放 in provider meta (createReplayProvider + gemini missing-key fallback) and in rate-limit soft-cap decisions. Probe JSON shows meta.label and decision.label both 演示回放; REPLAY_LABEL constant present. F1 home has no run UI yet, so the observable surface is meta/UI-facing copy as specified — not a silent mode switch.",
+  "artifacts": [
+    ".harness/tasks/foundation/evaluation/evidence/rb12-rb14-probe.json",
+    ".harness/tasks/foundation/evaluation/evidence/rb12-rb14-probe.txt"
+  ],
+  "verify": ["unit", "e2e"],
+  "heuristics": ["H-UX-2.3", "H-UX-7.1"],
+  "rubricRefinementSuggestions": [
+    {
+      "type": "refine",
+      "item": "RB-12",
+      "problem": "F1 has no browser-visible run chrome, so 演示回放 can only be proven via meta/helpers; item wording mixes meta and UI",
+      "suggestion": "Split: keep F1 essential on meta.label === 演示回放; add a later L4 item that the generate-loop run timeline shows a visible 演示回放 badge when mode is replay"
+    }
+  ]
+}

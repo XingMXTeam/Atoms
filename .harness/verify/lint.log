@@ -1,0 +1,20 @@
+
+/Users/felix/Documents/atoms-worktrees/demo/.harness/tasks/foundation/evaluation/evidence/e2e7-ui.mjs
+   4:10  warning  'relativeLuminanceFromLabApprox' is defined but never used  @typescript-eslint/no-unused-vars
+   4:41  warning  'labStr' is defined but never used                          @typescript-eslint/no-unused-vars
+  19:11  warning  'r' is assigned a value but never used                      @typescript-eslint/no-unused-vars
+
+/Users/felix/Documents/atoms-worktrees/demo/.harness/tasks/foundation/evaluation/evidence/rb12-rb14-probe.mjs
+  1:10  warning  'writeFileSync' is defined but never used  @typescript-eslint/no-unused-vars
+  2:10  warning  'createRequire' is defined but never used  @typescript-eslint/no-unused-vars
+  3:10  warning  'pathToFileURL' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/felix/Documents/atoms-worktrees/demo/src/lib/llm/modes/mock.ts
+  10:20  warning  '_input' is defined but never used  @typescript-eslint/no-unused-vars
+
+/Users/felix/Documents/atoms-worktrees/demo/src/lib/llm/modes/replay.ts
+  12:20  warning  '_input' is defined but never used  @typescript-eslint/no-unused-vars
+
+✖ 8 problems (0 errors, 8 warnings)
+
+$ eslint

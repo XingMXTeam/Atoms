@@ -1,0 +1,13 @@
+{
+  "score": 1,
+  "note": "c1-confirm/home.png matches REF-1: brand eyebrow Atoms Studio (14px zinc), Chinese H1 可验证的 AI 应用生成 (36px, largest text), calm centered max-width column (offset-from-center 0px at 1280), lang=zh-CN, title Atoms Studio — 可验证的 AI 应用生成. Contrast h1 17.7:1, body 7.7:1, eyebrow 4.8:1. No clip/overflow at 1280 or 375.",
+  "artifacts": [
+    ".harness/tasks/foundation/evidence/c1-confirm/home.png",
+    ".harness/tasks/foundation/evaluation/evidence/home.png",
+    ".harness/tasks/foundation/evaluation/evidence/home-mobile-375.png",
+    ".harness/tasks/foundation/evaluation/evidence/home-metrics.json",
+    ".harness/tasks/foundation/evaluation/evidence/e2e7-ui.json"
+  ],
+  "verify": ["typecheck", "lint", "unit", "e2e", "build"],
+  "heuristics": ["H-UI-1.3", "H-UI-2.3", "H-UI-4.3", "H-UI-5.1", "H-UI-6.4", "H-UI-7.1"]
+}

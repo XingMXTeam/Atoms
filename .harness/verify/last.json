@@ -1,0 +1,60 @@
+{
+  "runs": {
+    "typecheck": {
+      "id": "typecheck",
+      "command": "pnpm typecheck",
+      "status": "passed",
+      "exitCode": 0,
+      "durationMs": 1372,
+      "at": 1795426738955,
+      "sha": "ca82e23",
+      "tail": "$ tsc --noEmit",
+      "log": ".harness/verify/typecheck.log"
+    },
+    "lint": {
+      "id": "lint",
+      "command": "pnpm lint",
+      "status": "passed",
+      "exitCode": 0,
+      "durationMs": 2050,
+      "at": 1795426741046,
+      "sha": "ca82e23",
+      "tail": "  12:20  warning  '_input' is defined but never used  @typescript-eslint/no-unused-vars\n\n✖ 8 problems (0 errors, 8 warnings)\n\n$ eslint",
+      "log": ".harness/verify/lint.log"
+    },
+    "unit": {
+      "id": "unit",
+      "command": "pnpm test",
+      "status": "passed",
+      "exitCode": 0,
+      "durationMs": 1051,
+      "at": 1795426742136,
+      "sha": "ca82e23",
+      "tail": "\n$ vitest run\n(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:\n  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest package.json\nSet `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.",
+      "log": ".harness/verify/unit.log"
+    },
+    "e2e": {
+      "id": "e2e",
+      "command": "pnpm test:e2e",
+      "status": "passed",
+      "exitCode": 0,
+      "durationMs": 5286,
+      "at": 1795426747458,
+      "sha": "ca82e23",
+      "tail": "  2 passed (4.8s)\n$ playwright test\n[WebServer] ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.\n[WebServer] \n[WebServer]",
+      "log": ".harness/verify/e2e.log"
+    },
+    "build": {
+      "id": "build",
+      "command": "pnpm build",
+      "status": "passed",
+      "exitCode": 0,
+      "durationMs": 3764,
+      "at": 1795426751263,
+      "sha": "ca82e23",
+      "tail": "\n  To migrate automatically, run:\n  npx @next/codemod@canary middleware-to-proxy .\n\n  Learn more: https://nextjs.org/docs/messages/middleware-to-proxy",
+      "log": ".harness/verify/build.log"
+    }
+  },
+  "updatedAt": 1795426751263
+}

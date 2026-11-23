@@ -1,0 +1,11 @@
+{
+  "score": 1,
+  "note": "Pitfall absent (RL-1): primary heading is Chinese 可验证的 AI 应用生成, not English-only. Confirmed in capture and DOM metrics; document title also bilingual with Chinese product phrase.",
+  "artifacts": [
+    ".harness/tasks/foundation/evidence/c1-confirm/home.png",
+    ".harness/tasks/foundation/evaluation/evidence/home-metrics.json",
+    ".harness/tasks/foundation/evaluation/evidence/e2e-smoke.txt"
+  ],
+  "verify": ["e2e", "unit"],
+  "heuristics": ["H-UI-7.2"]
+}

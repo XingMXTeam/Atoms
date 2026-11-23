@@ -1,0 +1,275 @@
+{
+  "at": 1795426751350,
+  "verdict": "pass",
+  "verdictReason": "score",
+  "score": 1,
+  "passScore": 0.9,
+  "layers": {
+    "L1": {
+      "score": 1,
+      "weight": 0.4
+    },
+    "L3": {
+      "score": 1,
+      "weight": 0.2
+    },
+    "L2": {
+      "score": 1,
+      "weight": 0.25
+    },
+    "L4": {
+      "score": 1,
+      "weight": 0.15
+    }
+  },
+  "vetoed": [],
+  "results": [
+    {
+      "id": "RB-1",
+      "requirement": "REQ-1",
+      "level": "essential",
+      "kind": "command",
+      "layer": "L1-function",
+      "score": 1,
+      "detail": "exit=0 [WebServer] ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests. | [WebServer]  | [WebServer]"
+    },
+    {
+      "id": "RB-2",
+      "requirement": "REQ-1",
+      "level": "essential",
+      "kind": "judge",
+      "layer": "L3-ui",
+      "score": 1,
+      "detail": "judge: c1-confirm/home.png matches REF-1: brand eyebrow Atoms Studio (14px zinc), Chinese H1 可验证的 AI 应用生成 (36px, largest text), calm centered max-width column (offset-from-center 0px at 1280), lang=zh-CN, title Atoms Studio — 可验证的 AI 应用生成. Contrast h1 17.7:1, body 7.7:1, eyebrow 4.8:1. No clip/overf"
+    },
+    {
+      "id": "RB-3",
+      "requirement": "REQ-1",
+      "level": "pitfall",
+      "kind": "judge",
+      "layer": "L3-ui",
+      "score": 1,
+      "detail": "judge: Pitfall absent (RL-1): primary heading is Chinese 可验证的 AI 应用生成, not English-only. Confirmed in capture and DOM metrics; document title also bilingual with Chinese product phrase."
+    },
+    {
+      "id": "RB-4",
+      "requirement": "REQ-1",
+      "level": "pitfall",
+      "kind": "grep",
+      "layer": "L2-robustness",
+      "score": 1,
+      "detail": "pattern /fonts\\.googleapis\\.com|fonts\\.gstatic\\.com|cdn\\.tailwindcss\\.com|esm\\.sh|unpkg\\.com|jsdelivr\\.net/ in src: not found, expected absent"
+    },
+    {
+      "id": "RB-5",
+      "requirement": "REQ-2",
+      "level": "essential",
+      "kind": "command",
+      "layer": "L1-function",
+      "score": 1,
+      "detail": "exit=0 9:    \"region\": \"aws:us-east-1\" | 17:      \"pattern\": \"atoms.maoxunxing.com\", | 23:      \"binding\": \"DB\","
+    },
+    {
+      "id": "RB-6",
+      "requirement": "REQ-2",
+      "level": "pitfall",
+      "kind": "grep",
+      "layer": "L2-robustness",
+      "score": 1,
+      "detail": "pattern /workers\\.dev/ in wrangler.jsonc: not found, expected absent"
+    },
+    {
+      "id": "RB-7",
+      "requirement": "REQ-3",
+      "level": "essential",
+      "kind": "command",
+      "layer": "L1-function",
+      "score": 1,
+      "detail": "exit=0 (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite: |   - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest package"
+    },
+    {
+      "id": "RB-8",
+      "requirement": "REQ-3",
+      "level": "important",
+      "kind": "grep",
+      "layer": "L1-function",
+      "score": 1,
+      "detail": "pattern /projects|messages|runs|agent_events|versions|usage/ in src/lib/db: found (src/lib/db/adapters/sqlite.ts), expected present"
+    },
+    {
+      "id": "RB-9",
+      "requirement": "REQ-4",
+      "level": "essential",
+      "kind": "command",
+      "layer": "L1-function",
+      "score": 1,
+      "detail": "exit=0 (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite: |   - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest package"
+    },
+    {
+      "id": "RB-10",
+      "requirement": "REQ-4",
+      "level": "essential",
+      "kind": "command",
+      "layer": "L2-robustness",
+      "score": 1,
+      "detail": "exit=0 (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite: |   - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest package"
+    },
+    {
+      "id": "RB-11",
+      "requirement": "REQ-5",
+      "level": "essential",
+      "kind": "command",
+      "layer": "L1-function",
+      "score": 1,
+      "detail": "exit=0 (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite: |   - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest package"
+    },
+    {
+      "id": "RB-12",
+      "requirement": "REQ-5",
+      "level": "essential",
+      "kind": "judge",
+      "layer": "L4-interaction",
+      "score": 1,
+      "detail": "judge: Replay activation exposes explicit label 演示回放 in provider meta (createReplayProvider + gemini missing-key fallback) and in rate-limit soft-cap decisions. Probe JSON shows meta.label and decision.label both 演示回放; REPLAY_LABEL constant present. F1 home has no run UI yet, so the observable surfa"
+    },
+    {
+      "id": "RB-13",
+      "requirement": "REQ-6",
+      "level": "essential",
+      "kind": "command",
+      "layer": "L1-function",
+      "score": 1,
+      "detail": "exit=0 (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite: |   - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest package"
+    },
+    {
+      "id": "RB-14",
+      "requirement": "REQ-6",
+      "level": "important",
+      "kind": "judge",
+      "layer": "L4-interaction",
+      "score": 1,
+      "detail": "judge: Over DEVICE_DAILY_RUN_LIMIT and over DAILY_TOKEN_CAP both return {ok:false, mode:replay, label:演示回放}. When replayAvailable=false, refuse returns Chinese messageZh 「今日体验额度已用完，且演示回放暂不可用。请明天再试，或稍后再来。」 — never a silent or English-only failure."
+    },
+    {
+      "id": "RB-15",
+      "requirement": "REQ-6",
+      "level": "pitfall",
+      "kind": "grep",
+      "layer": "L2-robustness",
+      "score": 1,
+      "detail": "pattern /Something went wrong|quota exceeded(?!.*[\\u4e00-\\u9fff])/ in src/lib: not found, expected absent"
+    },
+    {
+      "id": "RB-16",
+      "requirement": "REQ-7",
+      "level": "essential",
+      "kind": "command",
+      "layer": "L1-function",
+      "score": 1,
+      "detail": "exit=0 11:LLM_PROVIDER=mock | 14:DAILY_TOKEN_CAP=500000 | 17:DEVICE_DAILY_RUN_LIMIT=20"
+    },
+    {
+      "id": "RB-17",
+      "requirement": "REQ-7",
+      "level": "pitfall",
+      "kind": "command",
+      "layer": "L2-robustness",
+      "score": 1,
+      "detail": "exit=0"
+    },
+    {
+      "id": "RB-18",
+      "requirement": "REQ-8",
+      "level": "essential",
+      "kind": "verify",
+      "layer": "L1-function",
+      "score": 1,
+      "detail": "verify typecheck: `pnpm typecheck` exit=0 $ tsc --noEmit"
+    },
+    {
+      "id": "RB-19",
+      "requirement": "REQ-8",
+      "level": "essential",
+      "kind": "verify",
+      "layer": "L1-function",
+      "score": 1,
+      "detail": "verify lint: `pnpm lint` exit=0  | $ eslint"
+    },
+    {
+      "id": "RB-20",
+      "requirement": "REQ-8",
+      "level": "essential",
+      "kind": "verify",
+      "layer": "L1-function",
+      "score": 1,
+      "detail": "verify unit: `pnpm test` exit=0   - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest package.json | Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning."
+    },
+    {
+      "id": "RB-21",
+      "requirement": "REQ-8",
+      "level": "essential",
+      "kind": "verify",
+      "layer": "L1-function",
+      "score": 1,
+      "detail": "verify e2e: `pnpm test:e2e` exit=0 [WebServer]  | [WebServer]"
+    },
+    {
+      "id": "RB-22",
+      "requirement": "REQ-8",
+      "level": "essential",
+      "kind": "verify",
+      "layer": "L1-function",
+      "score": 1,
+      "detail": "verify build: `pnpm build` exit=0  |   Learn more: https://nextjs.org/docs/messages/middleware-to-proxy"
+    },
+    {
+      "id": "RB-23",
+      "requirement": "REQ-2",
+      "level": "pitfall",
+      "kind": "grep",
+      "layer": "L1-function",
+      "score": 1,
+      "detail": "pattern /aws:ap-east-1|aws:ap-southeast/ in wrangler.jsonc: not found, expected absent"
+    },
+    {
+      "id": "RB-26",
+      "requirement": "REQ-5",
+      "level": "pitfall",
+      "kind": "grep",
+      "layer": "L4-interaction",
+      "score": 1,
+      "detail": "pattern /演示回放/ in src: found (src/lib/limits/rate-limit.test.ts), expected present"
+    },
+    {
+      "id": "RB-24",
+      "requirement": "REQ-1",
+      "level": "important",
+      "kind": "judge",
+      "layer": "L4-interaction",
+      "score": 1,
+      "detail": "judge: ANTI-1 absent: home is a calm zinc placeholder — no gradient mesh (backgroundImage none), no feature grid (0 grid nodes), no English-first hero (H1 is Chinese), no decorative illustration or marketing clutter. Matches vision airy density rather than busy AI landing."
+    },
+    {
+      "id": "RB-25",
+      "requirement": "REQ-8",
+      "level": "pitfall",
+      "kind": "grep",
+      "layer": "L2-robustness",
+      "score": 1,
+      "detail": "pattern /LLM_PROVIDER\\s*:\\s*[\"']mock[\"']/ in playwright.config.ts: found, expected present"
+    }
+  ],
+  "refinementSuggestions": {
+    "added": [
+      "RS-3",
+      "RS-4"
+    ],
+    "pending": [
+      "RS-1",
+      "RS-2",
+      "RS-3",
+      "RS-4"
+    ],
+    "invalid": []
+  }
+}

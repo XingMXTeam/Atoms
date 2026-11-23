@@ -1,0 +1,11 @@
+{
+  "probe": "unit-backed interaction contracts for REQ-5/REQ-6",
+  "cases": [
+    {"id": "E2E-3", "result": "PASS", "expect": "over DEVICE_DAILY_RUN_LIMIT -> replay + 演示回放 or Chinese refuse"},
+    {"id": "E2E-4", "result": "PASS", "expect": "LLM_PROVIDER=mock -> deterministic payload, meta.mode=mock"},
+    {"id": "E2E-5", "result": "PASS", "expect": "over DAILY_TOKEN_CAP -> replay not gemini"}
+  ],
+  "replayLabel": "演示回放",
+  "refuseMessageSample": "今日体验额度已用完，且演示回放暂不可用。请明天再试，或稍后再来。",
+  "note": "F1 has no run UI; label lives in provider/rate-limit meta consumed by later features."
+}

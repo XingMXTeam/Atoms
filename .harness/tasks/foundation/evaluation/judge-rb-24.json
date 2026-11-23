@@ -1,0 +1,11 @@
+{
+  "score": 1,
+  "note": "ANTI-1 absent: home is a calm zinc placeholder — no gradient mesh (backgroundImage none), no feature grid (0 grid nodes), no English-first hero (H1 is Chinese), no decorative illustration or marketing clutter. Matches vision airy density rather than busy AI landing.",
+  "artifacts": [
+    ".harness/tasks/foundation/evidence/c1-confirm/home.png",
+    ".harness/tasks/foundation/evaluation/evidence/home-metrics.json",
+    ".harness/tasks/foundation/evaluation/evidence/home-mobile-375.png"
+  ],
+  "verify": ["e2e", "build"],
+  "heuristics": ["H-UI-5.1", "H-UI-7.2"]
+}
