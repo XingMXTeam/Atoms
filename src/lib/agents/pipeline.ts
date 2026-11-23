@@ -25,7 +25,28 @@ export type RunAgentPipelineOptions = {
   onEvent?: (event: AgentEventRecord) => void | Promise<void>;
   /** When true, skip marking the run failed on error (caller handles). */
   signal?: AbortSignal;
+  /** Test-only delay between stages so e2e can force an SSE disconnect (REQ-9). */
+  stageDelayMs?: number;
 };
+
+async function delayStage(ms: number | undefined, signal?: AbortSignal) {
+  if (!ms || ms <= 0) return;
+  await new Promise<void>((resolve, reject) => {
+    const timer = setTimeout(() => {
+      signal?.removeEventListener("abort", onAbort);
+      resolve();
+    }, ms);
+    const onAbort = () => {
+      clearTimeout(timer);
+      reject(new DOMException("Aborted", "AbortError"));
+    };
+    if (signal?.aborted) {
+      onAbort();
+      return;
+    }
+    signal?.addEventListener("abort", onAbort, { once: true });
+  });
+}
 
 async function persistEvent(
   repo: AppRepository,
@@ -40,7 +61,16 @@ async function persistEvent(
 export async function runAgentPipeline(
   options: RunAgentPipelineOptions,
 ): Promise<PipelineResult> {
-  const { repo, provider, projectId, runId, prompt, onEvent, signal } = options;
+  const {
+    repo,
+    provider,
+    projectId,
+    runId,
+    prompt,
+    onEvent,
+    signal,
+    stageDelayMs,
+  } = options;
   const nextSeq = createSeqCounter();
 
   try {
@@ -48,6 +78,7 @@ export async function runAgentPipeline(
       throw new DOMException("Aborted", "AbortError");
     }
 
+    await delayStage(stageDelayMs, signal);
     const plan = await runPlanner(provider, prompt);
     await persistEvent(
       repo,
@@ -68,6 +99,7 @@ export async function runAgentPipeline(
       throw new DOMException("Aborted", "AbortError");
     }
 
+    await delayStage(stageDelayMs, signal);
     const design = await runArchitect(provider, { prompt, plan });
     await persistEvent(
       repo,
@@ -85,6 +117,7 @@ export async function runAgentPipeline(
       throw new DOMException("Aborted", "AbortError");
     }
 
+    await delayStage(stageDelayMs, signal);
     const engineer = await runEngineer(provider, { prompt, plan, design });
     await persistEvent(
       repo,

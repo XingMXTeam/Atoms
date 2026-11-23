@@ -12,10 +12,20 @@ type RouteContext = {
   params: Promise<{ projectId: string; runId: string }>;
 };
 
+function parseStageDelayMs(request: Request): number | undefined {
+  const url = new URL(request.url);
+  const raw = url.searchParams.get("stageDelayMs");
+  if (!raw) return undefined;
+  const value = Number(raw);
+  if (!Number.isFinite(value) || value <= 0) return undefined;
+  // Cap so a rogue client cannot stall the worker forever.
+  return Math.min(Math.floor(value), 5_000);
+}
+
 /**
  * SSE stream for Planner → Architect → Engineer.
  * OpenNext/Workers may buffer; we enqueue discrete SSE frames as events persist.
- * Disconnect → run marked `interrupted` (known limitation; 「继续」 lands in TASK-3).
+ * Disconnect → run marked `interrupted`; UI surfaces 「继续」 (REQ-9 known limitation).
  */
 export async function GET(request: Request, context: RouteContext) {
   const { projectId, runId } = await context.params;
@@ -48,6 +58,7 @@ export async function GET(request: Request, context: RouteContext) {
   request.signal.addEventListener("abort", () => {
     abort.abort();
   });
+  const stageDelayMs = parseStageDelayMs(request);
 
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
@@ -100,6 +111,7 @@ export async function GET(request: Request, context: RouteContext) {
           runId,
           prompt: userPrompt,
           signal: abort.signal,
+          stageDelayMs,
           onEvent: (event) => {
             send(encodeSseMessage(event));
           },

@@ -99,4 +99,43 @@ describe("agent pipeline (REQ-3 / REQ-7 / REQ-8)", () => {
     expect(engineerCalls).toBe(2);
     expect(result.files.length).toBeGreaterThan(0);
   });
+
+  it("marks run interrupted when the abort signal fires (REQ-9)", async () => {
+    const repo = createSqliteRepository(":memory:");
+    const project = await repo.createProject({
+      deviceId: "device-a",
+      title: "中断",
+    });
+    const run = await repo.createRun({
+      projectId: project.id,
+      status: "running",
+    });
+
+    const abort = new AbortController();
+    const provider = {
+      mode: "mock" as const,
+      async complete() {
+        abort.abort();
+        await new Promise((resolve) => setTimeout(resolve, 10));
+        return createLlmProvider({ mode: "mock" }).complete({
+          stage: "planner",
+        });
+      },
+    };
+
+    await expect(
+      runAgentPipeline({
+        repo,
+        provider,
+        projectId: project.id,
+        runId: run.id,
+        prompt: "做一个会中断的应用",
+        signal: abort.signal,
+      }),
+    ).rejects.toMatchObject({ name: "AbortError" });
+
+    const updated = await repo.getRun(run.id);
+    expect(updated?.status).toBe("interrupted");
+    expect(updated?.finishedAt).toBeInstanceOf(Date);
+  });
 });
