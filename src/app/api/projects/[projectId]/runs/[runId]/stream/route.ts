@@ -37,6 +37,7 @@ export async function GET(request: Request, context: RouteContext) {
   );
 
   const repo = getDb();
+  const provider = createLlmProvider();
   const project = await repo.getProject(projectId, deviceId);
   if (!project) {
     return new Response(JSON.stringify({ messageZh: "项目不存在" }), {
@@ -103,7 +104,6 @@ export async function GET(request: Request, context: RouteContext) {
         const messages = await repo.listMessages(projectId);
         const userPrompt =
           messages.filter((m) => m.role === "user").at(-1)?.content ?? project.title;
-        const provider = createLlmProvider();
         const currentVersion = project.currentVersionId
           ? await repo.getVersion(project.currentVersionId)
           : null;

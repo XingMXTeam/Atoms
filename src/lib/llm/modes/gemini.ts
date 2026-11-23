@@ -1,3 +1,4 @@
+import { DEFAULT_GEMINI_MODEL_FLASH } from "@/lib/env";
 import { resolveModelId, type ModelClass } from "../model-routing";
 import type { LlmCompletion, LlmProvider } from "../types";
 import { createReplayProvider, REPLAY_LABEL } from "./replay";
@@ -27,7 +28,7 @@ export type GeminiCompleteInput = {
 
 const GEMINI_API_BASE =
   "https://generativelanguage.googleapis.com/v1beta/models";
-const GEMINI_TIMEOUT_MS = 45_000;
+const GEMINI_TIMEOUT_MS = 60_000;
 
 type GeminiSchemaNode = {
   type: "OBJECT" | "ARRAY" | "STRING" | "BOOLEAN" | "INTEGER" | "NUMBER";
@@ -215,6 +216,9 @@ export async function defaultFetchGeminiCompletion(
     ],
     generationConfig: {
       temperature: input.stage === "qa" ? 0.1 : 0.3,
+      ...(input.modelId.startsWith("gemini-3")
+        ? { thinkingConfig: { thinkingLevel: "low" } }
+        : {}),
       ...(schema
         ? {
             responseMimeType: "application/json",
@@ -225,35 +229,43 @@ export async function defaultFetchGeminiCompletion(
   };
 
   const url = `${GEMINI_API_BASE}/${encodeURIComponent(input.modelId)}:generateContent`;
-  const response = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-goog-api-key": apiKey,
-    },
-    body: JSON.stringify(body),
-    signal: AbortSignal.timeout(GEMINI_TIMEOUT_MS),
-  });
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), GEMINI_TIMEOUT_MS);
 
-  if (!response.ok) {
-    throw new Error(`Gemini HTTP ${response.status}`);
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-goog-api-key": apiKey,
+      },
+      body: JSON.stringify(body),
+      signal: controller.signal,
+    });
+
+    if (!response.ok) {
+      const detail = (await response.text().catch(() => "")).slice(0, 300);
+      throw new Error(`Gemini HTTP ${response.status}${detail ? `: ${detail}` : ""}`);
+    }
+
+    const payload = (await response.json()) as {
+      candidates?: Array<{
+        content?: { parts?: Array<{ text?: string }> };
+      }>;
+    };
+    const rawText = payload.candidates?.[0]?.content?.parts
+      ?.map((part) => part.text ?? "")
+      .join("")
+      .trim();
+
+    if (!rawText) {
+      throw new Error("Gemini returned an empty completion");
+    }
+
+    return schema ? stripJsonFence(rawText) : rawText;
+  } finally {
+    clearTimeout(timer);
   }
-
-  const payload = (await response.json()) as {
-    candidates?: Array<{
-      content?: { parts?: Array<{ text?: string }> };
-    }>;
-  };
-  const rawText = payload.candidates?.[0]?.content?.parts
-    ?.map((part) => part.text ?? "")
-    .join("")
-    .trim();
-
-  if (!rawText) {
-    throw new Error("Gemini returned an empty completion");
-  }
-
-  return schema ? stripJsonFence(rawText) : rawText;
 }
 
 /**
@@ -270,15 +282,6 @@ export function createGeminiProvider(
   return {
     mode: "gemini",
     async complete(input: unknown): Promise<LlmCompletion> {
-      const apiKey = options.apiKey?.trim() ?? "";
-      if (!apiKey) {
-        const fallback = await replay.complete(input);
-        return {
-          text: fallback.text,
-          meta: { mode: "replay", label: REPLAY_LABEL },
-        };
-      }
-
       const typed =
         input && typeof input === "object"
           ? (input as GeminiCompleteInput)
@@ -288,10 +291,65 @@ export function createGeminiProvider(
         typed.modelClass === "pro" ? "pro" : "flash";
       const modelId = resolveModelId(modelClass);
 
+      const apiKey = options.apiKey?.trim() ?? "";
+      if (!apiKey) {
+        console.warn("[gemini-fallback]", {
+          stage: typed.stage ?? "general",
+          modelId,
+          hasKey: false,
+          reason: "missing_api_key",
+        });
+        const fallback = await replay.complete(input);
+        return {
+          text: fallback.text,
+          meta: { mode: "replay", label: REPLAY_LABEL },
+        };
+      }
+
       try {
         const text = await transport({ ...typed, modelClass, modelId }, apiKey);
         return { text, meta: { mode: "gemini" } };
-      } catch {
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        const canFallbackToFlash =
+          modelId !== DEFAULT_GEMINI_MODEL_FLASH &&
+          (message.includes("Gemini HTTP 404") ||
+            message.includes("Gemini HTTP 429") ||
+            message.includes("Gemini HTTP 503") ||
+            message.includes("aborted"));
+        const canRetryTransient503 =
+          modelId === DEFAULT_GEMINI_MODEL_FLASH &&
+          message.includes("Gemini HTTP 503");
+
+        if (canFallbackToFlash || canRetryTransient503) {
+          if (canRetryTransient503) {
+            await new Promise((resolve) => setTimeout(resolve, 800));
+          }
+          try {
+            const text = await transport(
+              { ...typed, modelClass: "flash", modelId: DEFAULT_GEMINI_MODEL_FLASH },
+              apiKey,
+            );
+            return { text, meta: { mode: "gemini" } };
+          } catch (retryError) {
+            console.warn("[gemini-fallback]", {
+              stage: typed.stage ?? "general",
+              modelId: DEFAULT_GEMINI_MODEL_FLASH,
+              hasKey: true,
+              reason:
+                retryError instanceof Error
+                  ? retryError.message
+                  : String(retryError),
+            });
+          }
+        } else {
+          console.warn("[gemini-fallback]", {
+            stage: typed.stage ?? "general",
+            modelId,
+            hasKey: true,
+            reason: message,
+          });
+        }
         const fallback = await replay.complete(input);
         return {
           text: fallback.text,

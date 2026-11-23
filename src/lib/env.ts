@@ -4,8 +4,8 @@ export const providerModeSchema = z.enum(["gemini", "mock", "replay"]);
 export type ProviderMode = z.infer<typeof providerModeSchema>;
 
 /** Defaults track currently available Flash/Pro-class Gemini ids (REQ-8). */
-export const DEFAULT_GEMINI_MODEL_FLASH = "gemini-2.5-flash";
-export const DEFAULT_GEMINI_MODEL_PRO = "gemini-2.5-pro";
+export const DEFAULT_GEMINI_MODEL_FLASH = "gemini-3.8-flash";
+export const DEFAULT_GEMINI_MODEL_PRO = "gemini-3.1-pro-preview";
 
 const CLOUDFLARE_CONTEXT_SYMBOL = Symbol.for("__cloudflare-context__");
 const ENV_KEYS = [
