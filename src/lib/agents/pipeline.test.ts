@@ -211,8 +211,11 @@ describe("agent pipeline (REQ-3 / REQ-7 / REQ-8)", () => {
     expect(qaCalls).toBe(4);
     expect(result).toMatchObject({ qaRounds: 3, qaScore: 0, exhausted: true });
     expect(result.versionId).toBeTruthy();
-    expect((await repo.getRun(run.id))?.qaRounds).toBe(3);
-    expect((await repo.getRun(run.id))?.qaScore).toBe(0);
+    const storedRun = await repo.getRun(run.id);
+    const storedProject = await repo.getProject(project.id, "device-a");
+    expect(storedRun?.qaRounds).toBe(3);
+    expect(storedRun?.qaScore).toBe(0);
+    expect(storedProject?.qaScore).toBe(storedRun?.qaScore);
     const events = await repo.listAgentEvents(run.id);
     expect(events.filter((event) => event.type === "fix")).toHaveLength(4);
     expect(events.at(-1)?.payload).toMatchObject({ exhausted: true, messageZh: "已达修复上限" });

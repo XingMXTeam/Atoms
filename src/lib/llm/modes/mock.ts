@@ -22,6 +22,7 @@ type MockCompleteInput = {
 };
 
 export function createMockProvider(): LlmProvider {
+  let persistentRepairAttempt = 0;
   return {
     mode: "mock",
     async complete(input: unknown): Promise<LlmCompletion> {
@@ -44,7 +45,8 @@ export function createMockProvider(): LlmProvider {
       }
       if (stage === "engineer") {
         const engineer = input as MockCompleteInput;
-        const output = engineer.prompt?.includes("触发修复演示")
+        const output = engineer.prompt?.includes("触发修复演示") ||
+          engineer.prompt?.includes("持续失败演示")
           ? {
               files: [{
                 path: "src/App.tsx",
@@ -59,13 +61,18 @@ export function createMockProvider(): LlmProvider {
         };
       }
       if (stage === "engineer-repair") {
+        const repair = input as MockCompleteInput;
+        const stillBroken = repair.prompt?.includes("持续失败演示");
+        if (stillBroken) persistentRepairAttempt += 1;
         return {
           text: JSON.stringify({
             files: [{
               path: "src/App.tsx",
-              content: 'export default function App() { return <main><h1>我的待办</h1><p>预览已修复</p></main>; }',
+              content: stillBroken
+                ? `/* MOCK_COMPILE_ERROR */\n/* 持续失败修复 ${persistentRepairAttempt} */\nexport default function App() { return <main><h1>我的待办</h1>; }`
+                : 'export default function App() { return <main><h1>我的待办</h1><p>预览已修复</p></main>; }',
             }],
-            summary: "已根据 QA 指令修复预览。",
+            summary: stillBroken ? "演示修复后仍有编译错误。" : "已根据 QA 指令修复预览。",
           }),
           meta: { mode: "mock" },
         };
