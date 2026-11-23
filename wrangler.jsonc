@@ -1,0 +1,29 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "atoms-demo",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2025-11-01",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  // Gemini REST is blocked from some CF regions (e.g. HKG); pin to us-east-1.
+  "placement": {
+    "region": "aws:us-east-1"
+  },
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "routes": [
+    {
+      "pattern": "atoms.maoxunxing.com",
+      "custom_domain": true
+    }
+  ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "atoms-demo",
+      // Placeholder — replace after `wrangler d1 create atoms-demo`.
+      "database_id": "00000000-0000-0000-0000-000000000000"
+    }
+  ]
+}
