@@ -24,6 +24,54 @@ describe("AppRepository (sqlite)", () => {
     expect(otherDevice).toBeNull();
   });
 
+  it("listProjects returns only this device's projects", async () => {
+    const repo = createSqliteRepository(":memory:");
+
+    const first = await repo.createProject({
+      deviceId: "device-a",
+      title: "旧项目",
+    });
+    // Ensure a later updatedAt so newest-first ordering is observable.
+    await new Promise((resolve) => setTimeout(resolve, 5));
+    const second = await repo.createProject({
+      deviceId: "device-a",
+      title: "新项目",
+    });
+    await repo.createProject({
+      deviceId: "device-b",
+      title: "别人的项目",
+    });
+
+    const listed = await repo.listProjects("device-a");
+    expect(listed).toHaveLength(2);
+    expect(listed.map((p) => p.id)).toEqual([second.id, first.id]);
+  });
+
+  it("createRun / addMessage persist for a project", async () => {
+    const repo = createSqliteRepository(":memory:");
+    const project = await repo.createProject({
+      deviceId: "device-a",
+      title: "运行项目",
+    });
+
+    const run = await repo.createRun({
+      projectId: project.id,
+      status: "running",
+    });
+    expect(run.projectId).toBe(project.id);
+    expect(run.status).toBe("running");
+    expect(run.finishedAt).toBeNull();
+
+    const message = await repo.addMessage({
+      projectId: project.id,
+      role: "user",
+      content: "做一个待办清单",
+    });
+    expect(message.projectId).toBe(project.id);
+    expect(message.role).toBe("user");
+    expect(message.content).toBe("做一个待办清单");
+  });
+
   it("incrementUsage / getUsage accumulates runs and tokens", async () => {
     const repo = createSqliteRepository(":memory:");
 

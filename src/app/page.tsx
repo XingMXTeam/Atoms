@@ -1,6 +1,18 @@
-export default function Home() {
+import { cookies } from "next/headers";
+import { PromptForm } from "@/components/home/prompt-form";
+import { ProjectGrid } from "@/components/home/project-grid";
+import { DEVICE_ID_COOKIE } from "@/lib/auth/device-id";
+import { getDb } from "@/lib/db";
+
+export const dynamic = "force-dynamic";
+
+export default async function Home() {
+  const cookieStore = await cookies();
+  const deviceId = cookieStore.get(DEVICE_ID_COOKIE)?.value;
+  const projects = deviceId ? await getDb().listProjects(deviceId) : [];
+
   return (
-    <main className="flex flex-1 flex-col items-center justify-center px-6 py-24">
+    <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col items-center gap-12 px-6 py-16">
       <div className="max-w-xl text-center">
         <p className="mb-3 text-sm font-medium tracking-wide text-zinc-500 dark:text-zinc-400">
           Atoms Studio
@@ -9,10 +21,12 @@ export default function Home() {
           可验证的 AI 应用生成
         </h1>
         <p className="mt-4 text-base leading-7 text-zinc-600 dark:text-zinc-400">
-          需求 → 验收标准 → QA 评分与自修复。脚手架已就绪，后续功能按 F1–F5
-          逐步接入。
+          输入需求，Agent 团队会规划、设计并生成可预览的应用。
         </p>
       </div>
+
+      <PromptForm />
+      <ProjectGrid projects={projects} />
     </main>
   );
 }

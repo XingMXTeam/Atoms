@@ -1,8 +1,8 @@
-import { and, eq, sql } from "drizzle-orm";
+import { and, desc, eq, sql } from "drizzle-orm";
 import type { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
 import type { DrizzleD1Database } from "drizzle-orm/d1";
 import * as schema from "./schema";
-import { projects, usage } from "./schema";
+import { messages, projects, runs, usage } from "./schema";
 
 export type Project = {
   id: string;
@@ -21,9 +21,37 @@ export type UsageRecord = {
   tokens: number;
 };
 
+export type Run = {
+  id: string;
+  projectId: string;
+  status: string;
+  qaRounds: number;
+  qaScore: number | null;
+  tokensIn: number;
+  tokensOut: number;
+  startedAt: Date;
+  finishedAt: Date | null;
+};
+
+export type Message = {
+  id: string;
+  projectId: string;
+  role: "user" | "agent";
+  content: string;
+  createdAt: Date;
+};
+
 export interface AppRepository {
   createProject(input: { deviceId: string; title: string }): Promise<Project>;
   getProject(id: string, deviceId: string): Promise<Project | null>;
+  listProjects(deviceId: string): Promise<Project[]>;
+  createRun(input: { projectId: string; status: string }): Promise<Run>;
+  updateRun(id: string, patch: Partial<Pick<Run, "status" | "finishedAt">>): Promise<Run>;
+  addMessage(input: {
+    projectId: string;
+    role: "user" | "agent";
+    content: string;
+  }): Promise<Message>;
   incrementUsage(
     deviceId: string,
     day: string,
@@ -57,6 +85,30 @@ function mapUsage(row: typeof usage.$inferSelect): UsageRecord {
   };
 }
 
+function mapRun(row: typeof runs.$inferSelect): Run {
+  return {
+    id: row.id,
+    projectId: row.projectId,
+    status: row.status,
+    qaRounds: row.qaRounds,
+    qaScore: row.qaScore,
+    tokensIn: row.tokensIn,
+    tokensOut: row.tokensOut,
+    startedAt: row.startedAt,
+    finishedAt: row.finishedAt,
+  };
+}
+
+function mapMessage(row: typeof messages.$inferSelect): Message {
+  return {
+    id: row.id,
+    projectId: row.projectId,
+    role: row.role,
+    content: row.content,
+    createdAt: row.createdAt,
+  };
+}
+
 export function createAppRepository(db: AppDb): AppRepository {
   return {
     async createProject(input) {
@@ -83,6 +135,62 @@ export function createAppRepository(db: AppDb): AppRepository {
         .limit(1);
       const row = rows[0];
       return row ? mapProject(row) : null;
+    },
+
+    async listProjects(deviceId) {
+      const rows = await db
+        .select()
+        .from(projects)
+        .where(eq(projects.deviceId, deviceId))
+        .orderBy(desc(projects.updatedAt), desc(projects.id));
+      return rows.map(mapProject);
+    },
+
+    async createRun(input) {
+      const now = new Date();
+      const id = crypto.randomUUID();
+      const row = {
+        id,
+        projectId: input.projectId,
+        status: input.status,
+        qaRounds: 0,
+        qaScore: null,
+        tokensIn: 0,
+        tokensOut: 0,
+        startedAt: now,
+        finishedAt: null,
+      };
+      await db.insert(runs).values(row);
+      return mapRun(row);
+    },
+
+    async updateRun(id, patch) {
+      const updates: Partial<typeof runs.$inferInsert> = {};
+      if (patch.status !== undefined) updates.status = patch.status;
+      if (patch.finishedAt !== undefined) updates.finishedAt = patch.finishedAt;
+
+      await db.update(runs).set(updates).where(eq(runs.id, id));
+
+      const rows = await db.select().from(runs).where(eq(runs.id, id)).limit(1);
+      const row = rows[0];
+      if (!row) {
+        throw new Error(`run missing after update (${id})`);
+      }
+      return mapRun(row);
+    },
+
+    async addMessage(input) {
+      const now = new Date();
+      const id = crypto.randomUUID();
+      const row = {
+        id,
+        projectId: input.projectId,
+        role: input.role,
+        content: input.content,
+        createdAt: now,
+      };
+      await db.insert(messages).values(row);
+      return mapMessage(row);
     },
 
     async incrementUsage(deviceId, day, delta) {

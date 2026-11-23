@@ -2,7 +2,13 @@ import { createD1Repository, type D1Binding } from "./adapters/d1";
 import { createSqliteRepository } from "./adapters/sqlite";
 import type { AppRepository } from "./repository";
 
-export type { AppRepository, Project, UsageRecord } from "./repository";
+export type {
+  AppRepository,
+  Message,
+  Project,
+  Run,
+  UsageRecord,
+} from "./repository";
 export type { D1Binding } from "./adapters/d1";
 export * from "./schema";
 
