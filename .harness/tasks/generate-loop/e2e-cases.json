@@ -1,0 +1,136 @@
+[
+  {
+    "id": "E2E-1",
+    "category": "core",
+    "mapsTo": "REQ-10",
+    "blocking": true,
+    "severity": "critical",
+    "route": "/",
+    "steps": [
+      "open / with LLM_PROVIDER=mock",
+      "fill or click an example prompt",
+      "submit",
+      "wait for workbench timeline Planner→Architect→Engineer completion",
+      "open 预览 tab"
+    ],
+    "expect": [
+      "preview iframe is non-blank",
+      "iframe body contains expected mock app content marker"
+    ]
+  },
+  {
+    "id": "E2E-2",
+    "category": "core",
+    "mapsTo": "REQ-4",
+    "blocking": true,
+    "severity": "critical",
+    "route": "/projects/demo",
+    "steps": [
+      "complete a mock generate",
+      "inspect left Agent timeline"
+    ],
+    "expect": [
+      "Planner / Architect / Engineer cards visible with Chinese labels",
+      "each completed card exposes status and expandable payload"
+    ]
+  },
+  {
+    "id": "E2E-3",
+    "category": "negative",
+    "mapsTo": "REQ-9",
+    "blocking": true,
+    "severity": "critical",
+    "route": "/projects/demo",
+    "steps": [
+      "start a mock run",
+      "force SSE disconnect mid-run via test hook or aborted client",
+      "observe workbench"
+    ],
+    "expect": [
+      "run status becomes interrupted",
+      "Chinese 继续 affordance is visible"
+    ]
+  },
+  {
+    "id": "E2E-4",
+    "category": "negative",
+    "mapsTo": "REQ-2",
+    "blocking": true,
+    "severity": "high",
+    "route": "/",
+    "steps": [
+      "open /",
+      "submit with empty prompt"
+    ],
+    "expect": [
+      "no navigation to workbench",
+      "Chinese validation feedback is shown or submit stays disabled"
+    ]
+  },
+  {
+    "id": "E2E-5",
+    "category": "boundary",
+    "mapsTo": "REQ-1",
+    "blocking": false,
+    "severity": "medium",
+    "route": "/",
+    "steps": [
+      "open /",
+      "click the first example prompt card"
+    ],
+    "expect": [
+      "central prompt input is filled with that card's text",
+      "at least 4 example cards are present"
+    ]
+  },
+  {
+    "id": "E2E-6",
+    "category": "persistence",
+    "mapsTo": "REQ-10",
+    "blocking": true,
+    "severity": "critical",
+    "route": "/",
+    "steps": [
+      "complete a mock generate",
+      "note project title from Planner output",
+      "navigate to / and hard refresh"
+    ],
+    "expect": [
+      "我的项目 lists the project",
+      "title is derived from Planner output"
+    ]
+  },
+  {
+    "id": "E2E-7",
+    "category": "uiJourney",
+    "mapsTo": "REQ-5",
+    "blocking": false,
+    "severity": "medium",
+    "route": "/projects/demo",
+    "steps": [
+      "complete a mock generate",
+      "switch 预览 → 代码 → 预览"
+    ],
+    "expect": [
+      "代码 tab shows a file tree and source for a selected file",
+      "returning to 预览 keeps a non-blank iframe",
+      "iframe sandbox attribute is allow-scripts only"
+    ]
+  },
+  {
+    "id": "E2E-8",
+    "category": "crossFeature",
+    "mapsTo": "REQ-2",
+    "blocking": false,
+    "severity": "medium",
+    "route": "/",
+    "steps": [
+      "open / with clean cookies",
+      "submit a prompt under mock provider"
+    ],
+    "expect": [
+      "deviceId cookie from foundation is present",
+      "created project is scoped to that deviceId (visible only for this browser context)"
+    ]
+  }
+]

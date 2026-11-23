@@ -1,0 +1,140 @@
+{
+  "version": 1,
+  "feature": "generate-loop",
+  "title": "",
+  "phase": "implement",
+  "createdAt": 1795426798303,
+  "updatedAt": 1795427038454,
+  "macroCycle": {
+    "current": 1,
+    "max": 5
+  },
+  "consecutivePasses": 0,
+  "clarificationComplete": true,
+  "tasks": [
+    {
+      "id": "TASK-1",
+      "title": "Home prompt, example cards, and 我的项目 grid",
+      "requirements": [
+        "REQ-1",
+        "REQ-2"
+      ],
+      "status": "pending",
+      "attempts": 0,
+      "commitSha": null
+    },
+    {
+      "id": "TASK-2",
+      "title": "SSE agent pipeline + repository persistence for events/versions",
+      "requirements": [
+        "REQ-3",
+        "REQ-7",
+        "REQ-8"
+      ],
+      "status": "pending",
+      "attempts": 0,
+      "commitSha": null
+    },
+    {
+      "id": "TASK-3",
+      "title": "Workbench Agent timeline + interrupt 继续 affordance",
+      "requirements": [
+        "REQ-4",
+        "REQ-9"
+      ],
+      "status": "pending",
+      "attempts": 0,
+      "commitSha": null
+    },
+    {
+      "id": "TASK-4",
+      "title": "Self-hosted esbuild-wasm preview + 代码 tab",
+      "requirements": [
+        "REQ-5",
+        "REQ-6"
+      ],
+      "status": "pending",
+      "attempts": 0,
+      "commitSha": null
+    },
+    {
+      "id": "TASK-5",
+      "title": "Mock e2e core+persistence journeys and verify green",
+      "requirements": [
+        "REQ-10",
+        "REQ-1",
+        "REQ-5"
+      ],
+      "status": "pending",
+      "attempts": 0,
+      "commitSha": null
+    }
+  ],
+  "history": [
+    {
+      "at": 1795426798305,
+      "event": "prd-imported",
+      "from": "docs/prd/F2-generate-loop.md",
+      "requirements": 10,
+      "numberingComplete": true
+    },
+    {
+      "at": 1795427038454,
+      "event": "clarify-done",
+      "tasks": 5
+    }
+  ],
+  "lastEvaluation": null,
+  "lastFailure": null,
+  "prd": {
+    "source": "imported",
+    "from": "docs/prd/F2-generate-loop.md",
+    "importedAt": "2026-11-23T09:39:58.303Z",
+    "requirements": 10,
+    "numberingComplete": true,
+    "missingNumbers": []
+  },
+  "baseSha": "83e04e4",
+  "rubricBaseline": {
+    "RB-1": "essential",
+    "RB-2": "essential",
+    "RB-3": "pitfall",
+    "RB-4": "essential",
+    "RB-5": "pitfall",
+    "RB-38": "pitfall",
+    "RB-39": "essential",
+    "RB-6": "essential",
+    "RB-7": "essential",
+    "RB-8": "essential",
+    "RB-9": "essential",
+    "RB-10": "pitfall",
+    "RB-11": "essential",
+    "RB-12": "essential",
+    "RB-13": "important",
+    "RB-14": "pitfall",
+    "RB-15": "essential",
+    "RB-16": "pitfall",
+    "RB-17": "pitfall",
+    "RB-18": "essential",
+    "RB-19": "essential",
+    "RB-20": "pitfall",
+    "RB-21": "essential",
+    "RB-22": "important",
+    "RB-23": "pitfall",
+    "RB-24": "essential",
+    "RB-25": "essential",
+    "RB-26": "essential",
+    "RB-27": "important",
+    "RB-28": "important",
+    "RB-29": "important",
+    "RB-30": "important",
+    "RB-31": "important",
+    "RB-32": "pitfall",
+    "RB-33": "pitfall",
+    "RB-34": "pitfall",
+    "RB-35": "pitfall",
+    "RB-36": "pitfall",
+    "RB-37": "pitfall"
+  },
+  "rubricHash": "7d2b7650a92a2b43"
+}
