@@ -497,3 +497,113 @@ test.describe("polish follow-up and UX states (REQ-2)", () => {
       .toMatch(/error|预览失败|预览已修复|我的待办|ready/);
   });
 });
+
+test.describe("polish China CDN reachability (REQ-7)", () => {
+  test("cdn-audit: home, workbench, and share never hit blocked CDNs", async ({
+    page,
+    browser,
+  }) => {
+    const { CDN_HOST_BLOCKLIST } = await import("../src/lib/preview/vendor");
+    const blockedHosts = CDN_HOST_BLOCKLIST.map((host) => host.toLowerCase());
+    const seenUrls: string[] = [];
+
+    const recordRequest = (url: string) => {
+      seenUrls.push(url);
+    };
+
+    page.on("request", (request) => {
+      recordRequest(request.url());
+    });
+
+    const assertNoBlockedHosts = (phase: string) => {
+      const offenders = seenUrls.filter((url) => {
+        try {
+          const host = new URL(url).hostname.toLowerCase();
+          return blockedHosts.some(
+            (blocked) => host === blocked || host.endsWith(`.${blocked}`),
+          );
+        } catch {
+          return blockedHosts.some((blocked) =>
+            url.toLowerCase().includes(blocked),
+          );
+        }
+      });
+      expect(offenders, `${phase} must not request blocked CDN hosts`).toEqual(
+        [],
+      );
+    };
+
+    // Home
+    await page.goto("/");
+    await expect(
+      page.getByRole("heading", { name: "可验证的 AI 应用生成" }),
+    ).toBeVisible();
+    await page.waitForTimeout(500);
+    assertNoBlockedHosts("home");
+
+    // Workbench (seeded project + preview)
+    await page.getByRole("link", { name: /待办清单示例/ }).click();
+    await expect(page).toHaveURL(/\/projects\//);
+    await page.getByRole("tab", { name: "预览" }).click();
+    await expect(page.getByTestId("preview-iframe")).toBeVisible({
+      timeout: 60_000,
+    });
+    await page.waitForTimeout(800);
+    assertNoBlockedHosts("workbench");
+
+    // Share (create if needed, then visit as a separate visitor)
+    const shareButton = page.getByRole("button", { name: "创建只读分享链接" });
+    if (await shareButton.isEnabled()) {
+      await shareButton.click();
+    } else {
+      await page.goto("/");
+      await page
+        .getByRole("textbox", { name: /描述你想生成的应用/ })
+        .fill("做一个简洁的待办清单应用");
+      await page.getByRole("button", { name: "开始生成" }).click();
+      await expect(
+        page.getByTestId("agent-card-engineer").getByText("已完成"),
+      ).toBeVisible({ timeout: 30_000 });
+      await page.getByRole("button", { name: "创建只读分享链接" }).click();
+    }
+
+    const shareLink = page.getByRole("link", { name: /\/share\// });
+    await expect(shareLink).toBeVisible({ timeout: 15_000 });
+    const shareUrl = await shareLink.getAttribute("href");
+    expect(shareUrl).toMatch(/^\/share\/[A-Za-z0-9_-]{43}$/);
+
+    const visitorContext = await browser.newContext();
+    const visitorPage = await visitorContext.newPage();
+    const visitorUrls: string[] = [];
+    visitorPage.on("request", (request) => {
+      visitorUrls.push(request.url());
+    });
+    await visitorPage.goto(shareUrl!);
+    await expect(visitorPage.getByText("只读分享")).toBeVisible();
+    await visitorPage.getByRole("tab", { name: "预览" }).click();
+    await expect(visitorPage.getByTestId("preview-iframe")).toBeVisible({
+      timeout: 60_000,
+    });
+    await visitorPage.waitForTimeout(800);
+
+    const visitorOffenders = visitorUrls.filter((url) => {
+      try {
+        const host = new URL(url).hostname.toLowerCase();
+        return blockedHosts.some(
+          (blocked) => host === blocked || host.endsWith(`.${blocked}`),
+        );
+      } catch {
+        return blockedHosts.some((blocked) =>
+          url.toLowerCase().includes(blocked),
+        );
+      }
+    });
+    expect(
+      visitorOffenders,
+      "share must not request blocked CDN hosts",
+    ).toEqual([]);
+    await visitorContext.close();
+
+    assertNoBlockedHosts("owner-after-share");
+  });
+});
