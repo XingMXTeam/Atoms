@@ -214,7 +214,7 @@ export function WorkbenchClient({
           type="button"
           onClick={exportCurrentVersion}
           disabled={exporting || !currentVersionId}
-          className="rounded-full border border-zinc-200 px-4 py-2 text-sm text-zinc-700 transition hover:bg-zinc-50 disabled:cursor-wait disabled:opacity-60 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900"
+          className="atoms-focus-ring rounded-full border border-zinc-200 px-4 py-2 text-sm text-zinc-700 transition hover:bg-zinc-50 disabled:cursor-wait disabled:opacity-60 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900"
         >
           {exporting ? "正在导出…" : "下载 ZIP"}
         </button>
@@ -222,7 +222,7 @@ export function WorkbenchClient({
           type="button"
           onClick={createShareLink}
           disabled={sharing || !currentVersionId}
-          className="rounded-full border border-zinc-200 px-4 py-2 text-sm text-zinc-700 transition hover:bg-zinc-50 disabled:cursor-wait disabled:opacity-60 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900"
+          className="atoms-focus-ring rounded-full border border-zinc-200 px-4 py-2 text-sm text-zinc-700 transition hover:bg-zinc-50 disabled:cursor-wait disabled:opacity-60 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900"
         >
           {sharing ? "正在创建…" : "创建只读分享链接"}
         </button>
@@ -245,7 +245,7 @@ export function WorkbenchClient({
           </p>
         ) : null}
       </div>
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
+      <div className="grid min-w-0 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
         <AgentTimeline
           projectId={projectId}
           initialRunId={initialRunId}

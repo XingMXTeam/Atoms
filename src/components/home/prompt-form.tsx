@@ -64,7 +64,7 @@ export function PromptForm({ initialPrompt = "" }: PromptFormProps) {
           onChange={(event) => setPrompt(event.target.value)}
           placeholder="描述你想生成的应用…"
           aria-label="描述你想生成的应用"
-          className="w-full resize-y rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-base text-zinc-900 shadow-sm outline-none placeholder:text-zinc-400 focus:border-zinc-400 focus:ring-2 focus:ring-zinc-200 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-50 dark:placeholder:text-zinc-500 dark:focus:border-zinc-600 dark:focus:ring-zinc-800"
+          className="atoms-focus-ring w-full resize-y rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-base text-zinc-900 shadow-sm placeholder:text-zinc-400 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-50 dark:placeholder:text-zinc-500"
         />
         <div className="flex items-center justify-between gap-3">
           {error ? (
@@ -77,7 +77,7 @@ export function PromptForm({ initialPrompt = "" }: PromptFormProps) {
           <button
             type="submit"
             disabled={!canSubmit}
-            className="inline-flex shrink-0 items-center justify-center rounded-full bg-zinc-900 px-5 py-2.5 text-sm font-medium text-white transition enabled:hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-zinc-100 dark:text-zinc-900 dark:enabled:hover:bg-white"
+            className="atoms-focus-ring inline-flex shrink-0 items-center justify-center rounded-full bg-zinc-900 px-5 py-2.5 text-sm font-medium text-white transition enabled:hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-zinc-100 dark:text-zinc-900 dark:enabled:hover:bg-white"
           >
             {pending ? "创建中…" : "开始生成"}
           </button>

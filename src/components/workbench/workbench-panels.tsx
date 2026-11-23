@@ -34,7 +34,7 @@ export function WorkbenchPanels({
   return (
     <section
       data-testid="workbench-panels"
-      className="flex min-h-64 flex-col gap-3 rounded-2xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950"
+      className="flex min-h-64 min-w-0 flex-col gap-3 rounded-2xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950"
     >
       <div
         role="tablist"
@@ -154,7 +154,7 @@ function VersionTimeline({
                       type="button"
                       disabled={restoringVersionId !== null}
                       onClick={() => onRestore(version.id)}
-                      className="rounded-full border border-zinc-200 px-3 py-1.5 text-xs font-medium text-zinc-700 transition hover:bg-zinc-50 disabled:cursor-wait disabled:opacity-60 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900"
+                      className="atoms-focus-ring rounded-full border border-zinc-200 px-3 py-1.5 text-xs font-medium text-zinc-700 transition hover:bg-zinc-50 disabled:cursor-wait disabled:opacity-60 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900"
                     >
                       {pending ? "正在恢复…" : "恢复此版本"}
                     </button>
@@ -191,8 +191,8 @@ function TabButton({
       onClick={() => onSelect(id)}
       className={
         selected
-          ? "rounded-full bg-zinc-900 px-4 py-1.5 text-sm font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
-          : "rounded-full px-4 py-1.5 text-sm font-medium text-zinc-600 transition hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+          ? "atoms-focus-ring atoms-tab-btn rounded-full bg-zinc-900 px-4 py-1.5 text-sm font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
+          : "atoms-focus-ring atoms-tab-btn rounded-full px-4 py-1.5 text-sm font-medium text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
       }
     >
       {label}

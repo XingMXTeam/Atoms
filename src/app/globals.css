@@ -3,6 +3,13 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --surface: #ffffff;
+  --surface-muted: #f4f4f5;
+  --border: #e4e4e7;
+  --focus-ring: #18181b;
+  --radius-card: 0.75rem;
+  --motion-fast: 160ms;
+  --motion-panel: 200ms;
 }
 
 @theme inline {
@@ -16,6 +23,10 @@
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
+    --surface: #09090b;
+    --surface-muted: #18181b;
+    --border: #27272a;
+    --focus-ring: #f4f4f5;
   }
 }
 
@@ -23,4 +34,55 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
+  overflow-x: clip;
+  /* Keep polish tokens live so runtime/theme probes can read them. */
+  --atoms-focus-ring: var(--focus-ring);
+  --atoms-radius-card: var(--radius-card);
+}
+
+@keyframes atoms-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.42;
+  }
+}
+
+.atoms-running-pulse {
+  animation: atoms-pulse 1.6s ease-in-out infinite;
+}
+
+.atoms-tab-btn {
+  transition:
+    color var(--motion-fast) ease,
+    background-color var(--motion-fast) ease,
+    box-shadow var(--motion-fast) ease;
+}
+
+.atoms-expand-panel {
+  transition:
+    opacity var(--motion-panel) ease,
+    transform var(--motion-panel) ease;
+  transform-origin: top;
+}
+
+.atoms-focus-ring:focus {
+  outline: none;
+}
+
+.atoms-focus-ring:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .atoms-running-pulse,
+  .atoms-tab-btn,
+  .atoms-expand-panel,
+  [data-motion] {
+    animation: none !important;
+    transition: none !important;
+  }
 }

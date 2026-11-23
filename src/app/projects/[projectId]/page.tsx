@@ -47,17 +47,21 @@ export default async function WorkbenchPage({
     notFound();
   }
 
-  const run = runIdFromQuery ? await repo.getRun(runIdFromQuery) : null;
-  if (runIdFromQuery && (!run || run.projectId !== projectId)) {
-    notFound();
-  }
-
   const currentVersion = project.currentVersionId
     ? await repo.getVersion(project.currentVersionId)
     : null;
   const version = currentVersion?.projectId === projectId ? currentVersion : null;
   const versions = await repo.listVersions(projectId);
-  const runId = run?.id ?? runIdFromQuery ?? "";
+
+  const preferredRunId = runIdFromQuery ?? version?.runId ?? null;
+  const run = preferredRunId ? await repo.getRun(preferredRunId) : null;
+  if (runIdFromQuery && (!run || run.projectId !== projectId)) {
+    notFound();
+  }
+  if (run && run.projectId !== projectId) {
+    notFound();
+  }
+  const runId = run?.id ?? "";
 
   let initialFiles: CodeFile[] = [];
   if (runId && version?.runId === runId) {
@@ -75,11 +79,11 @@ export default async function WorkbenchPage({
   }
 
   return (
-    <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-6 py-10">
-      <div className="flex items-center justify-between gap-4">
-        <div>
+    <main className="mx-auto flex w-full max-w-5xl min-w-0 flex-1 flex-col gap-6 overflow-x-clip px-4 py-10 sm:px-6">
+      <div className="flex min-w-0 items-center justify-between gap-4">
+        <div className="min-w-0">
           <p className="text-sm text-zinc-500 dark:text-zinc-400">工作台</p>
-          <h1 className="mt-1 text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+          <h1 className="mt-1 truncate text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
             {project.title}
           </h1>
           {runId ? (
@@ -91,7 +95,7 @@ export default async function WorkbenchPage({
         </div>
         <Link
           href="/"
-          className="rounded-full border border-zinc-200 px-4 py-2 text-sm text-zinc-700 transition hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900"
+          className="atoms-focus-ring shrink-0 rounded-full border border-zinc-200 px-4 py-2 text-sm text-zinc-700 transition hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900"
         >
           返回首页
         </Link>

@@ -105,7 +105,7 @@ export function QaTimelineCard({ events, status }: QaTimelineCardProps) {
           <button
             type="button"
             onClick={() => setExpanded((value) => !value)}
-            className="rounded-full border border-zinc-200 px-2.5 py-1 text-xs text-zinc-700 transition hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-950 dark:focus-visible:outline-zinc-100"
+            className="atoms-focus-ring rounded-full border border-zinc-200 px-2.5 py-1 text-xs text-zinc-700 transition hover:bg-white dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-950"
             aria-expanded={expanded}
           >
             {expanded ? "收起质检详情" : "展开质检详情"}
@@ -114,7 +114,7 @@ export function QaTimelineCard({ events, status }: QaTimelineCardProps) {
       </div>
 
       {expanded ? (
-        <div className="mt-3 space-y-3 text-xs leading-5 text-zinc-700 dark:text-zinc-300">
+        <div className="atoms-expand-panel mt-3 space-y-3 text-xs leading-5 text-zinc-700 dark:text-zinc-300">
           <ol aria-label="质检事件" className="space-y-1">
             {events.map((event) => {
               const payload = payloadOf(event);

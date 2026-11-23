@@ -82,7 +82,14 @@ export function AgentCard({ card }: AgentCardProps) {
             {label}
           </h3>
           <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-            {statusLabel}
+            <span
+              className={
+                card.status === "running" ? "atoms-running-pulse" : undefined
+              }
+              data-motion={card.status === "running" ? "pulse" : undefined}
+            >
+              {statusLabel}
+            </span>
             {elapsedMs !== null ? ` · ${formatElapsed(elapsedMs)}` : null}
           </p>
         </div>
@@ -90,7 +97,7 @@ export function AgentCard({ card }: AgentCardProps) {
           <button
             type="button"
             onClick={() => setExpanded((value) => !value)}
-            className="rounded-full border border-zinc-200 px-2.5 py-1 text-xs text-zinc-700 transition hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-950 dark:focus-visible:outline-zinc-100"
+            className="atoms-focus-ring rounded-full border border-zinc-200 px-2.5 py-1 text-xs text-zinc-700 transition hover:bg-white dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-950"
             aria-expanded={expanded}
           >
             {expanded ? "收起详情" : "展开详情"}
@@ -99,7 +106,7 @@ export function AgentCard({ card }: AgentCardProps) {
       </div>
 
       {expanded && payloadText ? (
-        <pre className="mt-3 max-h-56 overflow-auto rounded-lg bg-white p-3 text-xs leading-5 text-zinc-700 dark:bg-zinc-950 dark:text-zinc-300">
+        <pre className="atoms-expand-panel mt-3 max-h-56 overflow-auto rounded-lg bg-white p-3 text-xs leading-5 text-zinc-700 dark:bg-zinc-950 dark:text-zinc-300">
           {payloadText}
         </pre>
       ) : null}

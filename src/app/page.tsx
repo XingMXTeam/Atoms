@@ -14,7 +14,7 @@ export default async function Home() {
   const projects = deviceId ? await repo.listProjects(deviceId) : [];
 
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col items-center gap-12 px-6 py-16">
+    <main className="mx-auto flex w-full max-w-3xl min-w-0 flex-1 flex-col items-center gap-12 overflow-x-clip px-4 py-16 sm:px-6">
       <div className="max-w-xl text-center">
         <p className="mb-3 text-sm font-medium tracking-wide text-zinc-500 dark:text-zinc-400">
           Atoms Studio

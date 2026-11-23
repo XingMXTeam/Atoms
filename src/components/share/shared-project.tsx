@@ -22,7 +22,7 @@ export function SharedProject({
   const [activeTab, setActiveTab] = useState<TabId>("preview");
 
   return (
-    <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-6 py-10">
+    <main className="mx-auto flex w-full max-w-5xl min-w-0 flex-1 flex-col gap-6 overflow-x-clip px-4 py-10 sm:px-6">
       <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="text-sm text-zinc-500 dark:text-zinc-400">Atoms Studio · 项目分享</p>
@@ -92,8 +92,8 @@ function TabButton({
       onClick={() => onSelect(id)}
       className={
         selected
-          ? "rounded-full bg-zinc-900 px-4 py-1.5 text-sm font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
-          : "rounded-full px-4 py-1.5 text-sm font-medium text-zinc-600 transition hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+          ? "atoms-focus-ring atoms-tab-btn rounded-full bg-zinc-900 px-4 py-1.5 text-sm font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
+          : "atoms-focus-ring atoms-tab-btn rounded-full px-4 py-1.5 text-sm font-medium text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
       }
     >
       {label}

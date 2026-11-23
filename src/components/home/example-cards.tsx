@@ -35,19 +35,19 @@ type ExampleCardsProps = {
 
 export function ExampleCards({ onSelect }: ExampleCardsProps) {
   return (
-    <ul className="grid w-full gap-3 sm:grid-cols-2">
+    <ul className="grid w-full min-w-0 gap-3 sm:grid-cols-2">
       {EXAMPLE_PROMPTS.map((example) => (
-        <li key={example.id}>
+        <li key={example.id} className="min-w-0">
           <button
             type="button"
             aria-label={`示例：${example.prompt}`}
             onClick={() => onSelect(example.prompt)}
-            className="flex h-full w-full flex-col items-start gap-1 rounded-xl border border-zinc-200 bg-white px-4 py-3 text-left transition hover:border-zinc-400 hover:bg-zinc-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 dark:border-zinc-800 dark:bg-zinc-950 dark:hover:border-zinc-600 dark:hover:bg-zinc-900 dark:focus-visible:outline-zinc-100"
+            className="atoms-focus-ring flex h-full w-full min-w-0 flex-col items-start gap-1 overflow-hidden rounded-xl border border-zinc-200 bg-white px-4 py-3 text-left transition hover:border-zinc-400 hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 dark:hover:border-zinc-600 dark:hover:bg-zinc-900"
           >
-            <span className="text-sm font-medium text-zinc-900 dark:text-zinc-50">
+            <span className="truncate text-sm font-medium text-zinc-900 dark:text-zinc-50">
               {example.title}
             </span>
-            <span className="text-sm leading-6 text-zinc-600 dark:text-zinc-400">
+            <span className="line-clamp-3 break-words text-sm leading-6 text-zinc-600 dark:text-zinc-400">
               {example.prompt}
             </span>
           </button>
