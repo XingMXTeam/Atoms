@@ -53,9 +53,10 @@ export function AgentCard({ card }: AgentCardProps) {
 
   const elapsedMs = useMemo(() => {
     if (!card.startedAt) return null;
+    // Parent supplies `now` while running; avoid impure Date.now() during render.
     const end =
       card.finishedAt ??
-      (card.status === "running" ? (card.now ?? Date.now()) : card.startedAt);
+      (card.status === "running" ? (card.now ?? card.startedAt) : card.startedAt);
     return Math.max(0, end - card.startedAt);
   }, [card.finishedAt, card.now, card.startedAt, card.status]);
 

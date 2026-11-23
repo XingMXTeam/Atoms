@@ -12,37 +12,35 @@ type PreviewPaneProps = {
   files: PreviewFile[];
 };
 
-type PreviewState =
-  | { status: "empty" }
-  | { status: "loading" }
-  | { status: "ready"; srcdoc: string }
-  | { status: "error"; messageZh: string };
+type BundleResult =
+  | { status: "ready"; srcdoc: string; filesRef: PreviewFile[] }
+  | { status: "error"; messageZh: string; filesRef: PreviewFile[] };
 
 export function PreviewPane({ files }: PreviewPaneProps) {
-  const [state, setState] = useState<PreviewState>(
-    files.length === 0 ? { status: "empty" } : { status: "loading" },
-  );
+  const [bundle, setBundle] = useState<BundleResult | null>(null);
 
   useEffect(() => {
-    let cancelled = false;
-
     if (files.length === 0) {
-      setState({ status: "empty" });
       return;
     }
 
-    setState({ status: "loading" });
+    let cancelled = false;
 
     void (async () => {
       const result = await bundlePreviewFiles(files);
       if (cancelled) return;
       if (!result.ok) {
-        setState({ status: "error", messageZh: result.messageZh });
+        setBundle({
+          status: "error",
+          messageZh: result.messageZh,
+          filesRef: files,
+        });
         return;
       }
-      setState({
+      setBundle({
         status: "ready",
         srcdoc: buildPreviewSrcdoc(result.js, result.css),
+        filesRef: files,
       });
     })();
 
@@ -51,7 +49,7 @@ export function PreviewPane({ files }: PreviewPaneProps) {
     };
   }, [files]);
 
-  if (state.status === "empty") {
+  if (files.length === 0) {
     return (
       <div
         data-testid="preview-pane"
@@ -67,7 +65,9 @@ export function PreviewPane({ files }: PreviewPaneProps) {
     );
   }
 
-  if (state.status === "loading") {
+  const matchesCurrent = bundle?.filesRef === files;
+
+  if (!matchesCurrent) {
     return (
       <div
         data-testid="preview-pane"
@@ -79,7 +79,7 @@ export function PreviewPane({ files }: PreviewPaneProps) {
     );
   }
 
-  if (state.status === "error") {
+  if (bundle.status === "error") {
     return (
       <div
         data-testid="preview-pane"
@@ -91,7 +91,7 @@ export function PreviewPane({ files }: PreviewPaneProps) {
           预览失败
         </p>
         <p className="text-sm text-amber-800 dark:text-amber-300">
-          {state.messageZh}
+          {bundle.messageZh}
         </p>
       </div>
     );
@@ -107,7 +107,7 @@ export function PreviewPane({ files }: PreviewPaneProps) {
         title="应用预览"
         data-testid="preview-iframe"
         sandbox={getPreviewSandboxAttribute()}
-        srcDoc={state.srcdoc}
+        srcDoc={bundle.srcdoc}
         className="h-full min-h-56 w-full border-0 bg-white"
       />
     </div>

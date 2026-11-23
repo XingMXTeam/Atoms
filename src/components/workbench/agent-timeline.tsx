@@ -128,10 +128,20 @@ export function AgentTimeline({
   const [cards, setCards] = useState<AgentCardModel[]>(emptyCards);
   const [now, setNow] = useState(() => Date.now());
   const [continuePending, setContinuePending] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(() =>
+    initialRunStatus === "interrupted"
+      ? "连接已中断。可点击「继续」重新生成。"
+      : null,
+  );
   const sourceRef = useRef<EventSource | null>(null);
   const onFilesRef = useRef(onFiles);
-  onFilesRef.current = onFiles;
+  const skippedInitialInterrupted = useRef(
+    initialRunStatus === "interrupted",
+  );
+
+  useEffect(() => {
+    onFilesRef.current = onFiles;
+  }, [onFiles]);
 
   useEffect(() => {
     const id = window.setInterval(() => setNow(Date.now()), 500);
@@ -262,16 +272,19 @@ export function AgentTimeline({
 
   useEffect(() => {
     if (!runId) return;
-    if (initialRunStatus === "interrupted") {
-      setRunStatus("interrupted");
-      setErrorMessage("连接已中断。可点击「继续」重新生成。");
+    // First mount with an already-interrupted run: UI is hydrated via initial
+    // state; skip connect once. Later runId changes (「继续」) must connect.
+    if (skippedInitialInterrupted.current) {
+      skippedInitialInterrupted.current = false;
       return;
     }
-    if (initialRunStatus === "completed" || initialRunStatus === "failed") {
-      // Still open the stream once to hydrate persisted events.
-    }
-    connect(runId);
+    // Defer so connect's setState is not synchronous inside the effect body
+    // (react-hooks/set-state-in-effect).
+    const timer = window.setTimeout(() => {
+      connect(runId);
+    }, 0);
     return () => {
+      window.clearTimeout(timer);
       closeSource();
     };
     // Intentionally connect once per mount / runId change via continue.

@@ -17,6 +17,9 @@ const eslintConfig = defineConfig([
     "coverage/**",
     "playwright-report/**",
     "test-results/**",
+    // Harness artifacts + self-hosted preview vendor (bundled React ESM).
+    ".harness/**",
+    "public/preview/vendor/**",
   ]),
 ]);
 
