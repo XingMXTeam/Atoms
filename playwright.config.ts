@@ -22,7 +22,7 @@ export default defineConfig({
   webServer: {
     command: "pnpm exec next start --port 3000",
     url: BASE_URL,
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: false,
     timeout: 120_000,
     env: {
       ...process.env,

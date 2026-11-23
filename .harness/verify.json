@@ -17,14 +17,14 @@
       "description": "unit tests pass"
     },
     {
-      "id": "e2e",
-      "command": "pnpm test:e2e",
-      "description": "end-to-end journeys pass"
-    },
-    {
       "id": "build",
       "command": "pnpm build",
       "description": "production build succeeds"
+    },
+    {
+      "id": "e2e",
+      "command": "pnpm test:e2e",
+      "description": "end-to-end journeys pass"
     }
   ]
 }
