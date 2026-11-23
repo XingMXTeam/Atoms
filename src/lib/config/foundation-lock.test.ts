@@ -30,7 +30,7 @@ describe("foundation lock (REQ-1 / REQ-2 / REQ-7)", () => {
     expect(wrangler).toContain("aws:us-east-1");
     expect(wrangler).toContain("atoms.maoxunxing.com");
     expect(wrangler).toMatch(/"binding"\s*:\s*"DB"/);
-    expect(wrangler).toMatch(/Placeholder/i);
+    expect(wrangler).toMatch(/"database_id"\s*:\s*"[0-9a-f-]{36}"/i);
   });
 
   it("documents required env vars without committing secrets", () => {
