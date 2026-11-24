@@ -68,9 +68,14 @@ export function PromptForm({ initialPrompt = "" }: PromptFormProps) {
           rows={4}
           value={prompt}
           onChange={(event) => setPrompt(event.target.value)}
+          onKeyDown={(event) => {
+            if ((event.metaKey || event.ctrlKey) && event.key === "Enter" && canSubmit) {
+              event.currentTarget.form?.requestSubmit();
+            }
+          }}
           placeholder="描述你想生成的应用…"
           aria-label="描述你想生成的应用"
-          className="atoms-focus-ring w-full resize-y rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-base text-zinc-900 shadow-sm placeholder:text-zinc-400 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-50 dark:placeholder:text-zinc-500"
+          className="atoms-focus-ring w-full resize-y rounded-2xl border border-zinc-200 bg-white/95 px-4 py-3 text-base text-zinc-900 shadow-sm transition placeholder:text-zinc-400 hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-950/95 dark:text-zinc-50 dark:placeholder:text-zinc-500 dark:hover:border-zinc-700"
         />
         <div className="flex items-center justify-between gap-3">
           {error ? (
@@ -78,12 +83,12 @@ export function PromptForm({ initialPrompt = "" }: PromptFormProps) {
               {error}
             </p>
           ) : (
-            <span className="text-sm text-zinc-500">用一句话描述即可</span>
+            <span className="text-sm text-zinc-500">用一句话描述即可 · ⌘/Ctrl + Enter 提交</span>
           )}
           <button
             type="submit"
             disabled={!canSubmit}
-            className="atoms-focus-ring inline-flex shrink-0 items-center justify-center rounded-full bg-zinc-900 px-5 py-2.5 text-sm font-medium text-white transition enabled:hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-zinc-100 dark:text-zinc-900 dark:enabled:hover:bg-white"
+            className="atoms-focus-ring atoms-btn-press inline-flex shrink-0 items-center justify-center rounded-full bg-zinc-900 px-5 py-2.5 text-sm font-medium text-white shadow-xs enabled:hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-40 dark:bg-zinc-100 dark:text-zinc-900 dark:enabled:hover:bg-white"
           >
             {pending ? "创建中…" : "开始生成"}
           </button>

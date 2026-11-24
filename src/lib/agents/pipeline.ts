@@ -2,6 +2,10 @@ import type { AppRepository } from "@/lib/db/repository";
 import { utcDay } from "@/lib/limits/rate-limit";
 import type { LlmProvider } from "@/lib/llm/types";
 import type { PreviewProbeReport } from "@/lib/preview/probe";
+import {
+  verifyInBackendSandbox,
+  type SandboxVerifyReport,
+} from "@/lib/sandbox/runner";
 import { runArchitect } from "./architect";
 import { runEngineer, runEngineerRepair } from "./engineer";
 import { runQa, type QaResult } from "./qa";
@@ -43,6 +47,8 @@ export type RunAgentPipelineOptions = {
     files: GeneratedFile[],
     round: number,
   ) => Promise<PreviewProbeReport>;
+  /** Optional override for backend execution sandbox verification (tests). */
+  verifySandbox?: (files: GeneratedFile[]) => Promise<SandboxVerifyReport>;
 };
 
 async function delayStage(ms: number | undefined, signal?: AbortSignal) {
@@ -120,6 +126,7 @@ export async function runAgentPipeline(
     signal,
     stageDelayMs,
     probePreview,
+    verifySandbox,
   } = options;
   const nextSeq = createSeqCounter();
   let sawReplayFallback = false;
@@ -252,9 +259,18 @@ export async function runAgentPipeline(
 
     while (true) {
       const probeStarted = Date.now();
-      const probe = probePreview
-        ? await probePreview(files, qaRounds)
-        : defaultProbe(files);
+      const [rawProbe, sandbox] = await Promise.all([
+        probePreview ? probePreview(files, qaRounds) : Promise.resolve(defaultProbe(files)),
+        (verifySandbox ?? verifyInBackendSandbox)(files),
+      ]);
+      const probe: PreviewProbeReport = sandbox.ok
+        ? rawProbe
+        : {
+            ...rawProbe,
+            compileErrors: Array.from(
+              new Set([...rawProbe.compileErrors, ...sandbox.errors]),
+            ),
+          };
       await persistEvent(
         repo,
         {
@@ -265,6 +281,7 @@ export async function runAgentPipeline(
           payload: {
             round: qaRounds,
             report: probe,
+            sandbox,
             timing: stageTiming(probeStarted),
           },
         },

@@ -10,6 +10,7 @@ import {
   containsBlockedCdnUrl,
   isPreviewVendorSpecifier,
 } from "./vendor";
+import { buildPreviewStorageShim } from "./storage-bridge";
 
 export type PreviewFile = {
   path: string;
@@ -332,19 +333,21 @@ export async function bundlePreviewFiles(
  * Fully inlined srcdoc so a sandboxed iframe (opaque origin; no same-origin
  * grant) never needs to fetch host or remote assets. Classic scripts only —
  * module scripts do not execute under an opaque iframe origin.
- *
- * Order: vendor IIFE (installs global) → app IIFE (shim imports) → paint beacon.
+/**
+ * Order: storage shim → vendor IIFE (installs global) → app IIFE (shim imports) → paint beacon.
  */
 export function buildPreviewSrcdoc(
   js: string,
   css: string,
   vendorJs = "",
   tailwindJs = "",
+  initialState?: Record<string, string>,
 ): string {
   const escapedVendor = vendorJs.replace(/<\/script/gi, "<\\/script");
   const escapedJs = js.replace(/<\/script/gi, "<\\/script");
   const escapedCss = css.replace(/<\/style/gi, "<\\/style");
   const escapedTailwind = tailwindJs.replace(/<\/script/gi, "<\\/script");
+  const storageShim = buildPreviewStorageShim(initialState);
   const probeCapture = `window.__atomsProbeErrors=[];window.addEventListener("error",function(e){var errors=window.__atomsProbeErrors;if(errors.length<20){errors.push(String(e.message||"Runtime error").slice(0,500));}});window.addEventListener("unhandledrejection",function(e){var errors=window.__atomsProbeErrors;if(errors.length<20){var reason=e.reason;errors.push(String(reason&&reason.message||reason||"Unhandled rejection").slice(0,500));}});`;
   const probeBeacon = `try{setTimeout(function(){var r=document.getElementById("root");if(!r)return;var text=(r.innerText||r.textContent||"").trim().slice(0,2000);var count=Math.min(r.querySelectorAll("*").length,10000);if(window.parent&&window.parent!==window){window.parent.postMessage({source:"atoms-preview",type:"probe",compileErrors:[],runtimeErrors:window.__atomsProbeErrors.slice(0,20),blankScreen:!text,domSummary:{title:String(document.title||"").slice(0,200),text:text,elementCount:count}},"*");}},500);}catch(e){}`;
 
@@ -363,6 +366,7 @@ export function buildPreviewSrcdoc(
 <body class="atoms-preview-root">
   <div id="root"></div>
   <script>${probeCapture}</script>
+  <script>${storageShim}</script>
   <script>${escapedVendor}</script>
   <script>${escapedJs}</script>
   <script>${paintBeacon}</script>

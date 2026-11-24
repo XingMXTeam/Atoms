@@ -31,13 +31,24 @@
 }
 
 body {
-  background: var(--background);
+  background:
+    radial-gradient(ellipse 80% 40% at 50% -10%, rgba(99, 102, 241, 0.06), transparent 70%),
+    var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
   overflow-x: clip;
+  -webkit-font-smoothing: antialiased;
   /* Keep polish tokens live so runtime/theme probes can read them. */
   --atoms-focus-ring: var(--focus-ring);
   --atoms-radius-card: var(--radius-card);
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background:
+      radial-gradient(ellipse 80% 40% at 50% -10%, rgba(129, 140, 248, 0.09), transparent 70%),
+      var(--background);
+  }
 }
 
 @keyframes atoms-pulse {
@@ -50,8 +61,43 @@ body {
   }
 }
 
+@keyframes atoms-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .atoms-running-pulse {
   animation: atoms-pulse 1.6s ease-in-out infinite;
+}
+
+.atoms-card-lift {
+  transition:
+    transform var(--motion-fast) cubic-bezier(0.16, 1, 0.3, 1),
+    border-color var(--motion-fast) ease,
+    box-shadow var(--motion-fast) ease,
+    background-color var(--motion-fast) ease;
+}
+
+.atoms-card-lift:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px -6px rgba(0, 0, 0, 0.09);
+}
+
+.atoms-btn-press {
+  transition:
+    transform 120ms ease,
+    background-color var(--motion-fast) ease,
+    opacity var(--motion-fast) ease;
+}
+
+.atoms-btn-press:enabled:active {
+  transform: scale(0.985);
 }
 
 .atoms-tab-btn {
@@ -62,6 +108,7 @@ body {
 }
 
 .atoms-expand-panel {
+  animation: atoms-fade-up var(--motion-panel) cubic-bezier(0.16, 1, 0.3, 1);
   transition:
     opacity var(--motion-panel) ease,
     transform var(--motion-panel) ease;
@@ -79,10 +126,13 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .atoms-running-pulse,
+  .atoms-card-lift,
+  .atoms-btn-press,
   .atoms-tab-btn,
   .atoms-expand-panel,
   [data-motion] {
     animation: none !important;
     transition: none !important;
+    transform: none !important;
   }
 }

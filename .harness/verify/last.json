@@ -5,9 +5,9 @@
       "command": "pnpm typecheck",
       "status": "passed",
       "exitCode": 0,
-      "durationMs": 1695,
-      "at": 1795484122583,
-      "sha": "eff699f",
+      "durationMs": 1959,
+      "at": 1795495389676,
+      "sha": "0add9a8",
       "tail": "$ tsc --noEmit",
       "log": ".harness/verify/typecheck.log"
     },
@@ -16,10 +16,10 @@
       "command": "pnpm lint",
       "status": "passed",
       "exitCode": 0,
-      "durationMs": 3068,
-      "at": 1795484125691,
-      "sha": "eff699f",
-      "tail": "  45:3  warning  'initialRunQaScore' is defined but never used  @typescript-eslint/no-unused-vars\n\n✖ 2 problems (0 errors, 2 warnings)\n\n$ eslint",
+      "durationMs": 3271,
+      "at": 1795495392986,
+      "sha": "0add9a8",
+      "tail": "  46:3  warning  'initialRunQaScore' is defined but never used  @typescript-eslint/no-unused-vars\n\n✖ 2 problems (0 errors, 2 warnings)\n\n$ eslint",
       "log": ".harness/verify/lint.log"
     },
     "unit": {
@@ -27,10 +27,10 @@
       "command": "pnpm test",
       "status": "passed",
       "exitCode": 0,
-      "durationMs": 3790,
-      "at": 1795484129518,
-      "sha": "eff699f",
-      "tail": "  stage: 'engineer',\n  modelId: 'gemini-3.8-flash',\n  hasKey: false,\n  reason: 'missing_api_key'\n}",
+      "durationMs": 6582,
+      "at": 1795495399611,
+      "sha": "0add9a8",
+      "tail": "  stage: 'general',\n  modelId: 'gemini-3.1-flash-lite',\n  hasKey: false,\n  reason: 'missing_api_key'\n}",
       "log": ".harness/verify/unit.log"
     },
     "e2e": {
@@ -38,10 +38,10 @@
       "command": "pnpm test:e2e",
       "status": "passed",
       "exitCode": 0,
-      "durationMs": 21894,
-      "at": 1795484157244,
-      "sha": "eff699f",
-      "tail": "  32 passed (21.4s)\n$ playwright test\n[WebServer] ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.\n[WebServer] \n[WebServer]",
+      "durationMs": 23270,
+      "at": 1795495428350,
+      "sha": "0add9a8",
+      "tail": "  37 passed (22.8s)\n$ playwright test\n[WebServer] ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.\n[WebServer] \n[WebServer]",
       "log": ".harness/verify/e2e.log"
     },
     "build": {
@@ -49,12 +49,12 @@
       "command": "pnpm build",
       "status": "passed",
       "exitCode": 0,
-      "durationMs": 5751,
-      "at": 1795484135306,
-      "sha": "eff699f",
-      "tail": "  #3 [App Route]:\n    ./src/lib/db/adapters/sqlite.ts\n    ./src/lib/db/adapters/sqlite.ts\n    ./src/lib/db/index.ts\n    ./src/app/api/projects/[projectId]/runs/[runId]/probe/route.ts",
+      "durationMs": 5391,
+      "at": 1795495405042,
+      "sha": "0add9a8",
+      "tail": "  #2 [App Route]:\n    ./src/lib/sandbox/local-node.ts\n    ./src/lib/sandbox/runner.ts\n    ./src/lib/agents/pipeline.ts\n    ./src/app/api/projects/[projectId]/runs/[runId]/stream/route.ts",
       "log": ".harness/verify/build.log"
     }
   },
-  "updatedAt": 1795484157244
+  "updatedAt": 1795495428350
 }

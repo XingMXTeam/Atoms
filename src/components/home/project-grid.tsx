@@ -33,7 +33,7 @@ export function ProjectGrid({ projects }: ProjectGridProps) {
               <Link
                 href={`/projects/${project.id}`}
                 data-testid="project-card"
-                className="atoms-focus-ring block min-w-0 overflow-hidden rounded-xl border border-zinc-200 bg-white px-4 py-3 transition hover:border-zinc-400 hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-950 dark:hover:border-zinc-600 dark:hover:bg-zinc-900"
+                className="atoms-focus-ring atoms-card-lift block min-w-0 overflow-hidden rounded-xl border border-zinc-200 bg-white/95 px-4 py-3.5 hover:border-zinc-300 hover:bg-white dark:border-zinc-800 dark:bg-zinc-950/95 dark:hover:border-zinc-700 dark:hover:bg-zinc-900/90"
               >
                 <span
                   data-testid="project-card-title"
@@ -42,13 +42,17 @@ export function ProjectGrid({ projects }: ProjectGridProps) {
                 >
                   {project.title}
                 </span>
-                <span className="mt-1 block truncate text-xs text-zinc-500 dark:text-zinc-400">
+                <span className="mt-1 block truncate text-xs tabular-nums text-zinc-500 dark:text-zinc-400">
                   {formatShanghaiDateTime(project.updatedAt)}
                 </span>
                 {project.qaScore !== null ? (
                   <span
                     data-testid="project-score-badge"
-                    className="mt-2 inline-flex max-w-full truncate rounded-full bg-zinc-100 px-2.5 py-1 text-xs font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
+                    className={
+                      project.qaScore >= 90
+                        ? "mt-2.5 inline-flex max-w-full truncate rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-medium tabular-nums text-emerald-700 ring-1 ring-emerald-200/70 dark:bg-emerald-950/50 dark:text-emerald-300 dark:ring-emerald-800/60"
+                        : "mt-2.5 inline-flex max-w-full truncate rounded-full bg-zinc-100 px-2.5 py-0.5 text-xs font-medium tabular-nums text-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
+                    }
                   >
                     {project.qaScore} 分
                   </span>

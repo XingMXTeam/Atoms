@@ -14,12 +14,22 @@ import {
   type PreviewProbeReport,
 } from "@/lib/preview/probe";
 import {
+  isPreviewStorageMessage,
+  sanitizePreviewState,
+} from "@/lib/preview/storage-bridge";
+import {
   previewFrameMaxWidthPx,
   type PreviewWidthMode,
 } from "@/lib/preview/width";
 
 type PreviewPaneProps = {
   files: PreviewFile[];
+  /** Optional project id for D1 + localStorage state persistence across reloads. */
+  projectId?: string;
+  /** Server-loaded initial state snapshot from D1 `project_state`. */
+  initialState?: Record<string, string>;
+  /** When true (e.g. read-only share pages), state changes stay in memory only. */
+  readOnly?: boolean;
   /** `sourceFiles` identifies which file set produced the report (stale-probe guard). */
   onProbeReport?: (report: PreviewProbeReport, sourceFiles: PreviewFile[]) => void;
 };
@@ -34,16 +44,101 @@ type PreviewPaintMessage = {
   text?: string;
 };
 
-export function PreviewPane({ files, onProbeReport }: PreviewPaneProps) {
+type SyncStatus = "idle" | "saving" | "saved";
+
+function localStateKey(projectId: string): string {
+  return `atoms.previewState:${projectId}`;
+}
+
+function readLocalCachedState(projectId: string): Record<string, string> {
+  if (typeof window === "undefined") return {};
+  try {
+    const raw = window.localStorage.getItem(localStateKey(projectId));
+    if (!raw) return {};
+    return sanitizePreviewState(JSON.parse(raw));
+  } catch {
+    return {};
+  }
+}
+
+function writeLocalCachedState(projectId: string, state: Record<string, string>): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(localStateKey(projectId), JSON.stringify(state));
+  } catch {
+    // Ignore storage quota / private mode errors; D1 remains source of truth.
+  }
+}
+
+export function PreviewPane({
+  files,
+  projectId,
+  initialState,
+  readOnly = false,
+  onProbeReport,
+}: PreviewPaneProps) {
   const [bundle, setBundle] = useState<BundleResult | null>(null);
   const [paintedText, setPaintedText] = useState("");
   const [widthMode, setWidthMode] = useState<PreviewWidthMode>("desktop");
+  const [syncStatus, setSyncStatus] = useState<SyncStatus>(
+    initialState && Object.keys(initialState).length > 0 ? "saved" : "idle",
+  );
   const iframeRef = useRef<HTMLIFrameElement>(null);
   // Files that produced the currently mounted iframe; probes are attributed to them.
   const renderedFilesRef = useRef<PreviewFile[] | null>(null);
   const generationRef = useRef(0);
+  const stateRef = useRef<Record<string, string>>(
+    sanitizePreviewState(initialState ?? {}),
+  );
+  const pendingStateRef = useRef<Record<string, string> | null>(null);
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const saveSeqRef = useRef(0);
 
   useEffect(() => scheduleEsbuildWasmPreload(), []);
+
+  // Hydrate instant local cache if server D1 snapshot is empty on first mount.
+  useEffect(() => {
+    if (readOnly || !projectId) return;
+    if (Object.keys(stateRef.current).length === 0) {
+      const cached = readLocalCachedState(projectId);
+      if (Object.keys(cached).length > 0) {
+        stateRef.current = cached;
+      }
+    } else {
+      writeLocalCachedState(projectId, stateRef.current);
+    }
+  }, [projectId, readOnly]);
+
+  // Flush any pending D1 state save on page hide / unmount so fast reloads never drop data.
+  useEffect(() => {
+    if (readOnly || !projectId) return;
+    const flushNow = () => {
+      if (saveTimerRef.current) {
+        clearTimeout(saveTimerRef.current);
+        saveTimerRef.current = null;
+      }
+      const pending = pendingStateRef.current;
+      if (!pending) return;
+      pendingStateRef.current = null;
+      void fetch(`/api/projects/${projectId}/state`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ state: pending }),
+        keepalive: true,
+      }).catch(() => undefined);
+    };
+
+    const onVisibility = () => {
+      if (document.visibilityState === "hidden") flushNow();
+    };
+    window.addEventListener("pagehide", flushNow);
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      window.removeEventListener("pagehide", flushNow);
+      document.removeEventListener("visibilitychange", onVisibility);
+      flushNow();
+    };
+  }, [projectId, readOnly]);
 
   useEffect(() => {
     if (files.length === 0) {
@@ -77,6 +172,7 @@ export function PreviewPane({ files, onProbeReport }: PreviewPaneProps) {
           result.css,
           result.vendorJs,
           result.tailwindJs,
+          stateRef.current,
         ),
         filesRef: files,
       });
@@ -91,10 +187,48 @@ export function PreviewPane({ files, onProbeReport }: PreviewPaneProps) {
     function onMessage(event: MessageEvent) {
       const data = event.data;
       if (event.source !== iframeRef.current?.contentWindow) return;
+
       const report = isPreviewProbeMessage(event, iframeRef.current?.contentWindow);
       if (report && renderedFilesRef.current) {
         onProbeReport?.(report, renderedFilesRef.current);
       }
+
+      const nextState = isPreviewStorageMessage(
+        event,
+        iframeRef.current?.contentWindow,
+      );
+      if (nextState) {
+        const serializedPrev = JSON.stringify(stateRef.current);
+        const serializedNext = JSON.stringify(nextState);
+        if (serializedNext !== serializedPrev) {
+          stateRef.current = nextState;
+          if (!readOnly && projectId) {
+            writeLocalCachedState(projectId, nextState);
+            pendingStateRef.current = nextState;
+            const seq = ++saveSeqRef.current;
+            setSyncStatus("saving");
+            if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+            saveTimerRef.current = setTimeout(() => {
+              saveTimerRef.current = null;
+              const payload = pendingStateRef.current;
+              if (!payload) return;
+              pendingStateRef.current = null;
+              void fetch(`/api/projects/${projectId}/state`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ state: payload }),
+              })
+                .then((res) => {
+                  if (res.ok && saveSeqRef.current === seq) {
+                    setSyncStatus("saved");
+                  }
+                })
+                .catch(() => undefined);
+            }, 120);
+          }
+        }
+      }
+
       if (!data || typeof data !== "object") return;
       const message = data as PreviewPaintMessage;
       const text = message.text?.trim();
@@ -108,7 +242,7 @@ export function PreviewPane({ files, onProbeReport }: PreviewPaneProps) {
     }
     window.addEventListener("message", onMessage);
     return () => window.removeEventListener("message", onMessage);
-  }, [onProbeReport]);
+  }, [onProbeReport, projectId, readOnly]);
 
   if (files.length === 0) {
     return (
@@ -168,27 +302,46 @@ export function PreviewPane({ files, onProbeReport }: PreviewPaneProps) {
       data-preview-width={widthMode}
       className="flex h-full min-h-56 flex-col gap-3"
     >
-      <div
-        role="group"
-        aria-label="预览宽度"
-        data-testid="preview-width-toggle"
-        className="inline-flex w-fit items-center gap-1 rounded-full border border-zinc-200 bg-zinc-50 p-1 dark:border-zinc-800 dark:bg-zinc-900"
-      >
-        <WidthToggleButton
-          label="桌面"
-          selected={widthMode === "desktop"}
-          onSelect={() => setWidthMode("desktop")}
-        />
-        <WidthToggleButton
-          label="移动 375px"
-          selected={widthMode === "mobile"}
-          onSelect={() => setWidthMode("mobile")}
-        />
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div
+          role="group"
+          aria-label="预览宽度"
+          data-testid="preview-width-toggle"
+          className="inline-flex w-fit items-center gap-1 rounded-full border border-zinc-200 bg-zinc-50 p-1 dark:border-zinc-800 dark:bg-zinc-900"
+        >
+          <WidthToggleButton
+            label="桌面"
+            selected={widthMode === "desktop"}
+            onSelect={() => setWidthMode("desktop")}
+          />
+          <WidthToggleButton
+            label="移动 375px"
+            selected={widthMode === "mobile"}
+            onSelect={() => setWidthMode("mobile")}
+          />
+        </div>
+
+        {!readOnly && projectId && syncStatus !== "idle" ? (
+          <span
+            data-testid="preview-state-sync"
+            data-sync-status={syncStatus}
+            className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-zinc-50 px-2.5 py-1 text-xs text-zinc-600 transition dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400"
+          >
+            <span
+              className={
+                syncStatus === "saving"
+                  ? "h-1.5 w-1.5 animate-pulse rounded-full bg-amber-500"
+                  : "h-1.5 w-1.5 rounded-full bg-emerald-500"
+              }
+            />
+            {syncStatus === "saving" ? "正在同步状态…" : "状态已持久化"}
+          </span>
+        ) : null}
       </div>
 
       <div
         data-testid="preview-frame"
-        className="mx-auto h-full min-h-56 w-full overflow-hidden rounded-xl border border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950"
+        className="mx-auto h-full min-h-56 w-full overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-xs transition-[max-width] duration-200 dark:border-zinc-800 dark:bg-zinc-950"
         style={maxWidth ? { maxWidth: `${maxWidth}px` } : undefined}
       >
         {/* Accessible paint probe for e2e when iframe content is opaque-origin. */}
@@ -229,8 +382,8 @@ function WidthToggleButton({
       onClick={onSelect}
       className={
         selected
-          ? "atoms-focus-ring rounded-full bg-zinc-900 px-3 py-1 text-xs font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
-          : "atoms-focus-ring rounded-full px-3 py-1 text-xs font-medium text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+          ? "atoms-focus-ring rounded-full bg-zinc-900 px-3 py-1 text-xs font-medium text-white transition dark:bg-zinc-100 dark:text-zinc-900"
+          : "atoms-focus-ring rounded-full px-3 py-1 text-xs text-zinc-600 transition hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-50"
       }
     >
       {label}

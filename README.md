@@ -8,7 +8,7 @@ Atoms Studio 是一个面向 mainland-China 可达网络的演示产品：用可
 
 - **App shell**: Next.js App Router + TypeScript，中文界面，light/dark 跟随 `prefers-color-scheme`。
 - **Agent loop**: 服务端 SSE 流水线；Provider 模式 `gemini` / `mock` / `replay`（默认采用低成本 Gemini Flash/Lite，配额耗尽、鉴权失败或上游异常时自动切换 DeepSeek 实时兜底，主备均不可用时首轮回退到高质量「演示回放」，增量迭代显式报错保护现有版本）。流水线实时统计上游 `usageMetadata` / `usage` token 用量，并在 QA 环节通过 `POST /api/.../probe` + D1 `preview_probes` 接入浏览器沙箱真实 DOM/错误探测报告（超时回退到服务端静态探测）。
-- **Preview (Plan A)**: 浏览器内 `esbuild-wasm` 打包 + `sandbox="allow-scripts allow-forms"`（严禁 `allow-same-origin`）iframe 预览。**不使用 WebContainer。**
+- **Preview & Persistence (Plan A + Dual-Track Sandbox)**: 浏览器内 `esbuild-wasm` 同源极速打包 + `sandbox="allow-scripts allow-forms"`（严禁 `allow-same-origin`）iframe 预览，内置安全 `postMessage` 存储桥将生成应用状态持久化至 D1 `project_state`（整页刷新不丢失）；QA 阶段并行调用可插拔后台执行沙箱（`cloudflare-sandbox` / `local-node-sandbox` 真实 `tsc --noEmit` / `worker-static-verifier`）。**不使用 WebContainer。**
 - **China reachability**: 运行时不依赖外部 CDN。`esbuild.wasm`、白名单 ESM vendor、Tailwind 浏览器构建均自托管在同源 `/preview/*`。
 - **Persistence**: Cloudflare D1 + Drizzle（本地/e2e 用 better-sqlite3，同一 repository 接口）。
 - **Deploy**: OpenNext → Cloudflare Workers，自定义域名 `atoms.maoxunxing.com`，Worker `placement: { region: "aws:us-east-1" }`（避免部分区域无法访问 Gemini）。

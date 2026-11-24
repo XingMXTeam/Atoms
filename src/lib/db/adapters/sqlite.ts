@@ -5,7 +5,11 @@ import { drizzle } from "drizzle-orm/better-sqlite3";
 import { createAppRepository, type AppRepository } from "../repository";
 import * as schema from "../schema";
 
-const MIGRATION_FILES = ["0000_init.sql", "0001_preview_probes.sql"] as const;
+const MIGRATION_FILES = [
+  "0000_init.sql",
+  "0001_preview_probes.sql",
+  "0002_project_state.sql",
+] as const;
 
 function loadSchemaSql(): string {
   const base = path.join(/*turbopackIgnore: true*/ process.cwd(), "migrations");

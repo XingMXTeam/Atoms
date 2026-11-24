@@ -1,0 +1,10 @@
+# Production Cloudflare Sandbox container image (matches stable @cloudflare/sandbox).
+# Build and deploy when Cloudflare Workers Paid + Containers is enabled on the account.
+FROM docker.io/cloudflare/sandbox:0.7.0
+
+WORKDIR /workspace
+
+# Pre-install TypeScript & React type definitions so verification runs offline
+# without pulling external npm registries at request time.
+RUN npm init -y && \
+    npm install --no-audit --no-fund typescript @types/react @types/react-dom react react-dom

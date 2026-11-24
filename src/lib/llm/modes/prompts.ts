@@ -65,7 +65,7 @@ export function buildPromptForStage(input: GeminiCompleteInput): {
         "硬性约束：",
         "1. 只能导入 `react`、`react-dom/client` 以及本地相对路径 `./...`；严禁导入未安装的第三方包，严禁引用任何外部 CDN URL。",
         "2. 必须确保 `src/main.tsx` 使用 `createRoot(document.getElementById(\"root\")!).render(<App />)` 挂载，`src/App.tsx` 使用 `export default function App()`。",
-        "3. 预览运行在无 allow-same-origin 权限的沙箱 iframe 中：严禁调用 `localStorage`、`sessionStorage` 或 `document.cookie`（会触发 SecurityError 导致功能失效），全部状态必须保留在 React `useState` / `useReducer` 中。若使用 `<form>`，必须在 `onSubmit` 调用 `e.preventDefault()` 或直接使用 `button type=\"button\"` 搭配 `onClick` 与键盘 Enter 事件，确保点击添加或提交始终触发。",
+        "3. 预览运行在无 allow-same-origin 权限的沙箱 iframe 中，宿主已通过安全存储桥代理 `localStorage`（并持久化到服务端数据库）：业务数据（如待办任务、完成状态、游戏进度与最高分等）应使用 `localStorage` 读写（并包在 `try/catch` 中防止异常），严禁调用 `document.cookie`。若使用 `<form>`，必须在 `onSubmit` 调用 `e.preventDefault()` 或直接使用 `button type=\"button\"` 搭配 `onClick` 与键盘 Enter 事件，确保点击添加或提交始终触发。",
         "4. 界面文案全部使用简体中文，页面结构清晰美观（可使用 Tailwind CSS v4 工具类）、具备真实可交互状态。",
         hasCurrentFiles
           ? "5. 这是基于现有版本的增量迭代/缺陷修复：必须完整保留 `currentFiles` 中既有的视觉设计、Tailwind 样式、布局结构和未要求改动的既有功能，只返回需要修复或增强的文件，禁止推倒重写或退化为无样式骨架，并在 summary 用一句话总结改动。"
@@ -86,7 +86,7 @@ export function buildPromptForStage(input: GeminiCompleteInput): {
     return {
       systemInstruction: [
         "你是 Atoms Studio 的全栈工程师 (Engineer)。根据 QA 修复指令修复现有 React + TS 文件中的编译错误、运行时异常或白屏问题。",
-        "硬性约束：只导入 `react` / `react-dom/client` 与本地相对路径；严禁调用 `localStorage`、`sessionStorage` 或 `document.cookie`；表单提交必须使用 `e.preventDefault()` 或 `onClick`；保留原有视觉与样式，只返回本次需要修改的文件，保证代码能正确渲染可见内容。严格输出 JSON。",
+        "硬性约束：只导入 `react` / `react-dom/client` 与本地相对路径；业务状态可通过宿主安全代理的 `localStorage`（配 `try/catch`）持久化，严禁调用 `document.cookie`；表单提交必须使用 `e.preventDefault()` 或 `onClick`；保留原有视觉与样式，只返回本次需要修改的文件，保证代码能正确渲染可见内容。严格输出 JSON。",
       ].join("\n"),
       userPrompt: JSON.stringify({
         prompt: input.prompt ?? "",

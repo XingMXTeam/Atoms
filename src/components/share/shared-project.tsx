@@ -52,7 +52,7 @@ export function SharedProject({
           hidden={activeTab !== "preview"}
           className="min-h-64 flex-1"
         >
-          <PreviewPane files={files} />
+          <PreviewPane files={files} readOnly />
         </div>
         <div
           role="tabpanel"

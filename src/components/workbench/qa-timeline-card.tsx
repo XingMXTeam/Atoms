@@ -8,6 +8,7 @@ import {
   readDurationLabel,
   UNRECORDED_DURATION_LABEL,
 } from "@/lib/agents/timing";
+import type { SandboxVerifyReport } from "@/lib/sandbox/types";
 import type { AgentCardStatus } from "./agent-card";
 
 type QaTimelineCardProps = {
@@ -30,6 +31,13 @@ type QaEventPayload = {
   exhausted?: boolean;
   messageZh?: string;
   report?: unknown;
+  sandbox?: SandboxVerifyReport;
+};
+
+const SANDBOX_BACKEND_LABEL: Record<SandboxVerifyReport["backend"], string> = {
+  "cloudflare-sandbox": "Cloudflare Sandbox 容器",
+  "local-node-sandbox": "Node 隔离执行沙箱",
+  "worker-static-verifier": "Worker 服务端校验器",
 };
 
 type CriterionHistory = {
@@ -161,7 +169,62 @@ export function QaTimelineCard({ events, status }: QaTimelineCardProps) {
                   {payload.fixInstruction ? <p>{payload.fixInstruction}</p> : null}
                   {payload.messageZh ? <p>{payload.messageZh}</p> : null}
                   {event.type === "probe" ? (
-                    <p>{payload.report ? "已收到预览探测报告" : "预览探测"}</p>
+                    <div className="mt-1 space-y-2">
+                      <p className="text-zinc-600 dark:text-zinc-400">
+                        {payload.report ? "已收到预览探测报告" : "预览探测"}
+                      </p>
+                      {payload.sandbox ? (
+                        <div
+                          data-testid="qa-sandbox-report"
+                          data-sandbox-backend={payload.sandbox.backend}
+                          className="rounded-lg border border-zinc-200/80 bg-zinc-50/90 p-2.5 dark:border-zinc-800 dark:bg-zinc-900/70"
+                        >
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <span className="font-medium text-zinc-800 dark:text-zinc-200">
+                              后台沙箱 · {SANDBOX_BACKEND_LABEL[payload.sandbox.backend]}
+                            </span>
+                            <span
+                              className={
+                                payload.sandbox.ok
+                                  ? "rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-medium tabular-nums text-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-300"
+                                  : "rounded-full bg-rose-100 px-2 py-0.5 text-[11px] font-medium tabular-nums text-rose-800 dark:bg-rose-950/70 dark:text-rose-300"
+                              }
+                            >
+                              {payload.sandbox.ok ? "通过" : "失败"} · {payload.sandbox.durationMs}ms
+                            </span>
+                          </div>
+                          {payload.sandbox.commands.map((cmd, idx) => (
+                            <div
+                              key={`${cmd.command}-${idx}`}
+                              className="mt-2 rounded-md border border-zinc-200/70 bg-zinc-950 px-2.5 py-2 font-mono text-[11px] leading-relaxed text-zinc-100 dark:border-zinc-800"
+                            >
+                              <div className="flex items-center justify-between gap-2 text-zinc-400">
+                                <span className="truncate">$ {cmd.command}</span>
+                                <span
+                                  className={
+                                    cmd.exitCode === 0
+                                      ? "shrink-0 tabular-nums text-emerald-400"
+                                      : "shrink-0 tabular-nums text-rose-400"
+                                  }
+                                >
+                                  exit {cmd.exitCode} · {cmd.durationMs}ms
+                                </span>
+                              </div>
+                              {cmd.stdout ? (
+                                <pre className="mt-1 overflow-x-auto whitespace-pre-wrap text-zinc-200">
+                                  {cmd.stdout}
+                                </pre>
+                              ) : null}
+                              {cmd.stderr ? (
+                                <pre className="mt-1 overflow-x-auto whitespace-pre-wrap text-rose-300">
+                                  {cmd.stderr}
+                                </pre>
+                              ) : null}
+                            </div>
+                          ))}
+                        </div>
+                      ) : null}
+                    </div>
                   ) : null}
                 </li>
               );

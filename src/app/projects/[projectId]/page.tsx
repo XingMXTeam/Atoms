@@ -62,6 +62,7 @@ export default async function WorkbenchPage({
     : null;
   const version = currentVersion?.projectId === projectId ? currentVersion : null;
   const versions = await repo.listVersions(projectId);
+  const initialProjectState = await repo.getProjectState(projectId);
 
   const preferredRunId = runIdFromQuery ?? version?.runId ?? null;
   const run = preferredRunId ? await repo.getRun(preferredRunId) : null;
@@ -122,6 +123,7 @@ export default async function WorkbenchPage({
           initialVersionRunId={version?.runId ?? null}
           initialVersionQaScore={version?.qaScore ?? null}
           initialFiles={initialFiles}
+          initialProjectState={initialProjectState}
           initialQaScore={project.qaScore}
           initialProviderLabel={initialProviderLabel}
           initialVersions={versions.map((item) => ({

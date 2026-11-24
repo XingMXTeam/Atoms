@@ -1,6 +1,7 @@
 import { and, asc, desc, eq, sql } from "drizzle-orm";
 import type { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
 import type { DrizzleD1Database } from "drizzle-orm/d1";
+import { sanitizePreviewState } from "@/lib/preview/storage-bridge";
 import * as schema from "./schema";
 import { persistSeedBundle } from "./seed-bundle";
 import {
@@ -8,6 +9,7 @@ import {
   messages,
   previewProbes,
   projects,
+  projectState,
   runs,
   usage,
   versions,
@@ -106,6 +108,11 @@ export interface AppRepository {
     report: unknown;
   }): Promise<void>;
   getPreviewProbe(runId: string, round: number): Promise<unknown | null>;
+  getProjectState(projectId: string): Promise<Record<string, string>>;
+  upsertProjectState(
+    projectId: string,
+    state: Record<string, string>,
+  ): Promise<Record<string, string>>;
   createVersion(input: {
     projectId: string;
     runId: string;
@@ -490,6 +497,36 @@ export function createAppRepository(db: AppDb): AppRepository {
         .from(usage)
         .where(eq(usage.day, day));
       return rows.reduce((sum, row) => sum + row.tokens, 0);
+    },
+
+    async getProjectState(projectId) {
+      const rows = await db
+        .select()
+        .from(projectState)
+        .where(eq(projectState.projectId, projectId))
+        .limit(1);
+      const row = rows[0];
+      return row ? sanitizePreviewState(row.stateJson) : {};
+    },
+
+    async upsertProjectState(projectId, state) {
+      const sanitized = sanitizePreviewState(state);
+      const now = new Date();
+      await db
+        .insert(projectState)
+        .values({
+          projectId,
+          stateJson: sanitized,
+          updatedAt: now,
+        })
+        .onConflictDoUpdate({
+          target: projectState.projectId,
+          set: {
+            stateJson: sanitized,
+            updatedAt: now,
+          },
+        });
+      return sanitized;
     },
   };
 }

@@ -19,6 +19,7 @@ type WorkbenchClientProps = {
   initialVersionRunId: string | null;
   initialVersionQaScore: number | null;
   initialFiles?: CodeFile[];
+  initialProjectState?: Record<string, string>;
   initialQaScore?: number | null;
   initialVersions: VersionSummary[];
   initialProviderLabel?: string | null;
@@ -47,6 +48,7 @@ export function WorkbenchClient({
   initialVersionRunId,
   initialVersionQaScore,
   initialFiles = [],
+  initialProjectState = {},
   initialQaScore = null,
   initialVersions,
   initialProviderLabel = null,
@@ -364,6 +366,8 @@ export function WorkbenchClient({
           onRunIdChange={handleRunIdChange}
         />
         <WorkbenchPanels
+          projectId={projectId}
+          initialProjectState={initialProjectState}
           files={files}
           versions={versions}
           currentVersionId={currentVersionId}
