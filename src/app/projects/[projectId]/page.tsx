@@ -1,11 +1,16 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { WorkbenchClient } from "@/components/workbench/workbench-client";
 import { DEVICE_ID_COOKIE } from "@/lib/auth/device-id";
-import { getDb } from "@/lib/db";
+import { D1_BOOKMARK_COOKIE, decodeD1Bookmark, getDb } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 
 type WorkbenchPageProps = {
   params: Promise<{ projectId: string }>;
@@ -43,7 +48,10 @@ export default async function WorkbenchPage({
     notFound();
   }
 
-  const repo = getDb();
+  const bookmark = decodeD1Bookmark(cookieStore.get(D1_BOOKMARK_COOKIE)?.value);
+  // Read the primary (or the seed bookmark) so a project that just became
+  // visible is not served a stale replica 404.
+  const repo = getDb({ d1Session: bookmark ?? "first-primary" });
   const project = await repo.getProject(projectId, deviceId);
   if (!project) {
     notFound();

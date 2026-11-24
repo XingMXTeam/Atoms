@@ -40,14 +40,40 @@ export function parseDeviceIdCookie(
   return null;
 }
 
-function buildSetCookie(deviceId: string): string {
-  return [
+export type DeviceIdOptions = {
+  /** Set the Secure attribute. Use on HTTPS; omit on local http. */
+  secure?: boolean;
+};
+
+export function isSecureRequest(input: {
+  protocol?: string;
+  forwardedProto?: string | null;
+}): boolean {
+  if (input.protocol === "https:") return true;
+  const forwarded = input.forwardedProto?.split(",")[0]?.trim().toLowerCase();
+  return forwarded === "https";
+}
+
+export function isSecureRequestUrl(request: {
+  url: string;
+  headers: { get(name: string): string | null };
+}): boolean {
+  return isSecureRequest({
+    protocol: new URL(request.url).protocol,
+    forwardedProto: request.headers.get("x-forwarded-proto"),
+  });
+}
+
+function buildSetCookie(deviceId: string, secure: boolean): string {
+  const parts = [
     `${DEVICE_ID_COOKIE}=${deviceId}`,
     "Path=/",
     `Max-Age=${DEVICE_ID_MAX_AGE}`,
     "HttpOnly",
     "SameSite=Lax",
-  ].join("; ");
+  ];
+  if (secure) parts.push("Secure");
+  return parts.join("; ");
 }
 
 /**
@@ -56,6 +82,7 @@ function buildSetCookie(deviceId: string): string {
  */
 export function getOrMintDeviceId(
   cookieHeader: string | null | undefined,
+  options: DeviceIdOptions = {},
 ): DeviceIdResult {
   const existing = parseDeviceIdCookie(cookieHeader);
   if (existing && isUuid(existing)) {
@@ -63,5 +90,5 @@ export function getOrMintDeviceId(
   }
 
   const deviceId = crypto.randomUUID();
-  return { deviceId, setCookie: buildSetCookie(deviceId) };
+  return { deviceId, setCookie: buildSetCookie(deviceId, options.secure === true) };
 }

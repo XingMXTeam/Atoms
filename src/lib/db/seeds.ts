@@ -4,6 +4,8 @@ export type SeedExampleProject = {
   qaScore: number;
   prd: string;
   acceptance: string[];
+  /** Distinct preset evidence, one per acceptance item. Not a live probe. */
+  qaReasons: string[];
   design: {
     files: string[];
     components: string[];
@@ -23,6 +25,11 @@ export const SEED_EXAMPLE_PROJECTS: SeedExampleProject[] = [
       "AC-1 页面展示「我的待办」标题与初始示例任务",
       "AC-2 支持输入任务并点击「添加待办」新增条目",
       "AC-3 支持勾选任务完成状态与按全部/未完成/已完成筛选",
+    ],
+    qaReasons: [
+      "预置示例：页面含标题「我的待办」，并带有「体验 Atoms Studio」「查看版本记录」两条初始任务",
+      "预置示例：表单 onSubmit 调用 preventDefault，提交按钮文案为「添加待办」",
+      "预置示例：任务勾选切换完成状态，筛选包含全部、未完成、已完成",
     ],
     design: {
       files: ["src/main.tsx", "src/App.tsx"],
@@ -167,6 +174,11 @@ export default function App() {
       "AC-1 页面展示「专注时钟」标题与初始 25:00 倒计时",
       "AC-2 点击「开始专注」启动实时倒计时并可暂停",
       "AC-3 支持切换专注/短休模式并显示「专注结束后休息 5 分钟」提示",
+    ],
+    qaReasons: [
+      "预置示例：标题为「专注时钟」，初始倒计时由 25 分钟换算为 25:00",
+      "预置示例：「开始专注」按钮切换 running，并用 setInterval 每秒减少剩余时间",
+      "预置示例：可在专注 25 分钟与短休 5 分钟之间切换，并展示「专注结束后休息 5 分钟」",
     ],
     design: {
       files: ["src/main.tsx", "src/App.tsx"],

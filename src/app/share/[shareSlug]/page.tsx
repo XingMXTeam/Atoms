@@ -1,9 +1,14 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { SharedProject } from "@/components/share/shared-project";
 import { getDb } from "@/lib/db";
 import { parseVersionFiles } from "@/lib/versions";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 
 const SHARE_SLUG_RE = /^[A-Za-z0-9_-]{43}$/;
 

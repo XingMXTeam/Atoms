@@ -464,4 +464,64 @@ describe("agent pipeline (REQ-3 / REQ-7 / REQ-8)", () => {
     expect(deviceUsage?.tokens).toBe(500);
     expect(await repo.getGlobalTokens(today)).toBe(500);
   });
+
+  it("emits the merged full file set on follow-up engineer events so preview never loses main.tsx", async () => {
+    const repo = createSqliteRepository(":memory:");
+    const project = await repo.createProject({ deviceId: "device-a", title: "待办" });
+    const v1Run = await repo.createRun({ projectId: project.id, status: "completed" });
+    const v1Files = [
+      { path: "src/main.tsx", content: "import App from './App';" },
+      { path: "src/App.tsx", content: "export default () => <div>V1</div>;" },
+    ];
+    const v1 = await repo.createVersion({
+      projectId: project.id,
+      runId: v1Run.id,
+      files: v1Files,
+      acceptance: ["AC-1"],
+      summary: "V1",
+      qaScore: 100,
+    });
+    await repo.setCurrentVersion(project.id, v1.id);
+    const run2 = await repo.createRun({ projectId: project.id, status: "running" });
+    const emitted: Array<{ agent: string; type: string; payload: unknown }> = [];
+
+    const deltaProvider = {
+      mode: "gemini" as const,
+      async complete(input: Record<string, unknown>) {
+        if (input.stage === "planner") {
+          return { text: JSON.stringify({ title: "优化", prd: "优化 UI", acceptance: ["AC-1"] }), meta: { mode: "gemini" as const } };
+        }
+        if (input.stage === "architect") {
+          return { text: JSON.stringify({ files: ["src/App.tsx"], components: ["App"], data: [], notes: "" }), meta: { mode: "gemini" as const } };
+        }
+        if (input.stage === "engineer") {
+          // Delta only: omits unchanged src/main.tsx.
+          return { text: JSON.stringify({ files: [{ path: "src/App.tsx", content: "export default () => <div>V2</div>;" }], summary: "优化 UI" }), meta: { mode: "gemini" as const } };
+        }
+        if (input.stage === "qa") {
+          return { text: JSON.stringify({ verdicts: [{ criterion: "AC-1", verdict: "pass", reason: "ok" }] }), meta: { mode: "gemini" as const } };
+        }
+        throw new Error(`Unexpected stage: ${String(input.stage)}`);
+      },
+    };
+
+    await runAgentPipeline({
+      repo,
+      provider: deltaProvider,
+      projectId: project.id,
+      runId: run2.id,
+      prompt: "优化下UI界面",
+      currentVersion: { id: v1.id, files: v1Files },
+      onEvent: (event) => {
+        emitted.push({ agent: event.agent, type: event.type, payload: event.payload });
+      },
+    });
+
+    const engineerEvent = emitted.find((e) => e.agent === "engineer" && e.type === "file");
+    const payload = engineerEvent?.payload as { currentFiles?: Array<{ path: string; content: string }> };
+    expect(payload.currentFiles).toEqual([
+      { path: "src/main.tsx", content: "import App from './App';" },
+      { path: "src/App.tsx", content: "export default () => <div>V2</div>;" },
+    ]);
+  });
 });

@@ -1,17 +1,51 @@
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
+import type { Metadata } from "next";
 import { PromptForm } from "@/components/home/prompt-form";
-import { ProjectGrid } from "@/components/home/project-grid";
+import {
+  ProjectSection,
+} from "@/components/home/project-section";
+import type { ProjectCardModel } from "@/components/home/project-grid";
 import { DEVICE_ID_COOKIE } from "@/lib/auth/device-id";
-import { getDb } from "@/lib/db";
+import { D1_BOOKMARK_COOKIE, decodeD1Bookmark, getDb } from "@/lib/db";
+import { DEVICE_MINTED_HEADER } from "@/lib/auth/device-minted";
 
 export const dynamic = "force-dynamic";
 
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+  openGraph: { url: "/" },
+};
+
+function toCard(project: {
+  id: string;
+  title: string;
+  qaScore: number | null;
+  updatedAt: Date;
+}): ProjectCardModel {
+  return {
+    id: project.id,
+    title: project.title,
+    qaScore: project.qaScore,
+    updatedAt: project.updatedAt.toISOString(),
+  };
+}
+
 export default async function Home() {
+  const headerStore = await headers();
+  const minted = headerStore.get(DEVICE_MINTED_HEADER) === "1";
   const cookieStore = await cookies();
   const deviceId = cookieStore.get(DEVICE_ID_COOKIE)?.value;
-  const repo = getDb();
-  if (deviceId) await repo.ensureSeedProjects(deviceId);
-  const projects = deviceId ? await repo.listProjects(deviceId) : [];
+
+  // A brand-new device used to block first paint on dozens of D1 writes.
+  // Render the shell immediately and let the client seed after the cookie lands.
+  let projects: ProjectCardModel[] = [];
+  if (!minted && deviceId) {
+    const bookmark = decodeD1Bookmark(cookieStore.get(D1_BOOKMARK_COOKIE)?.value);
+    const repo = getDb({
+      d1Session: bookmark ?? "first-unconstrained",
+    });
+    projects = (await repo.listProjects(deviceId)).map(toCard);
+  }
 
   return (
     <main className="mx-auto flex w-full max-w-3xl min-w-0 flex-1 flex-col items-center gap-12 overflow-x-clip px-4 py-16 sm:px-6">
@@ -28,7 +62,10 @@ export default async function Home() {
       </div>
 
       <PromptForm />
-      <ProjectGrid projects={projects} />
+      <ProjectSection
+        initialProjects={projects}
+        seedOnMount={minted || (Boolean(deviceId) && projects.length === 0)}
+      />
     </main>
   );
 }

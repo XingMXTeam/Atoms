@@ -12,6 +12,7 @@ import {
 import type { GeneratedFile, PlannerPayload } from "./fixtures";
 import { runPlanner } from "./planner";
 import { mergeFileDelta } from "@/lib/versions";
+import { stageTiming } from "./timing";
 
 export type PipelineResult = {
   plan: PlannerPayload;
@@ -147,6 +148,7 @@ export async function runAgentPipeline(
     }
 
     await delayStage(stageDelayMs, signal);
+    const plannerStarted = Date.now();
     const plan = await runPlanner(trackedProvider, {
       prompt,
       ...(history ? { history } : {}),
@@ -161,6 +163,7 @@ export async function runAgentPipeline(
         type: "plan",
         payload: {
           ...plan,
+          timing: stageTiming(plannerStarted),
           ...(replayLabel ? { providerLabel: replayLabel } : {}),
         },
       },
@@ -177,6 +180,7 @@ export async function runAgentPipeline(
     }
 
     await delayStage(stageDelayMs, signal);
+    const architectStarted = Date.now();
     const design = await runArchitect(trackedProvider, {
       prompt,
       plan,
@@ -192,6 +196,7 @@ export async function runAgentPipeline(
         type: "design",
         payload: {
           ...design,
+          timing: stageTiming(architectStarted),
           ...(replayLabel ? { providerLabel: replayLabel } : {}),
         },
       },
@@ -203,6 +208,7 @@ export async function runAgentPipeline(
     }
 
     await delayStage(stageDelayMs, signal);
+    const engineerStarted = Date.now();
     const engineer = await runEngineer(trackedProvider, {
       prompt,
       plan,
@@ -215,6 +221,14 @@ export async function runAgentPipeline(
         "上游模型触发演示回放降级，为避免覆盖现有版本已中止保存，请稍后重试",
       );
     }
+    if (!currentVersion && engineer.files.length === 0) {
+      throw new Error("Engineer returned no files for the initial version");
+    }
+    // Merge follow-up deltas BEFORE emitting so the client preview always
+    // receives the full file set (a delta alone may omit src/main.tsx → blank screen).
+    let files = currentVersion
+      ? mergeFileDelta(currentVersion.files, engineer.files)
+      : engineer.files;
     await persistEvent(
       repo,
       {
@@ -224,24 +238,20 @@ export async function runAgentPipeline(
         type: "file",
         payload: {
           ...engineer,
+          currentFiles: files,
+          timing: stageTiming(engineerStarted),
           ...(replayLabel ? { providerLabel: replayLabel } : {}),
         },
       },
       onEvent,
     );
-
-    if (!currentVersion && engineer.files.length === 0) {
-      throw new Error("Engineer returned no files for the initial version");
-    }
-    let files = currentVersion
-      ? mergeFileDelta(currentVersion.files, engineer.files)
-      : engineer.files;
     let summary = engineer.summary;
     let qaRounds = 0;
     let exhausted = false;
     let qaResult: QaResult;
 
     while (true) {
+      const probeStarted = Date.now();
       const probe = probePreview
         ? await probePreview(files, qaRounds)
         : defaultProbe(files);
@@ -252,11 +262,16 @@ export async function runAgentPipeline(
           seq: nextSeq(),
           agent: "qa",
           type: "probe",
-          payload: { round: qaRounds, report: probe },
+          payload: {
+            round: qaRounds,
+            report: probe,
+            timing: stageTiming(probeStarted),
+          },
         },
         onEvent,
       );
 
+      const verdictStarted = Date.now();
       qaResult = await runQa(trackedProvider, { acceptance: plan.acceptance, probe });
       await persistEvent(
         repo,
@@ -265,7 +280,11 @@ export async function runAgentPipeline(
           seq: nextSeq(),
           agent: "qa",
           type: "verdict",
-          payload: { round: qaRounds, ...qaResult },
+          payload: {
+            round: qaRounds,
+            ...qaResult,
+            timing: stageTiming(verdictStarted),
+          },
         },
         onEvent,
       );
@@ -303,6 +322,7 @@ export async function runAgentPipeline(
 
       qaRounds += 1;
       await repo.updateRun(runId, { qaRounds, qaScore: qaResult.qa_score });
+      const repairStarted = Date.now();
       const repair = await runEngineerRepair(trackedProvider, {
         prompt,
         plan,
@@ -324,6 +344,7 @@ export async function runAgentPipeline(
             fixInstruction,
             files: repair.files.map(({ path }) => path),
             currentFiles: files,
+            timing: stageTiming(repairStarted),
           },
         },
         onEvent,

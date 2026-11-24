@@ -1,8 +1,15 @@
 import Link from "next/link";
-import type { Project } from "@/lib/db/repository";
+import { formatShanghaiDateTime } from "@/lib/time/shanghai";
+
+export type ProjectCardModel = {
+  id: string;
+  title: string;
+  qaScore: number | null;
+  updatedAt: string;
+};
 
 type ProjectGridProps = {
-  projects: Project[];
+  projects: ProjectCardModel[];
 };
 
 export function ProjectGrid({ projects }: ProjectGridProps) {
@@ -36,7 +43,7 @@ export function ProjectGrid({ projects }: ProjectGridProps) {
                   {project.title}
                 </span>
                 <span className="mt-1 block truncate text-xs text-zinc-500 dark:text-zinc-400">
-                  {project.updatedAt.toLocaleString("zh-CN")}
+                  {formatShanghaiDateTime(project.updatedAt)}
                 </span>
                 {project.qaScore !== null ? (
                   <span

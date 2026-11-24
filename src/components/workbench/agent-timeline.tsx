@@ -6,6 +6,11 @@ import {
   type AgentEventRecord,
   type AgentName,
 } from "@/lib/agents/events";
+import {
+  readDurationLabel,
+  readStageTiming,
+  UNRECORDED_DURATION_LABEL,
+} from "@/lib/agents/timing";
 import { AgentCard, type AgentCardModel, type AgentCardStatus } from "./agent-card";
 import { FollowUpForm } from "./follow-up-form";
 import { QaTimelineCard } from "./qa-timeline-card";
@@ -99,12 +104,50 @@ function applyEvent(
       };
     }
 
+    const presetLabel = readDurationLabel(event.payload);
+    const recorded = readStageTiming(event.payload);
+    if (presetLabel && !recorded) {
+      return {
+        ...card,
+        status: "completed",
+        payload: event.payload,
+        durationLabel: presetLabel,
+        startedAt: undefined,
+        finishedAt: undefined,
+      };
+    }
+    if (recorded) {
+      return {
+        ...card,
+        status: "completed",
+        payload: event.payload,
+        durationLabel: undefined,
+        startedAt: recorded.startedAt,
+        finishedAt: recorded.finishedAt,
+      };
+    }
+
+    const startedAt = card.startedAt ?? now;
+    const finishedAt = now;
+    // Replaying a finished run in one tick has no clock. Do not print "0s".
+    if (card.startedAt == null && finishedAt - startedAt < 50) {
+      return {
+        ...card,
+        status: "completed",
+        payload: event.payload,
+        durationLabel: UNRECORDED_DURATION_LABEL,
+        startedAt: undefined,
+        finishedAt: undefined,
+      };
+    }
+
     return {
       ...card,
       status: "completed",
-      startedAt: card.startedAt ?? now,
-      finishedAt: now,
+      startedAt,
+      finishedAt,
       payload: event.payload,
+      durationLabel: undefined,
     };
   });
 }
@@ -365,9 +408,10 @@ export function AgentTimeline({
             currentFiles?: unknown;
             exhausted?: unknown;
           } | null;
-          const files = event.agent === "qa"
-            ? extractFiles({ files: payload?.currentFiles })
-            : extractFiles(event.payload);
+          // Prefer the server-merged full file set; fall back to raw files for legacy events.
+          const files =
+            extractFiles({ files: payload?.currentFiles }) ??
+            (event.agent === "engineer" ? extractFiles(event.payload) : null);
           if (files) onFilesRef.current?.(files);
           if (payload?.exhausted !== true) {
             setErrorMessage(null);

@@ -79,8 +79,15 @@ export function WorkbenchClient({
   const qaRoundsRef = useRef(initialRunQaRounds);
   const lastProbeKeyRef = useRef<string | null>(null);
 
+  // File set most recently emitted by the active run (engineer / QA fix).
+  // Only probes rendered from exactly these files may be reported to QA.
+  const runFilesRef = useRef<CodeFile[] | null>(null);
+
   const handleFiles = useCallback((next: CodeFile[]) => {
-    if (liveRunStatusRef.current !== "completed") setFiles(next);
+    if (liveRunStatusRef.current !== "completed") {
+      runFilesRef.current = next;
+      setFiles(next);
+    }
   }, []);
 
   const handleRunStatus = useCallback((status: RunStatus) => {
@@ -92,6 +99,7 @@ export function WorkbenchClient({
     activeRunIdRef.current = nextRunId;
     qaRoundsRef.current = 0;
     lastProbeKeyRef.current = null;
+    runFilesRef.current = null;
     setActiveRunId(nextRunId);
   }, []);
 
@@ -101,9 +109,12 @@ export function WorkbenchClient({
   }, []);
 
   const handleProbeReport = useCallback(
-    (report: PreviewProbeReport) => {
+    (report: PreviewProbeReport, sourceFiles: CodeFile[]) => {
       const runId = activeRunIdRef.current;
       if (liveRunStatusRef.current !== "running" || !runId) return;
+      // Stale-probe guard: ignore reports from a previous version's preview
+      // (e.g. follow-up runs) so QA never judges code it did not render.
+      if (!runFilesRef.current || sourceFiles !== runFilesRef.current) return;
       const round = qaRoundsRef.current;
       const key = `${runId}:${round}:${report.compileErrors.join("|")}:${report.runtimeErrors.join("|")}:${report.blankScreen}`;
       if (lastProbeKeyRef.current === key) return;

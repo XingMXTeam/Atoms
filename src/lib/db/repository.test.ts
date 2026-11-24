@@ -99,6 +99,35 @@ describe("AppRepository (sqlite)", () => {
     expect(await repo.listProjects("device-b")).toHaveLength(0);
   });
 
+  it("keeps one pair of examples when seeding races, with distinct preset QA reasons", async () => {
+    const repo = createSqliteRepository(":memory:");
+    await Promise.all(
+      Array.from({ length: 6 }, () => repo.ensureSeedProjects("device-a")),
+    );
+    const seeded = await repo.listProjects("device-a");
+    expect(seeded).toHaveLength(2);
+    const ids = seeded.map((project) => project.id).sort();
+    await repo.ensureSeedProjects("device-a");
+    expect((await repo.listProjects("device-a")).map((project) => project.id).sort()).toEqual(ids);
+
+    for (const project of seeded) {
+      expect(await repo.getProject(project.id, "device-a")).not.toBeNull();
+      const version = await repo.getVersion(project.currentVersionId!);
+      const events = await repo.listAgentEvents(version!.runId);
+      const verdict = events.find((event) => event.type === "verdict");
+      const payload = verdict?.payload as {
+        evidenceKind?: string;
+        verdicts?: Array<{ reason: string }>;
+      };
+      expect(payload.evidenceKind).toBe("preset-example");
+      const reasons = (payload.verdicts ?? []).map((item) => item.reason);
+      expect(reasons.length).toBeGreaterThan(1);
+      expect(new Set(reasons).size).toBe(reasons.length);
+      expect(reasons.every((reason) => reason.includes("预置示例"))).toBe(true);
+      expect(reasons.join("\n")).not.toContain("预览正常渲染且交互可用");
+    }
+  });
+
   it("does not add seed projects when a device already has a project", async () => {
     const repo = createSqliteRepository(":memory:");
     const project = await repo.createProject({ deviceId: "device-a", title: "已有项目" });

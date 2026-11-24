@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   PREVIEW_CACHE_CONTROL,
+  hashedStaticHeaderRules,
   isLongLivedPreviewCacheControl,
   previewAssetHeaderRules,
 } from "./cache-headers";
@@ -20,6 +21,13 @@ describe("preview cache headers (REQ-4)", () => {
     const cache = rules[0]?.headers.find((h) => h.key === "Cache-Control");
     expect(cache?.value).toBe(PREVIEW_CACHE_CONTROL);
     expect(isLongLivedPreviewCacheControl(cache?.value)).toBe(true);
+  });
+
+  it("gives hashed Next static files a year-long immutable cache", () => {
+    const rules = hashedStaticHeaderRules();
+    expect(rules[0]?.source).toBe("/_next/static/:path*");
+    expect(rules[0]?.headers[0]?.value).toBe(PREVIEW_CACHE_CONTROL);
+    expect(isLongLivedPreviewCacheControl(rules[0]?.headers[0]?.value)).toBe(true);
   });
 
   it("rejects short or missing cache policies", () => {

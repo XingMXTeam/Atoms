@@ -19,6 +19,26 @@ test.describe("generate-loop home (REQ-1)", () => {
     await expect(page.getByRole("heading", { name: "我的项目" })).toBeVisible();
     await expect(page.getByTestId("project-score-badge")).toHaveCount(2);
     await expect(page.getByRole("link", { name: /待办清单示例|专注计时器示例/ })).toHaveCount(2);
+    await expect(page.getByTestId("project-card").first()).toContainText(
+      /\d{4}\/\d{2}\/\d{2} \d{2}:\d{2}/,
+    );
+  });
+
+  test("example projects show preset QA evidence instead of identical pass reasons", async ({
+    page,
+  }) => {
+    await page.goto("/");
+    await page.getByRole("link", { name: /待办清单示例/ }).click();
+    await expect(page).toHaveURL(/\/projects\/[0-9a-f-]{36}/i);
+
+    const qaCard = page.getByTestId("agent-card-qa");
+    await expect(qaCard).toContainText("示例项目，无真实耗时", { timeout: 15_000 });
+    await qaCard.getByRole("button", { name: "展开质检详情" }).click();
+    await expect(page.getByTestId("qa-preset-evidence")).toBeVisible();
+    await expect(qaCard.getByText(/预置示例：页面含标题/)).toBeVisible();
+    await expect(qaCard.getByText(/预置示例：表单/)).toBeVisible();
+    await expect(qaCard.getByText(/预置示例：任务勾选/)).toBeVisible();
+    await expect(qaCard.getByText("预览正常渲染且交互可用")).toHaveCount(0);
   });
 
   test("clicking an example card fills the central prompt", async ({ page }) => {

@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { DEVICE_ID_COOKIE, getOrMintDeviceId } from "@/lib/auth/device-id";
+import { DEVICE_ID_COOKIE, getOrMintDeviceId, isSecureRequestUrl } from "@/lib/auth/device-id";
 import { getDb } from "@/lib/db";
 import { parseVersionFiles } from "@/lib/versions";
 
@@ -11,9 +11,9 @@ type RouteContext = {
   params: Promise<{ projectId: string }>;
 };
 
-export async function GET(_request: Request, context: RouteContext) {
+export async function GET(request: Request, context: RouteContext) {
   const { projectId } = await context.params;
-  const { deviceId, setCookie } = await getDeviceId();
+  const { deviceId, setCookie } = await getDeviceId(request);
   const repo = getDb();
   const project = await repo.getProject(projectId, deviceId);
   if (!project) return jsonWithCookie({ messageZh: "项目不存在" }, 404, setCookie);
@@ -46,7 +46,10 @@ export async function POST(request: Request, context: RouteContext) {
   if (!existingDeviceId) {
     return NextResponse.json({ messageZh: "请先打开自己的项目" }, { status: 401 });
   }
-  const { deviceId, setCookie } = getOrMintDeviceId(`${DEVICE_ID_COOKIE}=${existingDeviceId}`);
+  const { deviceId, setCookie } = getOrMintDeviceId(
+    `${DEVICE_ID_COOKIE}=${existingDeviceId}`,
+    { secure: isSecureRequestUrl(request) },
+  );
   const repo = getDb();
   const project = await repo.getProject(projectId, deviceId);
   if (!project) return jsonWithCookie({ messageZh: "无权修改此项目" }, 403, setCookie);
@@ -79,10 +82,12 @@ export async function POST(request: Request, context: RouteContext) {
   );
 }
 
-async function getDeviceId() {
+async function getDeviceId(request: Request) {
   const cookieStore = await cookies();
   const existing = cookieStore.get(DEVICE_ID_COOKIE)?.value;
-  return getOrMintDeviceId(existing ? `${DEVICE_ID_COOKIE}=${existing}` : null);
+  return getOrMintDeviceId(existing ? `${DEVICE_ID_COOKIE}=${existing}` : null, {
+    secure: isSecureRequestUrl(request),
+  });
 }
 
 function jsonWithCookie(body: unknown, status: number, setCookie?: string) {
