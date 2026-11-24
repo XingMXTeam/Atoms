@@ -83,6 +83,7 @@ export interface AppRepository {
   updateProjectTitle(id: string, title: string): Promise<Project>;
   createRun(input: { projectId: string; status: string }): Promise<Run>;
   getRun(id: string): Promise<Run | null>;
+  getLatestRun(projectId: string): Promise<Run | null>;
   getVersion(id: string): Promise<Version | null>;
   listVersions(projectId: string): Promise<Version[]>;
   updateRun(
@@ -315,6 +316,17 @@ export function createAppRepository(db: AppDb): AppRepository {
 
     async getRun(id) {
       const rows = await db.select().from(runs).where(eq(runs.id, id)).limit(1);
+      const row = rows[0];
+      return row ? mapRun(row) : null;
+    },
+
+    async getLatestRun(projectId) {
+      const rows = await db
+        .select()
+        .from(runs)
+        .where(eq(runs.projectId, projectId))
+        .orderBy(desc(runs.startedAt))
+        .limit(1);
       const row = rows[0];
       return row ? mapRun(row) : null;
     },
