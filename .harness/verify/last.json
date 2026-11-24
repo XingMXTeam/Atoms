@@ -5,9 +5,9 @@
       "command": "pnpm typecheck",
       "status": "passed",
       "exitCode": 0,
-      "durationMs": 1501,
-      "at": 1795480806080,
-      "sha": "e561a85",
+      "durationMs": 1395,
+      "at": 1795482067241,
+      "sha": "fe75e24",
       "tail": "$ tsc --noEmit",
       "log": ".harness/verify/typecheck.log"
     },
@@ -16,10 +16,10 @@
       "command": "pnpm lint",
       "status": "passed",
       "exitCode": 0,
-      "durationMs": 2812,
-      "at": 1795480808935,
-      "sha": "e561a85",
-      "tail": "  44:3  warning  'initialRunQaScore' is defined but never used  @typescript-eslint/no-unused-vars\n\n✖ 2 problems (0 errors, 2 warnings)\n\n$ eslint",
+      "durationMs": 2933,
+      "at": 1795482070222,
+      "sha": "fe75e24",
+      "tail": "  45:3  warning  'initialRunQaScore' is defined but never used  @typescript-eslint/no-unused-vars\n\n✖ 2 problems (0 errors, 2 warnings)\n\n$ eslint",
       "log": ".harness/verify/lint.log"
     },
     "unit": {
@@ -27,9 +27,9 @@
       "command": "pnpm test",
       "status": "passed",
       "exitCode": 0,
-      "durationMs": 2986,
-      "at": 1795480811965,
-      "sha": "e561a85",
+      "durationMs": 3036,
+      "at": 1795482073303,
+      "sha": "fe75e24",
       "tail": "  stage: 'engineer',\n  modelId: 'gemini-3.8-flash',\n  hasKey: true,\n  reason: 'Gemini HTTP 503: flash overload'\n}",
       "log": ".harness/verify/unit.log"
     },
@@ -38,10 +38,10 @@
       "command": "pnpm test:e2e",
       "status": "passed",
       "exitCode": 0,
-      "durationMs": 20926,
-      "at": 1795480838021,
-      "sha": "e561a85",
-      "tail": "  32 passed (20.4s)\n$ playwright test\n[WebServer] ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.\n[WebServer] \n[WebServer]",
+      "durationMs": 19827,
+      "at": 1795482097925,
+      "sha": "fe75e24",
+      "tail": "  32 passed (19.3s)\n$ playwright test\n[WebServer] ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.\n[WebServer] \n[WebServer]",
       "log": ".harness/verify/e2e.log"
     },
     "build": {
@@ -49,12 +49,12 @@
       "command": "pnpm build",
       "status": "passed",
       "exitCode": 0,
-      "durationMs": 5049,
-      "at": 1795480817052,
-      "sha": "e561a85",
-      "tail": "\n  To migrate automatically, run:\n  npx @next/codemod@canary middleware-to-proxy .\n\n  Learn more: https://nextjs.org/docs/messages/middleware-to-proxy",
+      "durationMs": 4710,
+      "at": 1795482078051,
+      "sha": "fe75e24",
+      "tail": "  #3 [App Route]:\n    ./src/lib/db/adapters/sqlite.ts\n    ./src/lib/db/adapters/sqlite.ts\n    ./src/lib/db/index.ts\n    ./src/app/api/projects/[projectId]/runs/[runId]/probe/route.ts",
       "log": ".harness/verify/build.log"
     }
   },
-  "updatedAt": 1795480838021
+  "updatedAt": 1795482097925
 }
