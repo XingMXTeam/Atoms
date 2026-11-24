@@ -2,6 +2,7 @@
 
 export const PREVIEW_WASM_PATH = "/preview/esbuild.wasm";
 export const PREVIEW_TAILWIND_PATH = "/preview/tailwind.css";
+export const PREVIEW_TAILWIND_RUNTIME_PATH = "/preview/vendor/tailwind-browser.js";
 
 /** Canonical combined vendor module (single React instance). */
 export const PREVIEW_VENDOR_RUNTIME_PATH = "/preview/vendor/runtime.js";
@@ -59,6 +60,7 @@ export function listVendorPaths(): string[] {
   return [
     PREVIEW_WASM_PATH,
     PREVIEW_TAILWIND_PATH,
+    PREVIEW_TAILWIND_RUNTIME_PATH,
     PREVIEW_VENDOR_RUNTIME_PATH,
   ];
 }

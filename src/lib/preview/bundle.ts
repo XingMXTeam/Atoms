@@ -4,6 +4,7 @@ import type {
 } from "esbuild-wasm";
 import {
   PREVIEW_TAILWIND_PATH,
+  PREVIEW_TAILWIND_RUNTIME_PATH,
   PREVIEW_VENDOR_MAP,
   PREVIEW_VENDOR_MODULE_ID,
   PREVIEW_VENDOR_RUNTIME_PATH,
@@ -19,7 +20,7 @@ export type PreviewFile = {
 };
 
 export type BundleResult =
-  | { ok: true; js: string; css: string; vendorJs: string }
+  | { ok: true; js: string; css: string; vendorJs: string; tailwindJs: string }
   | { ok: false; messageZh: string };
 
 type EsbuildApi = typeof import("esbuild-wasm");
@@ -28,6 +29,7 @@ let esbuildApi: EsbuildApi | null = null;
 let initPromise: Promise<void> | null = null;
 let vendorIifeCache: string | null = null;
 let cssCache: string | null = null;
+let tailwindRuntimeCache: string | null = null;
 
 async function loadEsbuildApi(): Promise<EsbuildApi> {
   if (esbuildApi) return esbuildApi;
@@ -188,10 +190,19 @@ export async function loadPreviewCss(
   return cssCache;
 }
 
+export async function loadPreviewTailwindRuntime(
+  fetchImpl: (url: string) => Promise<string> = fetchText,
+): Promise<string> {
+  if (tailwindRuntimeCache) return tailwindRuntimeCache;
+  tailwindRuntimeCache = await fetchImpl(PREVIEW_TAILWIND_RUNTIME_PATH);
+  return tailwindRuntimeCache;
+}
+
 /** Test-only: reset caches between cases. */
 export function resetPreviewAssetCaches(): void {
   vendorIifeCache = null;
   cssCache = null;
+  tailwindRuntimeCache = null;
 }
 
 function createVirtualPlugin(files: Map<string, string>): Plugin {
@@ -285,9 +296,10 @@ export async function bundlePreviewFiles(
 
   try {
     const fetchAsset = options?.fetchAsset ?? fetchText;
-    const [vendorJs, css] = await Promise.all([
+    const [vendorJs, css, tailwindJs] = await Promise.all([
       loadVendorIife(fetchAsset),
       loadPreviewCss(fetchAsset),
+      loadPreviewTailwindRuntime(fetchAsset).catch(() => ""),
     ]);
 
     const api = await ensureEsbuildInitialized(
@@ -310,14 +322,18 @@ export async function bundlePreviewFiles(
     if (!js) {
       return { ok: false, messageZh: "打包结果为空，请检查生成的源码。" };
     }
-    if (containsBlockedCdnUrl(js) || containsBlockedCdnUrl(vendorJs)) {
+    if (
+      containsBlockedCdnUrl(js) ||
+      containsBlockedCdnUrl(vendorJs) ||
+      containsBlockedCdnUrl(tailwindJs)
+    ) {
       return {
         ok: false,
         messageZh: "打包产物包含外部 CDN 引用，已阻止预览。",
       };
     }
 
-    return { ok: true, js, css, vendorJs };
+    return { ok: true, js, css, vendorJs, tailwindJs };
   } catch (error) {
     const detail =
       error instanceof Error ? error.message : "未知打包错误";
@@ -339,10 +355,12 @@ export function buildPreviewSrcdoc(
   js: string,
   css: string,
   vendorJs = "",
+  tailwindJs = "",
 ): string {
   const escapedVendor = vendorJs.replace(/<\/script/gi, "<\\/script");
   const escapedJs = js.replace(/<\/script/gi, "<\\/script");
   const escapedCss = css.replace(/<\/style/gi, "<\\/style");
+  const escapedTailwind = tailwindJs.replace(/<\/script/gi, "<\\/script");
   const probeCapture = `window.__atomsProbeErrors=[];window.addEventListener("error",function(e){var errors=window.__atomsProbeErrors;if(errors.length<20){errors.push(String(e.message||"Runtime error").slice(0,500));}});window.addEventListener("unhandledrejection",function(e){var errors=window.__atomsProbeErrors;if(errors.length<20){var reason=e.reason;errors.push(String(reason&&reason.message||reason||"Unhandled rejection").slice(0,500));}});`;
   const probeBeacon = `try{setTimeout(function(){var r=document.getElementById("root");if(!r)return;var text=(r.innerText||r.textContent||"").trim().slice(0,2000);var count=Math.min(r.querySelectorAll("*").length,10000);if(window.parent&&window.parent!==window){window.parent.postMessage({source:"atoms-preview",type:"probe",compileErrors:[],runtimeErrors:window.__atomsProbeErrors.slice(0,20),blankScreen:!text,domSummary:{title:String(document.title||"").slice(0,200),text:text,elementCount:count}},"*");}},500);}catch(e){}`;
 
@@ -356,7 +374,7 @@ export function buildPreviewSrcdoc(
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Atoms Preview</title>
-  <style>${escapedCss}</style>
+  <style>${escapedCss}</style>${escapedTailwind ? `\n  <script>${escapedTailwind}</script>` : ""}
 </head>
 <body class="atoms-preview-root">
   <div id="root"></div>

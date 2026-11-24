@@ -26,6 +26,7 @@ describe("preview vendor map (REQ-6 / RL-2)", () => {
     const paths = listVendorPaths();
     expect(paths).toContain("/preview/esbuild.wasm");
     expect(paths).toContain("/preview/tailwind.css");
+    expect(paths).toContain("/preview/vendor/tailwind-browser.js");
     expect(paths).toContain(PREVIEW_VENDOR_RUNTIME_PATH);
     for (const path of paths) {
       expect(path.startsWith("/preview/")).toBe(true);

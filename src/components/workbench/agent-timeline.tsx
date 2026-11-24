@@ -56,6 +56,16 @@ function emptyCards(): AgentCardModel[] {
   }));
 }
 
+function initialCardsForStatus(status: RunStatus): AgentCardModel[] {
+  if (status === "completed") {
+    return AGENT_ORDER.map((agent) => ({
+      agent,
+      status: "completed",
+    }));
+  }
+  return emptyCards();
+}
+
 function applyEvent(
   cards: AgentCardModel[],
   event: AgentEventRecord,
@@ -137,10 +147,11 @@ export function AgentTimeline({
   onRunIdChange,
 }: AgentTimelineProps) {
   const [runId, setRunId] = useState(initialRunId);
-  const [runStatus, setRunStatus] = useState<RunStatus>(
-    (initialRunStatus as RunStatus) || "running",
+  const initialStatus = (initialRunStatus as RunStatus) || "running";
+  const [runStatus, setRunStatus] = useState<RunStatus>(initialStatus);
+  const [cards, setCards] = useState<AgentCardModel[]>(() =>
+    initialCardsForStatus(initialStatus),
   );
-  const [cards, setCards] = useState<AgentCardModel[]>(emptyCards);
   const [qaEvents, setQaEvents] = useState<AgentEventRecord[]>([]);
   const [now, setNow] = useState(() => Date.now());
   const [continuePending, setContinuePending] = useState(false);
@@ -206,9 +217,10 @@ export function AgentTimeline({
   }, [runStatus]);
 
   useEffect(() => {
+    if (runStatus !== "running") return;
     const id = window.setInterval(() => setNow(Date.now()), 500);
     return () => window.clearInterval(id);
-  }, []);
+  }, [runStatus]);
 
   const closeSource = useCallback(() => {
     if (sourceRef.current) {
@@ -262,11 +274,13 @@ export function AgentTimeline({
       (window as unknown as { __ATOMS_ABORT_SSE__: () => void }).__ATOMS_ABORT_SSE__ =
         abortHook;
 
-      // Kick the first pending agent into running so elapsed time starts.
-      setCards((prev) => {
-        const nextAgent = nextPendingAgent(prev) ?? "planner";
-        return markRunning(prev, nextAgent, Date.now());
-      });
+      // Kick the first pending agent into running only for active runs.
+      if (!sawTerminalRef.current) {
+        setCards((prev) => {
+          const nextAgent = nextPendingAgent(prev) ?? "planner";
+          return markRunning(prev, nextAgent, Date.now());
+        });
+      }
 
       source.onmessage = (message) => {
         const event = parseSseChunk(`data: ${message.data}`);

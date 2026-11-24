@@ -64,7 +64,12 @@ export function PreviewPane({ files, onProbeReport }: PreviewPaneProps) {
       setPaintedText("");
       setBundle({
         status: "ready",
-        srcdoc: buildPreviewSrcdoc(result.js, result.css, result.vendorJs),
+        srcdoc: buildPreviewSrcdoc(
+          result.js,
+          result.css,
+          result.vendorJs,
+          result.tailwindJs,
+        ),
         filesRef: files,
       });
     })();

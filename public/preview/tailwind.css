@@ -1,3 +1,6 @@
+@layer theme, base, components, utilities;
+
+@layer base {
 /*
   1. Prevent padding and border from affecting element width. (https://github.com/mozdevs/cssremedy/issues/4)
   2. Remove default margins and padding
@@ -397,6 +400,5 @@ input:where([type='button'], [type='reset'], [type='submit']),
   display: none !important;
 }
 
-
-/* Atoms Studio preview utilities (self-hosted; no CDN) */
-.atoms-preview-root { min-height: 100vh; }
+  .atoms-preview-root { min-height: 100vh; }
+}

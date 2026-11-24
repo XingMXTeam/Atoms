@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { AgentEventRecord } from "@/lib/agents/events";
 import { AgentTimeline } from "./agent-timeline";
@@ -23,6 +23,7 @@ class MockEventSource {
 }
 
 afterEach(() => {
+  cleanup();
   vi.unstubAllGlobals();
 });
 
@@ -81,5 +82,32 @@ describe("AgentTimeline QA stream", () => {
     expect(within(qaCard).getByText("探测 · 第 0 轮")).toBeTruthy();
     expect(within(qaCard).getByText("显示页面")).toBeTruthy();
     expect(source.closed).toBe(false);
+  });
+
+  it("hydrates completed runs with all agent cards marked 已完成 even with empty SSE replay", async () => {
+    vi.stubGlobal("EventSource", MockEventSource);
+    render(
+      <AgentTimeline
+        projectId="seed-project"
+        initialRunId="seed-run"
+        initialRunStatus="completed"
+      />,
+    );
+
+    for (const role of ["planner", "architect", "engineer"] as const) {
+      const card = screen.getByTestId(`agent-card-${role}`);
+      expect(card.getAttribute("data-status")).toBe("completed");
+      expect(within(card).getByText("已完成")).toBeTruthy();
+      expect(within(card).queryByText("进行中")).toBeNull();
+      expect(within(card).queryByText("等待中")).toBeNull();
+    }
+
+    await waitFor(() => expect(MockEventSource.current).toBeTruthy());
+    act(() => MockEventSource.current.onerror?.());
+
+    expect(
+      screen.getByTestId("agent-timeline").getAttribute("data-run-status"),
+    ).toBe("completed");
+    expect(screen.queryByTestId("ux-banner-interrupted")).toBeNull();
   });
 });

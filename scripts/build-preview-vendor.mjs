@@ -78,7 +78,13 @@ const preflight = readFileSync(
 );
 writeFileSync(
   join(outDir, "tailwind.css"),
-  `${preflight}\n\n/* Atoms Studio preview utilities (self-hosted; no CDN) */\n.atoms-preview-root { min-height: 100vh; }\n`,
+  `@layer theme, base, components, utilities;\n\n@layer base {\n${preflight}\n  .atoms-preview-root { min-height: 100vh; }\n}\n`,
 );
 
-console.log("Wrote public/preview/{esbuild.wasm,tailwind.css,vendor/runtime.js}");
+const tailwindBrowserSrc = join(
+  root,
+  "node_modules/@tailwindcss/browser/dist/index.global.js",
+);
+cpSync(tailwindBrowserSrc, join(vendorDir, "tailwind-browser.js"));
+
+console.log("Wrote public/preview/{esbuild.wasm,tailwind.css,vendor/runtime.js,vendor/tailwind-browser.js}");

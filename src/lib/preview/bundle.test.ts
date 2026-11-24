@@ -44,7 +44,14 @@ describe("preview bundle (REQ-5 / REQ-6)", () => {
 
     expect(result.vendorJs.length).toBeGreaterThan(0);
     expect(result.vendorJs.includes("__ATOMS_PREVIEW_VENDOR__")).toBe(true);
-    const srcdoc = buildPreviewSrcdoc(result.js, result.css, result.vendorJs);
+    expect(result.tailwindJs.length).toBeGreaterThan(0);
+    expect(containsBlockedCdnUrl(result.tailwindJs)).toBe(false);
+    const srcdoc = buildPreviewSrcdoc(
+      result.js,
+      result.css,
+      result.vendorJs,
+      result.tailwindJs,
+    );
     expect(srcdoc).toContain("<style>");
     expect(srcdoc).toContain("<script>");
     expect(srcdoc.includes('type="module"')).toBe(false);
