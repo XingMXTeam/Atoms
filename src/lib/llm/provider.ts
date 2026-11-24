@@ -11,6 +11,9 @@ export { MOCK_COMPLETION_TEXT } from "./modes/mock";
 export type CreateLlmProviderOptions = {
   mode?: ProviderMode;
   geminiApiKey?: string;
+  deepseekApiKey?: string;
+  deepseekModel?: string;
+  deepseekBaseUrl?: string;
 };
 
 /** Factory: `LLM_PROVIDER` selects gemini | mock | replay (REQ-5). */
@@ -28,6 +31,9 @@ export function createLlmProvider(
     case "gemini":
       return createGeminiProvider({
         apiKey: options.geminiApiKey ?? env.GEMINI_API_KEY,
+        deepseekApiKey: options.deepseekApiKey ?? env.DEEPSEEK_API_KEY,
+        deepseekModel: options.deepseekModel ?? env.DEEPSEEK_MODEL,
+        deepseekBaseUrl: options.deepseekBaseUrl ?? env.DEEPSEEK_BASE_URL,
       });
     default: {
       const _exhaustive: never = mode;

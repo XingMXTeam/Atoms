@@ -215,6 +215,14 @@ export async function runAgentPipeline(
         "上游模型触发演示回放降级，为避免覆盖现有版本已中止保存，请稍后重试",
       );
     }
+    if (!currentVersion && engineer.files.length === 0) {
+      throw new Error("Engineer returned no files for the initial version");
+    }
+    // Merge follow-up deltas BEFORE emitting so the client preview always
+    // receives the full file set (a delta alone may omit src/main.tsx → blank screen).
+    let files = currentVersion
+      ? mergeFileDelta(currentVersion.files, engineer.files)
+      : engineer.files;
     await persistEvent(
       repo,
       {
@@ -224,18 +232,12 @@ export async function runAgentPipeline(
         type: "file",
         payload: {
           ...engineer,
+          currentFiles: files,
           ...(replayLabel ? { providerLabel: replayLabel } : {}),
         },
       },
       onEvent,
     );
-
-    if (!currentVersion && engineer.files.length === 0) {
-      throw new Error("Engineer returned no files for the initial version");
-    }
-    let files = currentVersion
-      ? mergeFileDelta(currentVersion.files, engineer.files)
-      : engineer.files;
     let summary = engineer.summary;
     let qaRounds = 0;
     let exhausted = false;

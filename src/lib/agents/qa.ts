@@ -13,7 +13,14 @@ export const qaVerdictSchema = z.object({
       }),
     )
     .min(1),
-  fixInstruction: z.string().min(1).optional(),
+    fixInstruction: z
+      .string()
+      .nullable()
+      .optional()
+      .transform((value) => {
+        const trimmed = value?.trim();
+        return trimmed ? trimmed : undefined;
+      }),
 });
 
 export type QaVerdict = z.infer<typeof qaVerdictSchema>["verdicts"][number];

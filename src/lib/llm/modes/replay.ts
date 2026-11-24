@@ -1,9 +1,9 @@
 import {
   createMockQaVerdicts,
   MOCK_ARCHITECT,
-  MOCK_ENGINEER,
   MOCK_PLANNER,
 } from "@/lib/agents/fixtures";
+import { SEED_EXAMPLE_PROJECTS } from "@/lib/db/seeds";
 import type { LlmCompletion, LlmProvider } from "../types";
 
 /** Pre-recorded demo run used as automatic fallback (REQ-5). */
@@ -44,8 +44,12 @@ export function createReplayProvider(): LlmProvider {
         };
       }
       if (stage === "engineer") {
+        const todoDemo = SEED_EXAMPLE_PROJECTS[0];
         return {
-          text: JSON.stringify(MOCK_ENGINEER),
+          text: JSON.stringify({
+            files: todoDemo.files,
+            summary: todoDemo.summary,
+          }),
           meta: { mode: "replay", label: REPLAY_LABEL },
         };
       }

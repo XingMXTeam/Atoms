@@ -5,9 +5,9 @@
       "command": "pnpm typecheck",
       "status": "passed",
       "exitCode": 0,
-      "durationMs": 1395,
-      "at": 1795482067241,
-      "sha": "fe75e24",
+      "durationMs": 1695,
+      "at": 1795484122583,
+      "sha": "eff699f",
       "tail": "$ tsc --noEmit",
       "log": ".harness/verify/typecheck.log"
     },
@@ -16,9 +16,9 @@
       "command": "pnpm lint",
       "status": "passed",
       "exitCode": 0,
-      "durationMs": 2933,
-      "at": 1795482070222,
-      "sha": "fe75e24",
+      "durationMs": 3068,
+      "at": 1795484125691,
+      "sha": "eff699f",
       "tail": "  45:3  warning  'initialRunQaScore' is defined but never used  @typescript-eslint/no-unused-vars\n\n✖ 2 problems (0 errors, 2 warnings)\n\n$ eslint",
       "log": ".harness/verify/lint.log"
     },
@@ -27,10 +27,10 @@
       "command": "pnpm test",
       "status": "passed",
       "exitCode": 0,
-      "durationMs": 3036,
-      "at": 1795482073303,
-      "sha": "fe75e24",
-      "tail": "  stage: 'engineer',\n  modelId: 'gemini-3.8-flash',\n  hasKey: true,\n  reason: 'Gemini HTTP 503: flash overload'\n}",
+      "durationMs": 3790,
+      "at": 1795484129518,
+      "sha": "eff699f",
+      "tail": "  stage: 'engineer',\n  modelId: 'gemini-3.8-flash',\n  hasKey: false,\n  reason: 'missing_api_key'\n}",
       "log": ".harness/verify/unit.log"
     },
     "e2e": {
@@ -38,10 +38,10 @@
       "command": "pnpm test:e2e",
       "status": "passed",
       "exitCode": 0,
-      "durationMs": 19827,
-      "at": 1795482097925,
-      "sha": "fe75e24",
-      "tail": "  32 passed (19.3s)\n$ playwright test\n[WebServer] ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.\n[WebServer] \n[WebServer]",
+      "durationMs": 21894,
+      "at": 1795484157244,
+      "sha": "eff699f",
+      "tail": "  32 passed (21.4s)\n$ playwright test\n[WebServer] ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests.\n[WebServer] \n[WebServer]",
       "log": ".harness/verify/e2e.log"
     },
     "build": {
@@ -49,12 +49,12 @@
       "command": "pnpm build",
       "status": "passed",
       "exitCode": 0,
-      "durationMs": 4710,
-      "at": 1795482078051,
-      "sha": "fe75e24",
+      "durationMs": 5751,
+      "at": 1795484135306,
+      "sha": "eff699f",
       "tail": "  #3 [App Route]:\n    ./src/lib/db/adapters/sqlite.ts\n    ./src/lib/db/adapters/sqlite.ts\n    ./src/lib/db/index.ts\n    ./src/app/api/projects/[projectId]/runs/[runId]/probe/route.ts",
       "log": ".harness/verify/build.log"
     }
   },
-  "updatedAt": 1795482097925
+  "updatedAt": 1795484157244
 }
