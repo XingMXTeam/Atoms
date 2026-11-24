@@ -75,5 +75,18 @@ export const usage = sqliteTable(
   (table) => [primaryKey({ columns: [table.deviceId, table.day] })],
 );
 
+export const previewProbes = sqliteTable(
+  "preview_probes",
+  {
+    runId: text("run_id")
+      .notNull()
+      .references(() => runs.id),
+    round: integer("round").notNull(),
+    report: text("report", { mode: "json" }).notNull().$type<unknown>(),
+    createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.runId, table.round] })],
+);
+
 export type ProjectRow = typeof projects.$inferSelect;
 export type UsageRow = typeof usage.$inferSelect;

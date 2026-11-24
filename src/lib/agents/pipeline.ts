@@ -1,4 +1,5 @@
 import type { AppRepository } from "@/lib/db/repository";
+import { utcDay } from "@/lib/limits/rate-limit";
 import type { LlmProvider } from "@/lib/llm/types";
 import type { PreviewProbeReport } from "@/lib/preview/probe";
 import { runArchitect } from "./architect";
@@ -28,6 +29,7 @@ export type RunAgentPipelineOptions = {
   projectId: string;
   runId: string;
   prompt: string;
+  deviceId?: string;
   history?: Array<{ role: "user" | "agent"; content: string }>;
   currentVersion?: { id: string; files: GeneratedFile[] };
   onEvent?: (event: AgentEventRecord) => void | Promise<void>;
@@ -36,7 +38,10 @@ export type RunAgentPipelineOptions = {
   /** Test-only delay between stages so e2e can force an SSE disconnect (REQ-9). */
   stageDelayMs?: number;
   /** Preview host callback; each repair is judged against a fresh report. */
-  probePreview?: (files: GeneratedFile[]) => Promise<PreviewProbeReport>;
+  probePreview?: (
+    files: GeneratedFile[],
+    round: number,
+  ) => Promise<PreviewProbeReport>;
 };
 
 async function delayStage(ms: number | undefined, signal?: AbortSignal) {
@@ -70,7 +75,7 @@ async function persistEvent(
 
 const MAX_FIX_ROUNDS = 3;
 
-function defaultProbe(files: GeneratedFile[]): PreviewProbeReport {
+export function defaultProbe(files: GeneratedFile[]): PreviewProbeReport {
   const hasMockCompileError = files.some(({ content }) =>
     content.includes("/* MOCK_COMPILE_ERROR */"),
   );
@@ -107,6 +112,7 @@ export async function runAgentPipeline(
     projectId,
     runId,
     prompt,
+    deviceId,
     history,
     currentVersion,
     onEvent,
@@ -117,6 +123,8 @@ export async function runAgentPipeline(
   const nextSeq = createSeqCounter();
   let sawReplayFallback = false;
   let replayLabel: string | undefined;
+  let tokensIn = 0;
+  let tokensOut = 0;
   const trackedProvider: LlmProvider = {
     mode: provider.mode,
     async complete(input: unknown) {
@@ -124,6 +132,10 @@ export async function runAgentPipeline(
       if (completion.meta.mode === "replay") {
         sawReplayFallback = true;
         replayLabel = completion.meta.label ?? "演示回放";
+      }
+      if (completion.meta.usage) {
+        tokensIn += completion.meta.usage.tokensIn;
+        tokensOut += completion.meta.usage.tokensOut;
       }
       return completion;
     },
@@ -230,7 +242,9 @@ export async function runAgentPipeline(
     let qaResult: QaResult;
 
     while (true) {
-      const probe = probePreview ? await probePreview(files) : defaultProbe(files);
+      const probe = probePreview
+        ? await probePreview(files, qaRounds)
+        : defaultProbe(files);
       await persistEvent(
         repo,
         {
@@ -336,7 +350,14 @@ export async function runAgentPipeline(
       finishedAt: new Date(),
       qaRounds,
       qaScore: qaResult.qa_score,
+      tokensIn,
+      tokensOut,
     });
+    if (deviceId && tokensIn + tokensOut > 0) {
+      await repo.incrementUsage(deviceId, utcDay(), {
+        tokens: tokensIn + tokensOut,
+      });
+    }
 
     return {
       plan,
@@ -378,7 +399,16 @@ export async function runAgentPipeline(
     await repo.updateRun(runId, {
       status: "failed",
       finishedAt: new Date(),
+      tokensIn,
+      tokensOut,
     });
+    if (deviceId && tokensIn + tokensOut > 0) {
+      await repo
+        .incrementUsage(deviceId, utcDay(), {
+          tokens: tokensIn + tokensOut,
+        })
+        .catch(() => undefined);
+    }
     throw error;
   }
 }

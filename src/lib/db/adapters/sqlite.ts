@@ -5,13 +5,13 @@ import { drizzle } from "drizzle-orm/better-sqlite3";
 import { createAppRepository, type AppRepository } from "../repository";
 import * as schema from "../schema";
 
+const MIGRATION_FILES = ["0000_init.sql", "0001_preview_probes.sql"] as const;
+
 function loadSchemaSql(): string {
-  const migrationPath = path.join(
-    /*turbopackIgnore: true*/ process.cwd(),
-    "migrations",
-    "0000_init.sql",
-  );
-  return fs.readFileSync(migrationPath, "utf8");
+  const base = path.join(/*turbopackIgnore: true*/ process.cwd(), "migrations");
+  return MIGRATION_FILES.map((file) =>
+    fs.readFileSync(path.join(base, file), "utf8"),
+  ).join("\n");
 }
 
 export function createSqliteRepository(

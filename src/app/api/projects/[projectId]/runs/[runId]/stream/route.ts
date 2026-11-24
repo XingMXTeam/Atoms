@@ -1,9 +1,13 @@
 import { cookies } from "next/headers";
 import { encodeSseMessage } from "@/lib/agents/events";
-import { runAgentPipeline } from "@/lib/agents/pipeline";
+import type { GeneratedFile } from "@/lib/agents/fixtures";
+import { defaultProbe, runAgentPipeline } from "@/lib/agents/pipeline";
 import { DEVICE_ID_COOKIE, getOrMintDeviceId } from "@/lib/auth/device-id";
 import { getDb } from "@/lib/db";
+import { getEnv } from "@/lib/env";
+import { utcDay } from "@/lib/limits/rate-limit";
 import { createLlmProvider } from "@/lib/llm/provider";
+import { previewProbeReportSchema } from "@/lib/preview/probe";
 import { parseVersionFiles } from "@/lib/versions";
 
 export const runtime = "nodejs";
@@ -24,7 +28,7 @@ function parseStageDelayMs(request: Request): number | undefined {
 }
 
 /**
- * SSE stream for Planner → Architect → Engineer.
+ * SSE stream for Planner → Architect → Engineer → QA.
  * OpenNext/Workers may buffer; we enqueue discrete SSE frames as events persist.
  * Disconnect → run marked `interrupted`; UI surfaces 「继续」 (REQ-9 known limitation).
  */
@@ -60,7 +64,10 @@ export async function GET(request: Request, context: RouteContext) {
   request.signal.addEventListener("abort", () => {
     abort.abort();
   });
+  const url = new URL(request.url);
   const stageDelayMs = parseStageDelayMs(request);
+  const clientProbe = url.searchParams.get("clientProbe") === "1";
+  const forceClientProbe = url.searchParams.get("forceClientProbe") === "1";
 
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
@@ -114,11 +121,44 @@ export async function GET(request: Request, context: RouteContext) {
           throw new Error("Current version does not belong to this project");
         }
 
+        let effectiveProvider = provider;
+        if (provider.mode === "gemini" && !currentVersion) {
+          const env = getEnv();
+          const day = utcDay();
+          const [usageSnapshot, globalTokens] = await Promise.all([
+            repo.getUsage(deviceId, day),
+            repo.getGlobalTokens(day),
+          ]);
+          const overRuns =
+            (usageSnapshot?.runs ?? 0) > env.DEVICE_DAILY_RUN_LIMIT;
+          const overTokens = globalTokens >= env.DAILY_TOKEN_CAP;
+          if (overRuns || overTokens) {
+            effectiveProvider = createLlmProvider({ mode: "replay" });
+          }
+        }
+
+        const useClientProbe =
+          (clientProbe && effectiveProvider.mode !== "mock") || forceClientProbe;
+        const probePreview = useClientProbe
+          ? async (files: GeneratedFile[], round: number) => {
+              const timeoutMs = round === 0 ? 12_000 : 6_000;
+              const deadline = Date.now() + timeoutMs;
+              while (!abort.signal.aborted && Date.now() < deadline) {
+                const raw = await repo.getPreviewProbe(runId, round);
+                const parsed = previewProbeReportSchema.safeParse(raw);
+                if (parsed.success) return parsed.data;
+                await new Promise((resolve) => setTimeout(resolve, 300));
+              }
+              return defaultProbe(files);
+            }
+          : undefined;
+
         await runAgentPipeline({
           repo,
-          provider,
+          provider: effectiveProvider,
           projectId,
           runId,
+          deviceId,
           prompt: userPrompt,
           history: messages.slice(-10).map(({ role, content }) => ({ role, content })),
           ...(currentVersion
@@ -131,6 +171,7 @@ export async function GET(request: Request, context: RouteContext) {
             : {}),
           signal: abort.signal,
           stageDelayMs,
+          ...(probePreview ? { probePreview } : {}),
           onEvent: (event) => {
             send(encodeSseMessage(event));
           },

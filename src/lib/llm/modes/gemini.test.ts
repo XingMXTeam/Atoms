@@ -189,4 +189,46 @@ describe("Gemini REST transport (REQ-5 / REQ-8)", () => {
     expect(String(fetchSpy.mock.calls[0]?.[0])).toContain("gemini-3.1-pro-preview");
     expect(String(fetchSpy.mock.calls[1]?.[0])).toContain("gemini-3.8-flash");
   });
+
+  it("parses Gemini usageMetadata into meta.usage tokensIn/tokensOut", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({
+          candidates: [
+            {
+              content: {
+                parts: [
+                  {
+                    text: JSON.stringify({
+                      title: "计费测试",
+                      prd: "prd",
+                      acceptance: ["AC-1"],
+                    }),
+                  },
+                ],
+              },
+            },
+          ],
+          usageMetadata: {
+            promptTokenCount: 120,
+            candidatesTokenCount: 45,
+            totalTokenCount: 165,
+          },
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } },
+      ),
+    );
+
+    const provider = createGeminiProvider({ apiKey: "test-key-123" });
+    const res = await provider.complete({
+      stage: "planner",
+      modelClass: "flash",
+      prompt: "做一个待办",
+    });
+
+    expect(res.meta).toEqual({
+      mode: "gemini",
+      usage: { tokensIn: 120, tokensOut: 45 },
+    });
+  });
 });

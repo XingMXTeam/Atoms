@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import type { PreviewProbeReport } from "@/lib/preview/probe";
 import { CodePane, type CodeFile } from "./code-pane";
 import { PreviewPane } from "./preview-pane";
 
@@ -22,6 +23,7 @@ type WorkbenchPanelsProps = {
   activeTab?: TabId;
   onTabChange?: (tab: TabId) => void;
   onRestore: (versionId: string) => void;
+  onProbeReport?: (report: PreviewProbeReport) => void;
 };
 
 export function WorkbenchPanels({
@@ -34,6 +36,7 @@ export function WorkbenchPanels({
   activeTab,
   onTabChange,
   onRestore,
+  onProbeReport,
 }: WorkbenchPanelsProps) {
   const [internalTab, setInternalTab] = useState<TabId>("preview");
   const currentTab = activeTab ?? internalTab;
@@ -97,7 +100,7 @@ export function WorkbenchPanels({
         hidden={currentTab !== "preview"}
         className="min-h-56 flex-1"
       >
-        <PreviewPane files={files} />
+        <PreviewPane files={files} onProbeReport={onProbeReport} />
       </div>
 
       <div

@@ -1,6 +1,6 @@
 import { DEFAULT_GEMINI_MODEL_FLASH } from "@/lib/env";
 import { resolveModelId, type ModelClass } from "../model-routing";
-import type { LlmCompletion, LlmProvider } from "../types";
+import type { LlmCompletion, LlmProvider, TokenUsage } from "../types";
 import { createReplayProvider, REPLAY_LABEL } from "./replay";
 
 export type GeminiProviderOptions = {
@@ -220,10 +220,10 @@ function stripJsonFence(raw: string): string {
   return fenced?.[1]?.trim() ?? trimmed;
 }
 
-export async function defaultFetchGeminiCompletion(
+async function defaultFetchGeminiResult(
   input: GeminiCompleteInput & { modelId: string },
   apiKey: string,
-): Promise<string> {
+): Promise<{ text: string; usage?: TokenUsage }> {
   const { systemInstruction, userPrompt } = buildPromptForStage(input);
   const schema = responseSchemaForStage(input.stage);
 
@@ -275,6 +275,11 @@ export async function defaultFetchGeminiCompletion(
       candidates?: Array<{
         content?: { parts?: Array<{ text?: string }> };
       }>;
+      usageMetadata?: {
+        promptTokenCount?: number;
+        candidatesTokenCount?: number;
+        totalTokenCount?: number;
+      };
     };
     const rawText = payload.candidates?.[0]?.content?.parts
       ?.map((part) => part.text ?? "")
@@ -285,10 +290,32 @@ export async function defaultFetchGeminiCompletion(
       throw new Error("Gemini returned an empty completion");
     }
 
-    return schema ? stripJsonFence(rawText) : rawText;
+    const um = payload.usageMetadata;
+    let usage: TokenUsage | undefined;
+    if (um && typeof um === "object") {
+      const tokensIn =
+        typeof um.promptTokenCount === "number" ? um.promptTokenCount : 0;
+      const tokensOut =
+        typeof um.candidatesTokenCount === "number"
+          ? um.candidatesTokenCount
+          : Math.max(0, (typeof um.totalTokenCount === "number" ? um.totalTokenCount : 0) - tokensIn);
+      if (tokensIn + tokensOut > 0) {
+        usage = { tokensIn, tokensOut };
+      }
+    }
+
+    return { text: schema ? stripJsonFence(rawText) : rawText, usage };
   } finally {
     clearTimeout(timer);
   }
+}
+
+export async function defaultFetchGeminiCompletion(
+  input: GeminiCompleteInput & { modelId: string },
+  apiKey: string,
+): Promise<string> {
+  const { text } = await defaultFetchGeminiResult(input, apiKey);
+  return text;
 }
 
 /**
@@ -300,7 +327,16 @@ export function createGeminiProvider(
   options: GeminiProviderOptions = {},
 ): LlmProvider {
   const replay = createReplayProvider();
-  const transport = options.fetchCompletion ?? defaultFetchGeminiCompletion;
+  const customTransport = options.fetchCompletion;
+  const runTransport = async (
+    args: GeminiCompleteInput & { modelId: string },
+    apiKey: string,
+  ): Promise<{ text: string; usage?: TokenUsage }> => {
+    if (customTransport) {
+      return { text: await customTransport(args, apiKey) };
+    }
+    return defaultFetchGeminiResult(args, apiKey);
+  };
 
   return {
     mode: "gemini",
@@ -335,8 +371,11 @@ export function createGeminiProvider(
       }
 
       try {
-        const text = await transport({ ...typed, modelClass, modelId }, apiKey);
-        return { text, meta: { mode: "gemini" } };
+        const result = await runTransport({ ...typed, modelClass, modelId }, apiKey);
+        return {
+          text: result.text,
+          meta: { mode: "gemini", ...(result.usage ? { usage: result.usage } : {}) },
+        };
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
         const canFallbackToFlash =
@@ -357,11 +396,14 @@ export function createGeminiProvider(
             );
           }
           try {
-            const text = await transport(
+            const result = await runTransport(
               { ...typed, modelClass: "flash", modelId: DEFAULT_GEMINI_MODEL_FLASH },
               apiKey,
             );
-            return { text, meta: { mode: "gemini" } };
+            return {
+              text: result.text,
+              meta: { mode: "gemini", ...(result.usage ? { usage: result.usage } : {}) },
+            };
           } catch (retryError) {
             console.warn("[gemini-fallback]", {
               stage: typed.stage ?? "general",

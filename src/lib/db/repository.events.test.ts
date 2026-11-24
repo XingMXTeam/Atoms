@@ -132,4 +132,37 @@ describe("AppRepository events/versions (REQ-3 / REQ-7)", () => {
     expect(found).toEqual(run);
     expect(await repo.getRun("missing")).toBeNull();
   });
+
+  it("upserts preview probe reports by (runId, round) and sums global daily tokens", async () => {
+    const repo = createSqliteRepository(":memory:");
+    const project = await repo.createProject({ deviceId: "device-a", title: "探针与用量" });
+    const run = await repo.createRun({ projectId: project.id, status: "running" });
+
+    expect(await repo.getPreviewProbe(run.id, 0)).toBeNull();
+    const firstReport = {
+      source: "atoms-preview",
+      type: "probe",
+      compileErrors: ["SyntaxError"],
+      runtimeErrors: [],
+      blankScreen: true,
+      domSummary: { title: "", text: "", elementCount: 0 },
+    };
+    await repo.savePreviewProbe({ runId: run.id, round: 0, report: firstReport });
+    expect(await repo.getPreviewProbe(run.id, 0)).toEqual(firstReport);
+
+    const updatedReport = {
+      ...firstReport,
+      compileErrors: [],
+      blankScreen: false,
+      domSummary: { title: "App", text: "我的待办", elementCount: 4 },
+    };
+    await repo.savePreviewProbe({ runId: run.id, round: 0, report: updatedReport });
+    expect(await repo.getPreviewProbe(run.id, 0)).toEqual(updatedReport);
+
+    await repo.incrementUsage("device-a", "2026-11-24", { runs: 1, tokens: 350 });
+    await repo.incrementUsage("device-b", "2026-11-24", { runs: 2, tokens: 650 });
+    await repo.incrementUsage("device-a", "2026-11-23", { runs: 1, tokens: 999 });
+    expect(await repo.getGlobalTokens("2026-11-24")).toBe(1000);
+    expect(await repo.getGlobalTokens("2026-11-23")).toBe(999);
+  });
 });

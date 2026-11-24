@@ -413,4 +413,55 @@ describe("agent pipeline (REQ-3 / REQ-7 / REQ-8)", () => {
     const engineerEvent = emitted.find((item) => item.agent === "engineer");
     expect((engineerEvent?.payload as { providerLabel?: string } | null)?.providerLabel).toBe("演示回放");
   });
+
+  it("accumulates Gemini token usage onto run + device/global totals and forwards probe round", async () => {
+    const repo = createSqliteRepository(":memory:");
+    const project = await repo.createProject({ deviceId: "device-tok", title: "计费测试" });
+    const run = await repo.createRun({ projectId: project.id, status: "running" });
+    const seenRounds: number[] = [];
+
+    const meteredProvider = {
+      mode: "mock" as const,
+      async complete(input: Record<string, unknown>) {
+        const base = await createLlmProvider({ mode: "mock" }).complete(input);
+        return {
+          ...base,
+          meta: {
+            ...base.meta,
+            usage: { tokensIn: 100, tokensOut: 25 },
+          },
+        };
+      },
+    };
+
+    const result = await runAgentPipeline({
+      repo,
+      provider: meteredProvider,
+      projectId: project.id,
+      runId: run.id,
+      deviceId: "device-tok",
+      prompt: "做一个中文待办清单",
+      probePreview: async (files, round) => {
+        seenRounds.push(round);
+        return {
+          source: "atoms-preview",
+          type: "probe",
+          compileErrors: [],
+          runtimeErrors: [],
+          blankScreen: false,
+          domSummary: { title: "", text: `${files.length} files`, elementCount: 5 },
+        };
+      },
+    });
+
+    expect(result.qaScore).toBe(100);
+    expect(seenRounds).toEqual([0]);
+    const savedRun = await repo.getRun(run.id);
+    expect(savedRun?.tokensIn).toBe(400);
+    expect(savedRun?.tokensOut).toBe(100);
+    const today = new Date().toISOString().slice(0, 10);
+    const deviceUsage = await repo.getUsage("device-tok", today);
+    expect(deviceUsage?.tokens).toBe(500);
+    expect(await repo.getGlobalTokens(today)).toBe(500);
+  });
 });

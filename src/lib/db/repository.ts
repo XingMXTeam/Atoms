@@ -6,6 +6,7 @@ import { SEED_EXAMPLE_PROJECTS } from "./seeds";
 import {
   agentEvents,
   messages,
+  previewProbes,
   projects,
   runs,
   usage,
@@ -84,7 +85,12 @@ export interface AppRepository {
   listVersions(projectId: string): Promise<Version[]>;
   updateRun(
     id: string,
-    patch: Partial<Pick<Run, "status" | "finishedAt" | "qaRounds" | "qaScore">>,
+    patch: Partial<
+      Pick<
+        Run,
+        "status" | "finishedAt" | "qaRounds" | "qaScore" | "tokensIn" | "tokensOut"
+      >
+    >,
   ): Promise<Run>;
   addMessage(input: {
     projectId: string;
@@ -94,6 +100,12 @@ export interface AppRepository {
   listMessages(projectId: string): Promise<Message[]>;
   appendAgentEvent(input: Omit<AgentEvent, "id">): Promise<AgentEvent>;
   listAgentEvents(runId: string): Promise<AgentEvent[]>;
+  savePreviewProbe(input: {
+    runId: string;
+    round: number;
+    report: unknown;
+  }): Promise<void>;
+  getPreviewProbe(runId: string, round: number): Promise<unknown | null>;
   createVersion(input: {
     projectId: string;
     runId: string;
@@ -110,6 +122,7 @@ export interface AppRepository {
     delta: { runs?: number; tokens?: number },
   ): Promise<UsageRecord>;
   getUsage(deviceId: string, day: string): Promise<UsageRecord | null>;
+  getGlobalTokens(day: string): Promise<number>;
 }
 
 export type AppDb =
@@ -415,6 +428,8 @@ export function createAppRepository(db: AppDb): AppRepository {
       if (patch.finishedAt !== undefined) updates.finishedAt = patch.finishedAt;
       if (patch.qaRounds !== undefined) updates.qaRounds = patch.qaRounds;
       if (patch.qaScore !== undefined) updates.qaScore = patch.qaScore;
+      if (patch.tokensIn !== undefined) updates.tokensIn = patch.tokensIn;
+      if (patch.tokensOut !== undefined) updates.tokensOut = patch.tokensOut;
 
       await db.update(runs).set(updates).where(eq(runs.id, id));
 
@@ -470,6 +485,36 @@ export function createAppRepository(db: AppDb): AppRepository {
         .where(eq(agentEvents.runId, runId))
         .orderBy(asc(agentEvents.seq));
       return rows.map(mapAgentEvent);
+    },
+
+    async savePreviewProbe(input) {
+      const now = new Date();
+      await db
+        .insert(previewProbes)
+        .values({
+          runId: input.runId,
+          round: input.round,
+          report: input.report,
+          createdAt: now,
+        })
+        .onConflictDoUpdate({
+          target: [previewProbes.runId, previewProbes.round],
+          set: {
+            report: input.report,
+            createdAt: now,
+          },
+        });
+    },
+
+    async getPreviewProbe(runId, round) {
+      const rows = await db
+        .select()
+        .from(previewProbes)
+        .where(
+          and(eq(previewProbes.runId, runId), eq(previewProbes.round, round)),
+        )
+        .limit(1);
+      return rows[0]?.report ?? null;
     },
 
     async createVersion(input) {
@@ -531,6 +576,14 @@ export function createAppRepository(db: AppDb): AppRepository {
         .limit(1);
       const row = rows[0];
       return row ? mapUsage(row) : null;
+    },
+
+    async getGlobalTokens(day) {
+      const rows = await db
+        .select()
+        .from(usage)
+        .where(eq(usage.day, day));
+      return rows.reduce((sum, row) => sum + row.tokens, 0);
     },
   };
 }

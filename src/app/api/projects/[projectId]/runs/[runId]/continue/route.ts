@@ -72,7 +72,7 @@ export async function POST(request: Request, context: RouteContext) {
       const row = await repo.getUsage(id, d);
       return row ? { runs: row.runs, tokens: row.tokens } : null;
     },
-    getGlobalTokens: async () => 0,
+    getGlobalTokens: (d) => repo.getGlobalTokens(d),
   });
 
   if (!decision.ok && "refuse" in decision && decision.refuse) {

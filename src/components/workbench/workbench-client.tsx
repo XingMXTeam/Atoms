@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
+import type { PreviewProbeReport } from "@/lib/preview/probe";
 import { AgentTimeline } from "./agent-timeline";
 import { WorkbenchPanels, type TabId, type VersionSummary } from "./workbench-panels";
 import type { CodeFile } from "./code-pane";
@@ -74,6 +75,9 @@ export function WorkbenchClient({
   const lastSyncedCompletedRunRef = useRef<string | null>(
     initialStatus === "completed" ? initialRunId : null,
   );
+  const activeRunIdRef = useRef(initialRunId);
+  const qaRoundsRef = useRef(initialRunQaRounds);
+  const lastProbeKeyRef = useRef<string | null>(null);
 
   const handleFiles = useCallback((next: CodeFile[]) => {
     if (liveRunStatusRef.current !== "completed") setFiles(next);
@@ -83,6 +87,36 @@ export function WorkbenchClient({
     liveRunStatusRef.current = status;
     setLiveRunStatus(status);
   }, []);
+
+  const handleRunIdChange = useCallback((nextRunId: string) => {
+    activeRunIdRef.current = nextRunId;
+    qaRoundsRef.current = 0;
+    lastProbeKeyRef.current = null;
+    setActiveRunId(nextRunId);
+  }, []);
+
+  const handleQaRoundsChange = useCallback((rounds: number) => {
+    qaRoundsRef.current = rounds;
+    setQaRounds(rounds);
+  }, []);
+
+  const handleProbeReport = useCallback(
+    (report: PreviewProbeReport) => {
+      const runId = activeRunIdRef.current;
+      if (liveRunStatusRef.current !== "running" || !runId) return;
+      const round = qaRoundsRef.current;
+      const key = `${runId}:${round}:${report.compileErrors.join("|")}:${report.runtimeErrors.join("|")}:${report.blankScreen}`;
+      if (lastProbeKeyRef.current === key) return;
+      lastProbeKeyRef.current = key;
+
+      void fetch(`/api/projects/${projectId}/runs/${runId}/probe`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ round, report }),
+      }).catch(() => undefined);
+    },
+    [projectId],
+  );
 
   useEffect(() => {
     if (liveRunStatus !== "completed") return;
@@ -190,6 +224,7 @@ export function WorkbenchClient({
       }
       if (result.runId) {
         lastSyncedCompletedRunRef.current = result.runId;
+        activeRunIdRef.current = result.runId;
         setActiveRunId(result.runId);
       }
       if (typeof window !== "undefined") {
@@ -313,9 +348,9 @@ export function WorkbenchClient({
           onFiles={handleFiles}
           onRunStatusChange={handleRunStatus}
           onQaScoreChange={setQaScore}
-          onQaRoundsChange={setQaRounds}
+          onQaRoundsChange={handleQaRoundsChange}
           onProviderLabel={setProviderLabel}
-          onRunIdChange={setActiveRunId}
+          onRunIdChange={handleRunIdChange}
         />
         <WorkbenchPanels
           files={files}
@@ -327,6 +362,7 @@ export function WorkbenchClient({
           activeTab={activeTab}
           onTabChange={setActiveTab}
           onRestore={restoreVersion}
+          onProbeReport={handleProbeReport}
         />
       </div>
     </div>

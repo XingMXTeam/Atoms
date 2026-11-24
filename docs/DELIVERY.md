@@ -25,8 +25,8 @@
 
 - Gemini **只走服务端** REST SSE；前端永不接触密钥。
 - Worker 固定 `placement.region = "aws:us-east-1"`，避开部分区域（例如 HKG）对 Gemini 出口的限制。
-- Provider 三态：`gemini`（生产）、`mock`（确定性 e2e）、`replay`（错误/配额自动回退，UI 标注「演示回放」）。
-- 另有按 `deviceId` / IP 的限流与全局日 token 软顶，避免演示被刷穿。
+- Provider 三态：`gemini`（生产）、`mock`（确定性 e2e）、`replay`（首轮错误/配额自动回退，UI 标注「演示回放」；增量追问拒绝破坏性回退，保留既有版本）。
+- 基于真实 `usageMetadata` 统计 `tokens_in / tokens_out` 与每日 `usage.tokens`，联合 `DEVICE_DAILY_RUN_LIMIT` 与 `DAILY_TOKEN_CAP` 在 SSE 入口执行限流降级。
 
 ### Harness-in-product
 
@@ -47,7 +47,7 @@
 | 中文壳与视觉 | Home / Workbench / Share；light/dark；`prefers-reduced-motion` 关闭装饰动画 |
 | 多 Agent 时间线 | Planner / Architect / Engineer / QA 可见状态与事件 |
 | 生成 → 预览 | SSE 流水线 + esbuild-wasm 同源预览 |
-| QA 自修复 | 预览 probe + 验收标准判定，≤3 轮；达上限展示「已达修复上限」 |
+| QA 自修复 | 浏览器 `postMessage` 探针 + D1 `preview_probes` 回传 + 验收标准判定，≤3 轮（超时回退静态探测）；达上限展示「已达修复上限」 |
 | 迭代与版本 | 工作台 follow-up、版本时间线、回滚 |
 | 分享与导出 | 只读 `/share/[slug]`、ZIP 下载（进行中禁用反馈） |
 | 预览宽度 | `桌面` / `移动 375px`，沙箱仍保持无 `allow-same-origin` |
@@ -57,8 +57,9 @@
 
 ### 已知限制
 
-- 生成规模有意受限（少量文件的前端原型），不是任意全栈应用工厂。
-- Live Gemini 质量受模型波动影响；确定性演示依赖 `mock` / `replay`。
+- 生成规模有意受限（少量文件的前端原型），不是任意全栈应用工厂；预览运行于 `sandbox="allow-scripts allow-forms"`（无 `allow-same-origin`），不开放 `localStorage`。
+- Live Gemini 质量受模型波动影响；首次生成兜底依赖 `mock` / `replay`，增量追问遇到上游失败则直接报错并保留当前版本。
+- 若浏览器端在轮询窗口（第 0 轮 12s / 后续轮 6s）内未提交 `POST /probe`，QA 自动回退到服务端静态探测。
 - OpenNext 增量缓存目前使用 dummy override，未接 R2。
 - 移动端是预览框宽度约束，不是独立响应式产品站。
 
@@ -66,11 +67,10 @@
 
 按优先级：
 
-1. **完成 Cloudflare 生产接线**：`wrangler login`、真实 D1 id、secret、自定义域名冒烟（含 SSE）。
-2. **R2 / 增量缓存**：降低重复构建与静态资源成本。
-3. **更丰富的 seeded 示例**与失败路径演示（编译错误 → 自修复叙事）。
-4. **可观测性**：Worker 侧 run/token 指标与告警，便于演示日控量。
-5. **体验增强**（不阻塞交付）：更细的版本 diff、分享页性能对照、可选的预览 console 面板。
+1. **R2 / 增量缓存**：降低重复构建与静态资源成本。
+2. **更丰富的 seeded 示例**与失败路径演示（编译错误 → 自修复叙事）。
+3. **可观测性**：Worker 侧 run/token 指标面板与流式输出进度细化。
+4. **体验增强**（不阻塞交付）：更细的版本 diff、分享页性能对照、可选的预览 console 面板。
 
 若预算吃紧，可砍顺序仍为：zip → share → 移动宽度切换 → 合并 Planner+Architect（时间线仍显示两角色）。**不砍** foundation / generate-loop / qa-self-heal。
 
@@ -94,7 +94,7 @@ npx wrangler d1 create atoms-demo
 
 ### 3. 迁移 schema
 
-仓库已包含初始化迁移 `migrations/0000_init.sql`（与 `src/lib/db/schema.ts` 一致，并在 `wrangler.jsonc` 中配好 `migrations_dir`）。直接应用到远程 D1：
+仓库已包含迁移文件 `migrations/0000_init.sql` 与 `migrations/0001_preview_probes.sql`（与 `src/lib/db/schema.ts` 一致，并在 `wrangler.jsonc` 中配好 `migrations_dir`）。直接应用到远程 D1：
 
 ```bash
 npx wrangler d1 migrations apply atoms-demo --remote

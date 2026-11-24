@@ -244,8 +244,16 @@ export function AgentTimeline({
         typeof window !== "undefined"
           ? window.localStorage.getItem("atoms.generate-loop.stageDelayMs")
           : null;
+      const forceProbeRaw =
+        typeof window !== "undefined"
+          ? window.localStorage.getItem("atoms.forceClientProbe")
+          : null;
       const delayMs = delayRaw ? Number(delayRaw) : 0;
       const params = new URLSearchParams();
+      params.set("clientProbe", "1");
+      if (forceProbeRaw === "1") {
+        params.set("forceClientProbe", "1");
+      }
       if (Number.isFinite(delayMs) && delayMs > 0) {
         params.set("stageDelayMs", String(Math.floor(delayMs)));
       }
