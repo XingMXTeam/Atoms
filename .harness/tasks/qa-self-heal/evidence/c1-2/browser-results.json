@@ -1,0 +1,41 @@
+{
+  "browserVersion": "159.0.8154.6",
+  "cases": {
+    "E2E-1": "PASS",
+    "E2E-2": "FAIL",
+    "E2E-5": "PASS",
+    "E2E-7": "PASS",
+    "E2E-8": "PASS",
+    "E2E-4": "PASS",
+    "E2E-6": "PASS"
+  },
+  "probes": {
+    "longInputAccepted": true,
+    "doubleSubmit": "double-click created one workbench run; no duplicate page navigation observed",
+    "backForward": "returned home after completed run and score remained visible after hard reload"
+  },
+  "measurements": {
+    "workbench": {
+      "viewport": [
+        1280,
+        800
+      ],
+      "clippedTextElements": 0,
+      "bodyScrollWidth": 1280,
+      "qaCardRect": {
+        "x": 169,
+        "y": 467,
+        "width": 402.359375,
+        "height": 680
+      }
+    },
+    "home": {
+      "viewport": [
+        1280,
+        800
+      ],
+      "clippedTextElements": 1,
+      "bodyScrollWidth": 1280
+    }
+  }
+}

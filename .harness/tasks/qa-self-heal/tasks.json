@@ -1,0 +1,66 @@
+[
+  {
+    "id": "TASK-1",
+    "title": "Validate sandbox preview probe reports",
+    "requirements": ["REQ-1"],
+    "checks": [
+      "pnpm exec vitest run src/lib/preview",
+      "pnpm typecheck"
+    ]
+  },
+  {
+    "id": "TASK-2",
+    "title": "Add structured QA verdicts and score aggregation",
+    "requirements": ["REQ-2"],
+    "checks": [
+      "pnpm exec vitest run src/lib/agents",
+      "pnpm typecheck"
+    ]
+  },
+  {
+    "id": "TASK-3",
+    "title": "Implement delta-only self-heal loop with three-round cap",
+    "requirements": ["REQ-3"],
+    "checks": [
+      "pnpm exec vitest run src/lib/agents src/lib/preview",
+      "pnpm typecheck"
+    ]
+  },
+  {
+    "id": "TASK-4",
+    "title": "Stream and expand persisted QA timeline events",
+    "requirements": ["REQ-4", "REQ-6"],
+    "checks": [
+      "pnpm exec vitest run src/lib/agents src/lib/db",
+      "pnpm exec playwright test e2e/qa-self-heal.spec.ts",
+      "pnpm typecheck"
+    ]
+  },
+  {
+    "id": "TASK-5",
+    "title": "Persist score badges and verify mock recovery journeys",
+    "requirements": ["REQ-5", "REQ-7"],
+    "checks": [
+      "LLM_PROVIDER=mock pnpm exec playwright test e2e/qa-self-heal.spec.ts",
+      "fh verify"
+    ]
+  },
+  {
+    "id": "TASK-6",
+    "title": "Cover exhaustion, persisted score consistency, and parallel journeys",
+    "requirements": ["REQ-3", "REQ-4", "REQ-5", "REQ-7"],
+    "checks": [
+      "LLM_PROVIDER=mock pnpm exec playwright test e2e/qa-self-heal.spec.ts --workers=5",
+      "pnpm exec vitest run src/lib/agents src/lib/db"
+    ]
+  },
+  {
+    "id": "TASK-7",
+    "title": "Add deterministic persistence assertions and repeat parallel recovery journey",
+    "requirements": ["REQ-3", "REQ-5", "REQ-7"],
+    "checks": [
+      "pnpm exec vitest run src/lib/agents src/lib/db",
+      "LLM_PROVIDER=mock pnpm exec playwright test e2e/qa-self-heal.spec.ts --workers=5 --repeat-each=3"
+    ]
+  }
+]

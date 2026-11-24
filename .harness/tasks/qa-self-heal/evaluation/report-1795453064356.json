@@ -1,0 +1,230 @@
+{
+  "at": 1795453064356,
+  "verdict": "fail",
+  "verdictReason": "below-pass-score",
+  "score": 0.879,
+  "passScore": 0.9,
+  "layers": {
+    "L1": {
+      "score": 1,
+      "weight": 0.4
+    },
+    "L4": {
+      "score": 0.857,
+      "weight": 0.15
+    },
+    "L2": {
+      "score": 1,
+      "weight": 0.25
+    },
+    "L3": {
+      "score": 0.5,
+      "weight": 0.2
+    }
+  },
+  "vetoed": [],
+  "results": [
+    {
+      "id": "RB-1",
+      "requirement": "REQ-1",
+      "level": "essential",
+      "kind": "command",
+      "layer": "L1-function",
+      "score": 1,
+      "detail": "exit=0 (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite: |   - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest package"
+    },
+    {
+      "id": "RB-2",
+      "requirement": "REQ-1",
+      "level": "important",
+      "kind": "judge",
+      "layer": "L4-interaction",
+      "score": 1,
+      "detail": "judge: The expanded workbench timeline shows Chinese 探测 cards in sequence with QA status; see the captured workbench and passing focused QA timeline journey."
+    },
+    {
+      "id": "RB-3",
+      "requirement": "REQ-2",
+      "level": "essential",
+      "kind": "command",
+      "layer": "L1-function",
+      "score": 1,
+      "detail": "exit=0 (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite: |   - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest package"
+    },
+    {
+      "id": "RB-4",
+      "requirement": "REQ-2",
+      "level": "important",
+      "kind": "judge",
+      "layer": "L4-interaction",
+      "score": 1,
+      "detail": "judge: The expanded QA card exposes per-criterion verdicts and reasons, with the final 100 分 badge visible in the workbench header; the focused browser journey asserts the AC text and reason."
+    },
+    {
+      "id": "RB-5",
+      "requirement": "REQ-3",
+      "level": "essential",
+      "kind": "command",
+      "layer": "L1-function",
+      "score": 1,
+      "detail": "exit=0 (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite: |   - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest package"
+    },
+    {
+      "id": "RB-6",
+      "requirement": "REQ-3",
+      "level": "essential",
+      "kind": "command",
+      "layer": "L2-robustness",
+      "score": 1,
+      "detail": "exit=0 (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite: |   - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest package"
+    },
+    {
+      "id": "RB-7",
+      "requirement": "REQ-3",
+      "level": "pitfall",
+      "kind": "command",
+      "layer": "L2-robustness",
+      "score": 1,
+      "detail": "exit=0 (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite: |   - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest package"
+    },
+    {
+      "id": "RB-8",
+      "requirement": "REQ-3",
+      "level": "important",
+      "kind": "judge",
+      "layer": "L4-interaction",
+      "score": 0.5,
+      "detail": "judge: The persistent-failure journey displays three fix rounds, 已达修复上限, and a retained 0 分 badge on the home card after reload. The UI evidence cannot establish the absence of a fourth backend Engineer call or inspect the retained version row directly."
+    },
+    {
+      "id": "RB-9",
+      "requirement": "REQ-4",
+      "level": "essential",
+      "kind": "command",
+      "layer": "L1-function",
+      "score": 1,
+      "detail": "exit=0 (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite: |   - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest package"
+    },
+    {
+      "id": "RB-10",
+      "requirement": "REQ-4",
+      "level": "important",
+      "kind": "judge",
+      "layer": "L4-interaction",
+      "score": 1,
+      "detail": "judge: The focused QA timeline journey passed alongside two other parallel QA journeys and asserted a completed run with visible probe and verdict events. Existing Planner, Architect, and Engineer cards remain visible in the captured timeline."
+    },
+    {
+      "id": "RB-11",
+      "requirement": "REQ-5",
+      "level": "essential",
+      "kind": "command",
+      "layer": "L1-function",
+      "score": 1,
+      "detail": "exit=0 (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite: |   - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest package"
+    },
+    {
+      "id": "RB-12",
+      "requirement": "REQ-5",
+      "level": "essential",
+      "kind": "judge",
+      "layer": "L3-ui",
+      "score": 0.5,
+      "detail": "judge: The workbench and home project card both display 100 分, and the card retains the score after reload. The browser contract does not expose run and version rows, so equality with both persisted qa_score values could not be independently established."
+    },
+    {
+      "id": "RB-13",
+      "requirement": "REQ-6",
+      "level": "essential",
+      "kind": "command",
+      "layer": "L1-function",
+      "score": 1,
+      "detail": "exit=0 [WebServer] ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests. | [WebServer]  | [WebServer]"
+    },
+    {
+      "id": "RB-14",
+      "requirement": "REQ-6",
+      "level": "important",
+      "kind": "judge",
+      "layer": "L4-interaction",
+      "score": 1,
+      "detail": "judge: The expanded QA history is ordered by round and labels probe, judgment, and repair entries in Chinese; the recovery journey asserts the failure reason and the round that resolved it, while exhaustion is separately labelled at round three."
+    },
+    {
+      "id": "RB-15",
+      "requirement": "REQ-7",
+      "level": "essential",
+      "kind": "command",
+      "layer": "L1-function",
+      "score": 1,
+      "detail": "exit=0 [WebServer] ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests. | [WebServer]  | [WebServer]"
+    },
+    {
+      "id": "RB-16",
+      "requirement": "REQ-7",
+      "level": "important",
+      "kind": "judge",
+      "layer": "L4-interaction",
+      "score": 0.5,
+      "detail": "judge: The focused recovery journey ends with a ready painted preview, 100 分 badge, and inspectable repair history. However, the full parallel project E2E run failed on this same journey because preview-painted remained false despite preview-status=ready, so the core visible result is not reliable u"
+    },
+    {
+      "id": "RB-17",
+      "requirement": "REQ-1",
+      "level": "pitfall",
+      "kind": "judge",
+      "layer": "L2-robustness",
+      "score": 1,
+      "detail": "judge: Malformed and forged probe messages sent from the host window left the QA timeline unchanged. The preview boundary also passes the existing focused iframe journey; the exploratory browser result is recorded."
+    },
+    {
+      "id": "RB-18",
+      "requirement": "REQ-5",
+      "level": "pitfall",
+      "kind": "judge",
+      "layer": "L3-ui",
+      "score": 1,
+      "detail": "judge: The score is shown as a compact badge in the workbench header and as a separate badge on the home project card; the QA verdict and repair history remain inspectable in their own timeline card."
+    },
+    {
+      "id": "RB-19",
+      "requirement": "REQ-1",
+      "level": "pitfall",
+      "kind": "command",
+      "layer": "L1-function",
+      "score": 1,
+      "detail": "exit=0 (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite: |   - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest package"
+    },
+    {
+      "id": "RB-20",
+      "requirement": "REQ-4",
+      "level": "essential",
+      "kind": "command",
+      "layer": "L4-interaction",
+      "score": 1,
+      "detail": "exit=0 [WebServer] ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests. | [WebServer]  | [WebServer]"
+    },
+    {
+      "id": "RB-21",
+      "requirement": "REQ-6",
+      "level": "pitfall",
+      "kind": "judge",
+      "layer": "L4-interaction",
+      "score": 1,
+      "detail": "judge: The completed score has an expanded per-criterion QA history with reasons and round labels; the recovered and exhausted paths both expose their final repair status in the browser journeys."
+    }
+  ],
+  "refinementSuggestions": {
+    "added": [
+      "RS-5",
+      "RS-6",
+      "RS-7"
+    ],
+    "pending": [
+      "RS-5",
+      "RS-6",
+      "RS-7"
+    ],
+    "invalid": []
+  }
+}

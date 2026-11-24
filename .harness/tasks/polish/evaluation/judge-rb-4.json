@@ -1,0 +1,19 @@
+{
+  "score": 1,
+  "note": "Pitfall absent (RL-2): with prefers-reduced-motion: reduce, atoms-running-pulse animationDuration is 0s and sampled tab/expand transitions are 0s — decorative motion fully suppressed.",
+  "artifacts": [
+    ".harness/tasks/polish/evidence/c1-2-browser/workbench-reduced-motion.png",
+    ".harness/tasks/polish/evidence/c1-2-browser/journey-results.json"
+  ],
+  "verify": [
+    "typecheck",
+    "lint",
+    "unit",
+    "build",
+    "e2e"
+  ],
+  "heuristics": [
+    "H-UX-5.1",
+    "H-UI-7.2"
+  ]
+}

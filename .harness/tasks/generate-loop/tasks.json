@@ -1,0 +1,65 @@
+[
+  {
+    "id": "TASK-1",
+    "title": "Home prompt, example cards, and 我的项目 grid",
+    "requirements": ["REQ-1", "REQ-2"],
+    "checks": [
+      "pnpm typecheck",
+      "pnpm exec playwright test e2e/generate-home.spec.ts e2e/generate-submit.spec.ts"
+    ]
+  },
+  {
+    "id": "TASK-2",
+    "title": "SSE agent pipeline + repository persistence for events/versions",
+    "requirements": ["REQ-3", "REQ-7", "REQ-8"],
+    "checks": [
+      "pnpm exec vitest run src/lib/agents src/lib/db src/lib/llm",
+      "pnpm typecheck",
+      "rg -n \"GEMINI_MODEL_FLASH|GEMINI_MODEL_PRO\" .env.example"
+    ]
+  },
+  {
+    "id": "TASK-3",
+    "title": "Workbench Agent timeline + interrupt 继续 affordance",
+    "requirements": ["REQ-4", "REQ-9"],
+    "checks": [
+      "pnpm exec playwright test e2e/generate-timeline.spec.ts",
+      "rg -n \"继续\" src",
+      "pnpm typecheck"
+    ]
+  },
+  {
+    "id": "TASK-4",
+    "title": "Self-hosted esbuild-wasm preview + 代码 tab",
+    "requirements": ["REQ-5", "REQ-6"],
+    "checks": [
+      "test -f public/preview/esbuild.wasm",
+      "pnpm exec vitest run src/lib/preview",
+      "pnpm exec playwright test e2e/generate-preview.spec.ts",
+      "pnpm typecheck"
+    ]
+  },
+  {
+    "id": "TASK-5",
+    "title": "Mock e2e core+persistence journeys and verify green",
+    "requirements": ["REQ-10", "REQ-1", "REQ-5"],
+    "checks": [
+      "pnpm typecheck",
+      "pnpm lint",
+      "pnpm test",
+      "pnpm test:e2e",
+      "pnpm build"
+    ]
+  },
+  {
+    "id": "TASK-6",
+    "title": "Fix open eval gaps: sandbox/CDN greps, interrupt chrome scoping, painted preview",
+    "requirements": ["REQ-5", "REQ-6", "REQ-9", "REQ-4", "REQ-10"],
+    "checks": [
+      "pnpm exec vitest run src/lib/preview src/lib/agents",
+      "pnpm exec playwright test e2e/generate-preview.spec.ts e2e/generate-timeline.spec.ts e2e/generate-core.spec.ts",
+      "pnpm typecheck",
+      "pnpm lint"
+    ]
+  }
+]

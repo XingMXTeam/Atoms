@@ -10,3 +10,10 @@ coverage/
 playwright-report/
 test-results/
 .DS_Store
+*.db
+*.db-journal
+.data/
+*.tsbuildinfo
+.harness/runs/
+.turbo/
+.vitest/

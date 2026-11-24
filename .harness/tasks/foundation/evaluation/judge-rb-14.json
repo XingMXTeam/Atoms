@@ -1,0 +1,18 @@
+{
+  "score": 1,
+  "note": "Over DEVICE_DAILY_RUN_LIMIT and over DAILY_TOKEN_CAP both return {ok:false, mode:replay, label:演示回放}. When replayAvailable=false, refuse returns Chinese messageZh 「今日体验额度已用完，且演示回放暂不可用。请明天再试，或稍后再来。」 — never a silent or English-only failure.",
+  "artifacts": [
+    ".harness/tasks/foundation/evaluation/evidence/rb12-rb14-probe.json",
+    ".harness/tasks/foundation/evaluation/evidence/rb12-rb14-probe.txt"
+  ],
+  "verify": ["unit"],
+  "heuristics": ["H-UX-2.3", "H-UX-3.2"],
+  "rubricRefinementSuggestions": [
+    {
+      "type": "add-verification",
+      "item": "RB-14",
+      "problem": "E2E-3/E2E-5 describe over-cap journeys but no Playwright route exercises them; confirmation relied on a Vitest helper probe",
+      "suggestion": "Add a Playwright (or route-handler) fixture that seeds usage at the cap and asserts the Chinese 演示回放/refuse payload is returned over HTTP"
+    }
+  ]
+}

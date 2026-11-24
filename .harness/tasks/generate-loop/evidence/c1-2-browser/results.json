@@ -1,0 +1,152 @@
+{
+  "results": [
+    {
+      "id": "E2E-5",
+      "category": "boundary",
+      "result": "PASS",
+      "cardCount": 4,
+      "projectsHeading": 1,
+      "overflowHome": 1,
+      "homeText": "Atoms Studio 可验证的 AI 应用生成 输入需求，Agent 团队会规划、设计并生成可预览的应用。 描述你想生成的应用 用一句话描述即可 开始生成 待办清单 做一个简洁的待办清单应用，支持添加、完成和删除任务 番茄钟 做一个番茄钟计时器，支持专注与休息切换，并显示剩余时间 计算器 做一个基础计算器，支持加减乘除和清除 天气卡片 做一个天气卡片界面，展示城市名称、温度和简短天气描述 我的项目 还没有项目，输入需求开始生成吧",
+      "artifacts": [
+        ".harness/tasks/generate-loop/evidence/c1-2-browser/home.png"
+      ]
+    },
+    {
+      "id": "E2E-4",
+      "category": "negative",
+      "blocking": true,
+      "result": "PASS",
+      "emptyDisabled": true,
+      "stayedHome": true,
+      "before": "http://127.0.0.1:3000/",
+      "after": "http://127.0.0.1:3000/",
+      "artifacts": [
+        ".harness/tasks/generate-loop/evidence/c1-2-browser/home-empty-submit.png"
+      ]
+    },
+    {
+      "id": "RB-31-probe",
+      "result": "PASS",
+      "filled": "做一个简洁的待办清单应用，支持添加、完成和删除任务",
+      "artifacts": [
+        ".harness/tasks/generate-loop/evidence/c1-2-browser/home-example-filled.png"
+      ]
+    },
+    {
+      "id": "probe-long-input",
+      "length": 1200,
+      "artifacts": [
+        ".harness/tasks/generate-loop/evidence/c1-2-browser/home-long-input.png"
+      ]
+    },
+    {
+      "id": "E2E-2",
+      "category": "core",
+      "blocking": true,
+      "result": "PASS",
+      "runStatus": "completed",
+      "labelBits": {
+        "planner": "规划师 已完成 · 0s 展开详情",
+        "architect": "架构师 已完成 · 0s 展开详情",
+        "engineer": "工程师 已完成 · 0s 展开详情"
+      },
+      "plannerPreVisible": true,
+      "artifacts": [
+        ".harness/tasks/generate-loop/evidence/c1-2-browser/workbench-after-generate.png",
+        ".harness/tasks/generate-loop/evidence/c1-2-browser/workbench-timeline-expanded.png"
+      ]
+    },
+    {
+      "id": "E2E-1",
+      "category": "core",
+      "blocking": true,
+      "result": "PASS",
+      "runStatus": "completed",
+      "sandbox": "allow-scripts",
+      "srcdocLen": 1303048,
+      "srcdocHasCdn": false,
+      "previewClip": {
+        "path": ".harness/tasks/generate-loop/evidence/c1-2-browser/preview-iframe-clip.png",
+        "bytes": 2509,
+        "width": 487.640625,
+        "height": 918
+      },
+      "artifacts": [
+        ".harness/tasks/generate-loop/evidence/c1-2-browser/workbench-preview.png",
+        ".harness/tasks/generate-loop/evidence/c1-2-browser/preview-iframe-clip.png"
+      ]
+    },
+    {
+      "id": "E2E-7",
+      "category": "uiJourney",
+      "result": "PASS",
+      "fileCount": 6,
+      "returnLen": 1303048,
+      "sandbox": "allow-scripts",
+      "codeText": "工作台 评测周期1：做一个简洁的待办清单应用 运行中 · f51370a6-d572-402e-a2bc-126a24d3dff4 返回首页 Agent 时间线 已完成 规划师 已完成 · 0s 收起详情 { \"title\": \"中文待办清单\", \"prd\": \"做一个可添加、勾选和删除事项的简洁待办清单，界面文案全部为中文。\", \"acceptance\": [ \"AC-1 页面显示标题「我的待办」\", \"AC-2 可以新增一条待办事项\", \"AC-3 可以勾选完成状态\" ] } 架构师 已完成 · 0s 收起详情 { \"files\": [ \"src/App.tsx\", \"src/components/TodoList.tsx\", \"src/main.tsx\" ], \"components\": [ \"App\", \"TodoList\" ], \"data\": [ \"todos: Array<{ id: string; text: string; done: boolean }>\" ], \"notes\": \"单页 React + TS；状态留在 App；无外部请求。\" } 工程师 已完成 ·",
+      "artifacts": [
+        ".harness/tasks/generate-loop/evidence/c1-2-browser/workbench-code.png",
+        ".harness/tasks/generate-loop/evidence/c1-2-browser/workbench-code-selected.png",
+        ".harness/tasks/generate-loop/evidence/c1-2-browser/workbench-preview-return.png"
+      ]
+    },
+    {
+      "id": "E2E-8",
+      "category": "crossFeature",
+      "result": "PASS",
+      "cookieName": "deviceId",
+      "workbenchUrl": "http://127.0.0.1:3000/projects/c69747b1-7ca5-4937-a480-420f86bfdf96?run=f51370a6-d572-402e-a2bc-126a24d3dff4"
+    },
+    {
+      "id": "RB-33-cdn",
+      "result": "PASS",
+      "cdnHits": [],
+      "srcdocHasCdn": false
+    },
+    {
+      "id": "measure-overflow-workbench",
+      "overflowWorkbench": 3
+    },
+    {
+      "id": "probe-status-copy",
+      "runningCount": 1,
+      "completedCount": 4,
+      "runStatus": "completed"
+    },
+    {
+      "id": "E2E-3",
+      "category": "negative",
+      "blocking": true,
+      "result": "PASS",
+      "continueVisible": true,
+      "interruptStatus": "interrupted",
+      "interruptMsg": 2,
+      "artifacts": [
+        ".harness/tasks/generate-loop/evidence/c1-2-browser/workbench-interrupted.png"
+      ]
+    },
+    {
+      "id": "E2E-6",
+      "category": "persistence",
+      "blocking": true,
+      "result": "PASS",
+      "projectLinks": 3,
+      "homeProjectsText": "Atoms Studio 可验证的 AI 应用生成 输入需求，Agent 团队会规划、设计并生成可预览的应用。 描述你想生成的应用 用一句话描述即可 开始生成 待办清单 做一个简洁的待办清单应用，支持添加、完成和删除任务 番茄钟 做一个番茄钟计时器，支持专注与休息切换，并显示剩余时间 计算器 做一个基础计算器，支持加减乘除和清除 天气卡片 做一个天气卡片界面，展示城市名称、温度和简短天气描述 我的项目 中断评测2：做一个计数器 2026/11/23 18:28:04 中文待办清单 2026/11/23 18:28:02 中文待办清单 2026/11/23 18:27:56",
+      "artifacts": [
+        ".harness/tasks/generate-loop/evidence/c1-2-browser/home-after-projects.png"
+      ]
+    },
+    {
+      "id": "home-chrome",
+      "englishOnlyChrome": false,
+      "cardCount": 4,
+      "projectsHeading": 1,
+      "overflowHome": 1,
+      "artifacts": [
+        ".harness/tasks/generate-loop/evidence/c1-2-browser/home.png"
+      ]
+    }
+  ],
+  "cdnHits": []
+}

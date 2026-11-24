@@ -1,0 +1,92 @@
+{
+  "ok": true,
+  "cases": {
+    "E2E-4": {
+      "result": "PASS",
+      "desktopWidth": 489.640625,
+      "mobileWidth": 375,
+      "sandbox": "allow-scripts"
+    },
+    "E2E-8-keyboard": {
+      "codeTab": true,
+      "widthToggle": true,
+      "followUp": true
+    },
+    "E2E-6-replay": {
+      "result": "PASS",
+      "text": "演示回放 — 当前使用预录演示结果，便于在额度或上游不可用时继续体验。"
+    },
+    "E2E-5": {
+      "result": "PASS",
+      "motion": {
+        "pulseDuration": "0s",
+        "samples": [
+          {
+            "animation": "none",
+            "animationDuration": "0s",
+            "transitionDuration": "0s"
+          },
+          {
+            "animation": "none",
+            "animationDuration": "0s",
+            "transitionDuration": "0s"
+          },
+          {
+            "animation": "none",
+            "animationDuration": "0s",
+            "transitionDuration": "0s"
+          },
+          {
+            "animation": "none",
+            "animationDuration": "0s",
+            "transitionDuration": "0s"
+          }
+        ]
+      }
+    },
+    "E2E-1": {
+      "result": "PASS",
+      "previousRunId": "b0c4ab9a-4245-4220-bd9d-e7210f626994",
+      "newRunId": "6a25c8fe-fcf2-4bca-b6fe-ac5e44513d68",
+      "codeHasPriority": true
+    },
+    "E2E-7": {
+      "result": "PASS",
+      "followUpVisible": true,
+      "runId": "6a25c8fe-fcf2-4bca-b6fe-ac5e44513d68"
+    },
+    "E2E-6-qa-cap": {
+      "result": "PASS",
+      "capVisible": true,
+      "qaRoundsAttr": "3"
+    },
+    "E2E-3": {
+      "result": "PASS",
+      "followUpCount": 0,
+      "zipCount": 0,
+      "shareBtnCount": 0,
+      "shareUrl": "/share/bGaEulN8DWxW49DSPJKfkCfXWnakzIDA62CS_cOjRnI",
+      "iframeTitle": "应用预览",
+      "sandbox": "allow-scripts"
+    },
+    "E2E-2": {
+      "result": "PASS",
+      "requestCount": 203,
+      "offenders": []
+    }
+  },
+  "probes": {
+    "emptySubmit": {
+      "disabledWhenEmpty": true
+    },
+    "longInput": {
+      "length": 606,
+      "submitEnabled": true,
+      "clipped": 1
+    },
+    "doubleFollowUp": {
+      "disabledAfter": true
+    }
+  },
+  "cdnOffenders": 0
+}

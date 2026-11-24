@@ -1,0 +1,10 @@
+{
+  "baseUrl": "http://127.0.0.1:3000",
+  "viewport": { "width": 1280, "height": 800 },
+  "fullPage": false,
+  "pages": [
+    { "name": "home", "route": "/", "waitFor": "main" },
+    { "name": "workbench", "route": "/projects/91b2b2bd-cc36-439b-b092-d435591bf16e?run=b410784d-9f12-4058-b108-331566455598", "waitFor": "[data-testid=agent-timeline], [data-agent-timeline], aside" },
+    { "name": "workbench-after-submit", "route": "/projects/91b2b2bd-cc36-439b-b092-d435591bf16e?run=b410784d-9f12-4058-b108-331566455598", "waitFor": "main" }
+  ]
+}

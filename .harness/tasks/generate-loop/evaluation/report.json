@@ -1,0 +1,389 @@
+{
+  "at": 1795447643296,
+  "verdict": "pass",
+  "verdictReason": "score",
+  "score": 0.967,
+  "passScore": 0.9,
+  "layers": {
+    "L1": {
+      "score": 1,
+      "weight": 0.4
+    },
+    "L3": {
+      "score": 0.833,
+      "weight": 0.2
+    },
+    "L4": {
+      "score": 1,
+      "weight": 0.15
+    },
+    "L2": {
+      "score": 1,
+      "weight": 0.25
+    }
+  },
+  "vetoed": [],
+  "results": [
+    {
+      "id": "RB-1",
+      "requirement": "REQ-1",
+      "level": "essential",
+      "kind": "command",
+      "layer": "L1-function",
+      "score": 1,
+      "detail": "exit=0 [WebServer] ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests. | [WebServer]  | [WebServer]"
+    },
+    {
+      "id": "RB-2",
+      "requirement": "REQ-1",
+      "level": "essential",
+      "kind": "judge",
+      "layer": "L3-ui",
+      "score": 1,
+      "detail": "judge: At 1280×800 the home view centers the prompt, shows four Chinese example cards, and presents 我的项目 with a clear empty state. Hierarchy and airy spacing are consistent with REF-1."
+    },
+    {
+      "id": "RB-3",
+      "requirement": "REQ-1",
+      "level": "pitfall",
+      "kind": "judge",
+      "layer": "L3-ui",
+      "score": 1,
+      "detail": "judge: The screenshot shows a Chinese generation workflow with Chinese examples and empty-state copy; the ANTI-1 English-only agent-marketing pattern is absent."
+    },
+    {
+      "id": "RB-4",
+      "requirement": "REQ-2",
+      "level": "essential",
+      "kind": "command",
+      "layer": "L1-function",
+      "score": 1,
+      "detail": "exit=0 [WebServer] ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests. | [WebServer]  | [WebServer]"
+    },
+    {
+      "id": "RB-5",
+      "requirement": "REQ-2",
+      "level": "pitfall",
+      "kind": "command",
+      "layer": "L2-robustness",
+      "score": 1,
+      "detail": "exit=0 (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite: |   - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest package"
+    },
+    {
+      "id": "RB-38",
+      "requirement": "REQ-2",
+      "level": "pitfall",
+      "kind": "grep",
+      "layer": "L1-function",
+      "score": 1,
+      "detail": "pattern /createProject|createRun|/api/projects/ in src: found (src/app/api/projects/[projectId]/runs/[runId]/continue/route.ts), expected present"
+    },
+    {
+      "id": "RB-39",
+      "requirement": "REQ-4",
+      "level": "essential",
+      "kind": "judge",
+      "layer": "L4-interaction",
+      "score": 1,
+      "detail": "judge: In the authenticated mock journey all three timeline cards show completed status and elapsed time, and Planner, Architect, and Engineer payloads each expand. Interrupt handling also distinguishes interrupted from completed runs: 继续 is shown only after disconnect."
+    },
+    {
+      "id": "RB-6",
+      "requirement": "REQ-3",
+      "level": "essential",
+      "kind": "command",
+      "layer": "L1-function",
+      "score": 1,
+      "detail": "exit=0 (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite: |   - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest package"
+    },
+    {
+      "id": "RB-7",
+      "requirement": "REQ-3",
+      "level": "essential",
+      "kind": "command",
+      "layer": "L2-robustness",
+      "score": 1,
+      "detail": "exit=0 (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite: |   - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest package"
+    },
+    {
+      "id": "RB-8",
+      "requirement": "REQ-4",
+      "level": "essential",
+      "kind": "command",
+      "layer": "L1-function",
+      "score": 1,
+      "detail": "exit=0 [WebServer] ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests. | [WebServer]  | [WebServer]"
+    },
+    {
+      "id": "RB-9",
+      "requirement": "REQ-4",
+      "level": "essential",
+      "kind": "judge",
+      "layer": "L3-ui",
+      "score": 1,
+      "detail": "judge: The workbench has a scannable left timeline with Chinese Planner/Architect/Engineer labels, completed status, elapsed time, and expandable payloads. The expanded screenshot confirms all three cards reveal their payloads."
+    },
+    {
+      "id": "RB-10",
+      "requirement": "REQ-4",
+      "level": "pitfall",
+      "kind": "judge",
+      "layer": "L4-interaction",
+      "score": 1,
+      "detail": "judge: After a mock generate, the timeline visibly contains Chinese Planner/Architect/Engineer labels and progress. The RL-3 missing-timeline pitfall is absent."
+    },
+    {
+      "id": "RB-11",
+      "requirement": "REQ-5",
+      "level": "essential",
+      "kind": "command",
+      "layer": "L1-function",
+      "score": 1,
+      "detail": "exit=0 [WebServer] ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests. | [WebServer]  | [WebServer]"
+    },
+    {
+      "id": "RB-12",
+      "requirement": "REQ-5",
+      "level": "essential",
+      "kind": "command",
+      "layer": "L2-robustness",
+      "score": 1,
+      "detail": "exit=0 (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite: |   - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest package"
+    },
+    {
+      "id": "RB-13",
+      "requirement": "REQ-5",
+      "level": "important",
+      "kind": "judge",
+      "layer": "L3-ui",
+      "score": 0.5,
+      "detail": "judge: Both tabs work: Preview shows identifiable mock app UI and Code shows the file tree and selected source. The source view is clipped at the right edge for long lines at 1280px; the screenshot does not make horizontal scrolling discoverable, a visible but non-blocking presentation flaw."
+    },
+    {
+      "id": "RB-14",
+      "requirement": "REQ-5",
+      "level": "pitfall",
+      "kind": "grep",
+      "layer": "L2-robustness",
+      "score": 1,
+      "detail": "pattern /allow-same-origin/ in src: not found, expected absent"
+    },
+    {
+      "id": "RB-15",
+      "requirement": "REQ-6",
+      "level": "essential",
+      "kind": "command",
+      "layer": "L1-function",
+      "score": 1,
+      "detail": "exit=0 public/preview/vendor/react.js:23842:  var vendor = { | public/preview/vendor/react.js:23852:  globalThis.__ATOMS_PREVIEW_VENDOR__ = vendor; | public/preview/vendor/react.js:23853:  var runtime_default = vendor;"
+    },
+    {
+      "id": "RB-16",
+      "requirement": "REQ-6",
+      "level": "pitfall",
+      "kind": "grep",
+      "layer": "L2-robustness",
+      "score": 1,
+      "detail": "pattern /esm\\.sh|unpkg\\.com|jsdelivr\\.net|cdn\\.tailwindcss\\.com|fonts\\.googleapis\\.com|fonts\\.gstatic\\.com/ in src: not found, expected absent"
+    },
+    {
+      "id": "RB-17",
+      "requirement": "REQ-6",
+      "level": "pitfall",
+      "kind": "grep",
+      "layer": "L2-robustness",
+      "score": 1,
+      "detail": "pattern /esm\\.sh|unpkg\\.com|jsdelivr\\.net|cdn\\.tailwindcss\\.com/ in public: not found, expected absent"
+    },
+    {
+      "id": "RB-18",
+      "requirement": "REQ-7",
+      "level": "essential",
+      "kind": "command",
+      "layer": "L1-function",
+      "score": 1,
+      "detail": "exit=0 (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite: |   - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest package"
+    },
+    {
+      "id": "RB-19",
+      "requirement": "REQ-8",
+      "level": "essential",
+      "kind": "command",
+      "layer": "L1-function",
+      "score": 1,
+      "detail": "exit=0 (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite: |   - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest package"
+    },
+    {
+      "id": "RB-20",
+      "requirement": "REQ-8",
+      "level": "pitfall",
+      "kind": "grep",
+      "layer": "L2-robustness",
+      "score": 1,
+      "detail": "pattern /GEMINI_MODEL_FLASH|GEMINI_MODEL_PRO|responseSchema/ in src/lib: found (src/lib/agents/architect.ts), expected present"
+    },
+    {
+      "id": "RB-21",
+      "requirement": "REQ-9",
+      "level": "essential",
+      "kind": "command",
+      "layer": "L1-function",
+      "score": 1,
+      "detail": "exit=0 (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite: |   - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest package"
+    },
+    {
+      "id": "RB-22",
+      "requirement": "REQ-9",
+      "level": "important",
+      "kind": "judge",
+      "layer": "L4-interaction",
+      "score": 1,
+      "detail": "judge: Aborting the live SSE stream produces interrupted status and a visible Chinese 继续 action; a completed mock run has no recovery banner or continue button."
+    },
+    {
+      "id": "RB-23",
+      "requirement": "REQ-9",
+      "level": "pitfall",
+      "kind": "grep",
+      "layer": "L4-interaction",
+      "score": 1,
+      "detail": "pattern /继续/ in src: found (src/app/api/projects/[projectId]/runs/[runId]/continue/route.ts), expected present"
+    },
+    {
+      "id": "RB-24",
+      "requirement": "REQ-10",
+      "level": "essential",
+      "kind": "command",
+      "layer": "L1-function",
+      "score": 1,
+      "detail": "exit=0 [WebServer] ▲ [WARNING] Proxy environment variables detected. We'll use your proxy for fetch requests. | [WebServer]  | [WebServer]"
+    },
+    {
+      "id": "RB-25",
+      "requirement": "REQ-10",
+      "level": "essential",
+      "kind": "verify",
+      "layer": "L1-function",
+      "score": 1,
+      "detail": "verify e2e: `pnpm test:e2e` exit=0 [WebServer]  | [WebServer]"
+    },
+    {
+      "id": "RB-26",
+      "requirement": "REQ-10",
+      "level": "essential",
+      "kind": "verify",
+      "layer": "L1-function",
+      "score": 1,
+      "detail": "verify unit: `pnpm test` exit=0   - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `\"type\": \"module\"` in the closest package.json | Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning."
+    },
+    {
+      "id": "RB-27",
+      "requirement": "REQ-10",
+      "level": "important",
+      "kind": "verify",
+      "layer": "L1-function",
+      "score": 1,
+      "detail": "verify typecheck: `pnpm typecheck` exit=0 $ tsc --noEmit"
+    },
+    {
+      "id": "RB-28",
+      "requirement": "REQ-10",
+      "level": "important",
+      "kind": "verify",
+      "layer": "L1-function",
+      "score": 1,
+      "detail": "verify lint: `pnpm lint` exit=0 $ eslint"
+    },
+    {
+      "id": "RB-29",
+      "requirement": "REQ-10",
+      "level": "important",
+      "kind": "verify",
+      "layer": "L1-function",
+      "score": 1,
+      "detail": "verify build: `pnpm build` exit=0     ./src/lib/db/index.ts |     ./src/app/projects/[projectId]/page.tsx"
+    },
+    {
+      "id": "RB-30",
+      "requirement": "REQ-5",
+      "level": "important",
+      "kind": "judge",
+      "layer": "L4-interaction",
+      "score": 1,
+      "detail": "judge: The post-submit Preview screenshot contains rendered mock app pixels, and the independent accessible paint probe reads 我的待办 添加 体验 Atoms Studio. This satisfies RL-3's non-blank preview condition."
+    },
+    {
+      "id": "RB-31",
+      "requirement": "REQ-1",
+      "level": "important",
+      "kind": "judge",
+      "layer": "L4-interaction",
+      "score": 1,
+      "detail": "judge: Clicking the first example card populates the central prompt; the browser observation is true and the captured screenshot shows its text in the textarea."
+    },
+    {
+      "id": "RB-32",
+      "requirement": "REQ-3",
+      "level": "pitfall",
+      "kind": "grep",
+      "layer": "L3-ui",
+      "score": 1,
+      "detail": "pattern /Planner|Architect|Engineer|规划|架构|工程/ in src: found (src/app/api/projects/[projectId]/runs/[runId]/stream/route.ts), expected present"
+    },
+    {
+      "id": "RB-33",
+      "requirement": "REQ-6",
+      "level": "pitfall",
+      "kind": "judge",
+      "layer": "L3-ui",
+      "score": 1,
+      "detail": "judge: No external CDN requests occurred during the browser generate and preview flow. The preview iframe uses sandbox=allow-scripts, and the observed app assets load from the local origin; the RL-2 CDN pitfall is absent."
+    },
+    {
+      "id": "RB-34",
+      "requirement": "REQ-2",
+      "level": "pitfall",
+      "kind": "grep",
+      "layer": "L4-interaction",
+      "score": 1,
+      "detail": "pattern //projects// in src: found (src/components/home/project-grid.tsx), expected present"
+    },
+    {
+      "id": "RB-35",
+      "requirement": "REQ-7",
+      "level": "pitfall",
+      "kind": "grep",
+      "layer": "L2-robustness",
+      "score": 1,
+      "detail": "pattern /currentVersionId|current_version_id|createVersion|addMessage/ in src/lib: found (src/lib/agents/pipeline.test.ts), expected present"
+    },
+    {
+      "id": "RB-36",
+      "requirement": "REQ-8",
+      "level": "pitfall",
+      "kind": "grep",
+      "layer": "L4-interaction",
+      "score": 1,
+      "detail": "pattern /GEMINI_MODEL_FLASH|GEMINI_MODEL_PRO/ in .env.example: found, expected present"
+    },
+    {
+      "id": "RB-37",
+      "requirement": "REQ-10",
+      "level": "pitfall",
+      "kind": "grep",
+      "layer": "L2-robustness",
+      "score": 1,
+      "detail": "pattern /LLM_PROVIDER\\s*:\\s*[\"']mock[\"']/ in playwright.config.ts: found, expected present"
+    }
+  ],
+  "refinementSuggestions": {
+    "added": [
+      "RS-7"
+    ],
+    "pending": [
+      "RS-6",
+      "RS-7"
+    ],
+    "invalid": []
+  }
+}

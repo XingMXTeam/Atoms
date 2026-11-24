@@ -1,0 +1,22 @@
+{
+  "score": 1,
+  "note": "Follow-up 后续需求 + 发送后续需求 is discoverable in the left rail; send enables with text, disables while run active (pending screenshot), and Chinese banners 演示回放 / 已达修复上限 are unambiguous.",
+  "artifacts": [
+    ".harness/tasks/polish/evidence/c1-2-browser/workbench-follow-up-ready.png",
+    ".harness/tasks/polish/evidence/c1-2-browser/workbench-follow-up-pending.png",
+    ".harness/tasks/polish/evidence/c1-2-browser/workbench-replay-banner.png",
+    ".harness/tasks/polish/evidence/c1-2-browser/workbench-qa-cap.png"
+  ],
+  "verify": [
+    "typecheck",
+    "lint",
+    "unit",
+    "build",
+    "e2e"
+  ],
+  "heuristics": [
+    "H-UX-6.1",
+    "H-UX-2.1",
+    "H-UX-2.4"
+  ]
+}

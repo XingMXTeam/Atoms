@@ -1,0 +1,38 @@
+{
+  "feature": "qa-self-heal",
+  "runId": "c3-confirm",
+  "status": "fail",
+  "note": null,
+  "tool": "@playwright/test",
+  "baseUrl": "http://127.0.0.1:3000",
+  "viewport": {
+    "width": 1280,
+    "height": 800
+  },
+  "fullPage": false,
+  "minBytes": 2048,
+  "generatedAt": "2026-11-23T17:54:23.161Z",
+  "dir": ".harness/tasks/qa-self-heal/evidence/c3-confirm",
+  "pages": [
+    {
+      "name": "home-project-cards-qa-score",
+      "route": "/",
+      "url": "http://127.0.0.1:3000/",
+      "file": ".harness/tasks/qa-self-heal/evidence/c3-confirm/home-project-cards-qa-score.png",
+      "bytes": 72127,
+      "ok": true,
+      "usedFallback": false,
+      "error": null
+    },
+    {
+      "name": "workbench-qa-timeline-and-score",
+      "route": "/projects/[projectId]",
+      "url": "http://127.0.0.1:3000/projects/[projectId]",
+      "file": ".harness/tasks/qa-self-heal/evidence/c3-confirm/workbench-qa-timeline-and-score.png",
+      "bytes": 0,
+      "ok": false,
+      "usedFallback": false,
+      "error": "page.waitForSelector: Timeout 30000ms exceeded."
+    }
+  ]
+}

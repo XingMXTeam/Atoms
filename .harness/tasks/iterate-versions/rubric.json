@@ -1,0 +1,267 @@
+{
+  "version": 1,
+  "feature": "iterate-versions",
+  "layerWeights": true,
+  "policy": {
+    "minEssentialPerLayer": 1,
+    "minPitfallsPerLayer": 1,
+    "minPitfallsPerRequirement": 0
+  },
+  "requirements": [
+    {
+      "id": "REQ-1",
+      "description": "Follow-up user messages on an existing project start a new `run` that sends current files to Engineer; Engineer returns only changed files; a new `versions` row is created with `parent_id` pointing at the previous version."
+    },
+    {
+      "id": "REQ-2",
+      "description": "Workbench 版本 tab: chronological timeline of versions with summary, `qa_score` badge, and a 回滚 action that sets `projects.current_version_id` and refreshes preview/code to that snapshot (no destructive delete)."
+    },
+    {
+      "id": "REQ-3",
+      "description": "Read-only share link: `projects.share_slug` minted on demand; public route loads that version's preview + code without requiring the owner's `deviceId` cookie (mutations disabled)."
+    },
+    {
+      "id": "REQ-4",
+      "description": "下载 zip exports the current version's files as a `.zip` (jszip) from the browser or a route handler."
+    },
+    {
+      "id": "REQ-5",
+      "description": "Seed data: ≥2 completed example projects (with versions + QA scores) inserted for every new `deviceId` (or on empty home) so first paint is never a blank grid; plus the ≥4 example prompts from F2."
+    },
+    {
+      "id": "REQ-6",
+      "description": "E2E uiJourney (`LLM_PROVIDER=mock`): iterate with a follow-up → new version appears → rollback restores prior preview content."
+    }
+  ],
+  "items": [
+    {
+      "id": "RB-1",
+      "requirement": "REQ-1",
+      "layer": "L1-function",
+      "level": "essential",
+      "kind": "command",
+      "command": "pnpm exec vitest run src/lib/versions",
+      "description": "A follow-up run receives the current complete files; its changed-file delta is merged into a new complete snapshot whose parent is the previous version, and an empty delta does not create a version.",
+      "weight": 3
+    },
+    {
+      "id": "RB-2",
+      "requirement": "REQ-1",
+      "layer": "L4-interaction",
+      "level": "important",
+      "kind": "judge",
+      "anchor": "REF-1",
+      "evidence": ".harness/tasks/iterate-versions/evaluation/judge-rb-2.json",
+      "description": "The follow-up action and completed new version are clear in the existing Chinese workbench interaction.",
+      "weight": 2
+    },
+    {
+      "id": "RB-3",
+      "requirement": "REQ-2",
+      "layer": "L1-function",
+      "level": "essential",
+      "kind": "command",
+      "command": "pnpm exec playwright test e2e/iterate-versions.spec.ts",
+      "description": "The chronological version timeline shows each summary and QA score, and rollback updates the current pointer and both preview and code to the chosen snapshot without deleting history.",
+      "weight": 3
+    },
+    {
+      "id": "RB-4",
+      "requirement": "REQ-2",
+      "layer": "L3-ui",
+      "level": "important",
+      "kind": "judge",
+      "anchor": "REF-1",
+      "evidence": ".harness/tasks/iterate-versions/evaluation/judge-rb-4.json",
+      "description": "Version order, summaries, QA badges, and rollback are easy to scan and visually consistent with the existing workbench.",
+      "weight": 2
+    },
+    {
+      "id": "RB-5",
+      "requirement": "REQ-3",
+      "layer": "L1-function",
+      "level": "essential",
+      "kind": "command",
+      "command": "pnpm exec playwright test e2e/iterate-versions.spec.ts",
+      "description": "A fresh browser without the owner's deviceId cookie loads the shared current preview and code, while public mutation requests are denied.",
+      "weight": 3
+    },
+    {
+      "id": "RB-6",
+      "requirement": "REQ-3",
+      "layer": "L4-interaction",
+      "level": "important",
+      "kind": "judge",
+      "anchor": "RL-2",
+      "evidence": ".harness/tasks/iterate-versions/evaluation/judge-rb-6.json",
+      "description": "The public share view communicates read-only access and presents the selected version's preview and code clearly.",
+      "weight": 2
+    },
+    {
+      "id": "RB-7",
+      "requirement": "REQ-4",
+      "layer": "L1-function",
+      "level": "essential",
+      "kind": "command",
+      "command": "pnpm exec vitest run src/lib/exports",
+      "description": "The downloaded ZIP is valid and contains every path and file content from the current version snapshot.",
+      "weight": 3
+    },
+    {
+      "id": "RB-8",
+      "requirement": "REQ-4",
+      "layer": "L4-interaction",
+      "level": "important",
+      "kind": "judge",
+      "anchor": "REF-1",
+      "evidence": ".harness/tasks/iterate-versions/evaluation/judge-rb-8.json",
+      "description": "The 下载 zip action is discoverable and gives clear feedback while the current version is being exported.",
+      "weight": 2
+    },
+    {
+      "id": "RB-9",
+      "requirement": "REQ-5",
+      "layer": "L1-function",
+      "level": "essential",
+      "kind": "command",
+      "command": "pnpm exec vitest run src/lib/db",
+      "description": "For a fresh device or empty home, seeding is idempotent and supplies at least two completed examples with version snapshots and QA scores, while home retains at least four F2 example prompts.",
+      "weight": 3
+    },
+    {
+      "id": "RB-10",
+      "requirement": "REQ-5",
+      "layer": "L3-ui",
+      "level": "important",
+      "kind": "judge",
+      "anchor": "RL-3",
+      "evidence": ".harness/tasks/iterate-versions/evaluation/judge-rb-10.json",
+      "description": "The first home view presents seeded project cards with visible QA badges and prompt examples without a blank-grid state.",
+      "weight": 2
+    },
+    {
+      "id": "RB-11",
+      "requirement": "REQ-6",
+      "layer": "L1-function",
+      "level": "essential",
+      "kind": "command",
+      "command": "LLM_PROVIDER=mock pnpm exec playwright test e2e/iterate-versions.spec.ts",
+      "description": "The mock uiJourney iterates a project, shows a new version, rolls back, and restores the prior preview content.",
+      "weight": 4
+    },
+    {
+      "id": "RB-12",
+      "requirement": "REQ-6",
+      "layer": "L4-interaction",
+      "level": "important",
+      "kind": "judge",
+      "anchor": "RL-1",
+      "evidence": ".harness/tasks/iterate-versions/evaluation/judge-rb-12.json",
+      "description": "The end-to-end rollback journey visibly returns to the earlier preview and matching code while keeping both versions in history.",
+      "weight": 2
+    },
+    {
+      "id": "RB-13",
+      "requirement": "REQ-1",
+      "layer": "L2-robustness",
+      "level": "pitfall",
+      "kind": "command",
+      "command": "pnpm exec vitest run src/lib/versions",
+      "description": "Pitfall absent: an empty or failed Engineer delta advances the current pointer or persists a partial version.",
+      "weight": 1
+    },
+    {
+      "id": "RB-14",
+      "requirement": "REQ-2",
+      "layer": "L2-robustness",
+      "level": "pitfall",
+      "kind": "judge",
+      "anchor": "RL-1",
+      "evidence": ".harness/tasks/iterate-versions/evaluation/judge-rb-14.json",
+      "description": "Pitfall absent: rollback deletes or rewrites any historical version, or leaves preview/code on a different snapshot from the selected version.",
+      "weight": 1
+    },
+    {
+      "id": "RB-15",
+      "requirement": "REQ-3",
+      "layer": "L2-robustness",
+      "level": "pitfall",
+      "kind": "command",
+      "command": "pnpm exec playwright test e2e/iterate-versions.spec.ts",
+      "description": "Pitfall absent: an unauthenticated public share request can mutate project or version state.",
+      "weight": 1
+    },
+    {
+      "id": "RB-16",
+      "requirement": "REQ-5",
+      "layer": "L3-ui",
+      "level": "pitfall",
+      "kind": "judge",
+      "anchor": "RL-3",
+      "evidence": ".harness/tasks/iterate-versions/evaluation/judge-rb-16.json",
+      "description": "Pitfall absent: first paint has fewer than two completed seeded project cards with visible QA scores or presents an empty project grid.",
+      "weight": 1
+    },
+    {
+      "id": "RB-17",
+      "requirement": "REQ-1",
+      "layer": "L2-robustness",
+      "level": "essential",
+      "kind": "command",
+      "command": "pnpm exec vitest run src/lib/versions",
+      "description": "Version creation is atomic: a failed persistence step leaves the previous current version intact and cannot expose a partial child snapshot.",
+      "weight": 2
+    },
+    {
+      "id": "RB-18",
+      "requirement": "REQ-2",
+      "layer": "L3-ui",
+      "level": "essential",
+      "kind": "judge",
+      "anchor": "REF-1",
+      "evidence": ".harness/tasks/iterate-versions/evaluation/judge-rb-18.json",
+      "description": "The 版本 tab exposes the complete version order, summary, QA score, and rollback affordance in a legible workbench layout.",
+      "weight": 2
+    },
+    {
+      "id": "RB-19",
+      "requirement": "REQ-6",
+      "layer": "L4-interaction",
+      "level": "essential",
+      "kind": "command",
+      "command": "LLM_PROVIDER=mock pnpm exec playwright test e2e/iterate-versions.spec.ts",
+      "description": "The mock journey gives visible completion feedback after iteration and confirms that rollback restores the first version's preview.",
+      "weight": 2
+    },
+    {
+      "id": "RB-20",
+      "requirement": "REQ-1",
+      "layer": "L1-function",
+      "level": "pitfall",
+      "kind": "command",
+      "command": "pnpm exec vitest run src/lib/versions",
+      "description": "Pitfall absent: a child version is persisted without linking parent_id to the version whose files were supplied to Engineer.",
+      "weight": 1
+    },
+    {
+      "id": "RB-21",
+      "requirement": "REQ-3",
+      "layer": "L4-interaction",
+      "level": "pitfall",
+      "kind": "judge",
+      "anchor": "RL-2",
+      "evidence": ".harness/tasks/iterate-versions/evaluation/judge-rb-21.json",
+      "description": "Pitfall absent: the public share view presents mutation controls or implies that the visitor can edit the owner's project.",
+      "weight": 1
+    }
+  ],
+  "qualityWaivers": [],
+  "e2eCategories": {
+    "core": 2,
+    "negative": 2,
+    "boundary": 1,
+    "crossFeature": 1,
+    "persistence": 1,
+    "uiJourney": 1
+  }
+}

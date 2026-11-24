@@ -1,0 +1,12 @@
+{
+  "score": 1,
+  "note": "Pitfall absent (RL-1): after rollback, status «已恢复所选版本»; both version rows still listed with their summaries/QA; v1 marked 当前版本 and preview/code both show the v1 snapshot («体验 Atoms Studio», no 优先级). No delete/rewrite of history; preview and code agree on the selected snapshot.",
+  "artifacts": [
+    ".harness/tasks/iterate-versions/evidence/c1-2-browser/workbench-after-rollback-versions.png",
+    ".harness/tasks/iterate-versions/evidence/c1-2-browser/workbench-after-rollback-preview.png",
+    ".harness/tasks/iterate-versions/evidence/c1-2-browser/workbench-after-rollback-code.png",
+    ".harness/tasks/iterate-versions/evidence/c1-2-browser/workbench-persistence-reload.png"
+  ],
+  "verify": ["typecheck", "lint", "unit", "build", "e2e"],
+  "heuristics": []
+}

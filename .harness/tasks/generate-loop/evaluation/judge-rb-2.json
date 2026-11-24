@@ -1,0 +1,7 @@
+{
+  "score": 1,
+  "note": "At 1280×800 the home view centers the prompt, shows four Chinese example cards, and presents 我的项目 with a clear empty state. Hierarchy and airy spacing are consistent with REF-1.",
+  "artifacts": [".harness/tasks/generate-loop/evidence/c2-confirm-20261123/home.png", ".harness/tasks/generate-loop/evidence/c2-confirm-20261123/manifest.json"],
+  "verify": ["typecheck", "lint", "unit", "e2e", "build"],
+  "heuristics": ["H-UI-1.1", "H-UI-1.2", "H-UI-3.2", "H-UI-4.3", "H-UI-7.1"]
+}

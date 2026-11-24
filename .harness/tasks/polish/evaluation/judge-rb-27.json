@@ -1,0 +1,31 @@
+{
+  "score": 1,
+  "note": "Chinese UX states are clear and calm: 演示回放 banner copy, 已达修复上限 at qa_rounds=3, follow-up pending disabled, empty-submit disabled on home. Minor: seeded reopen can briefly show planner 进行中 while header 已完成 (H-PR-2.1) — non-blocking.",
+  "artifacts": [
+    ".harness/tasks/polish/evidence/c1-2-browser/workbench-replay-banner.png",
+    ".harness/tasks/polish/evidence/c1-2-browser/workbench-qa-cap.png",
+    ".harness/tasks/polish/evidence/c1-2-browser/workbench-follow-up-pending.png",
+    ".harness/tasks/polish/evidence/c1-2-browser/workbench-polish-states.png",
+    ".harness/tasks/polish/evidence/c1-2-browser/home-visual-system-1280.png"
+  ],
+  "verify": [
+    "typecheck",
+    "lint",
+    "unit",
+    "build",
+    "e2e"
+  ],
+  "heuristics": [
+    "H-UI-6.1",
+    "H-UX-2.3",
+    "H-PR-2.1"
+  ],
+  "rubricRefinementSuggestions": [
+    {
+      "type": "add",
+      "item": "RB-27",
+      "problem": "seeded workbench first paint can disagree between overall completed and planner running",
+      "suggestion": "add an essential/important check that completed seeded projects hydrate timeline agent statuses consistently before first paint"
+    }
+  ]
+}

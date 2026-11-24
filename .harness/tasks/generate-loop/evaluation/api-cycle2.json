@@ -1,0 +1,25 @@
+{
+  "cases": [
+    {
+      "request": "POST /api/projects",
+      "body": { "prompt": "API契约探测" },
+      "expected": "200 with projectId and runId",
+      "actual": { "status": 200, "body": { "projectId": "55c80ffb-84ef-4c69-b6cb-a75a344dc1bd", "runId": "dfee2867-2f01-49bf-945b-28e24e1b2d05", "mode": "mock" } },
+      "result": "PASS"
+    },
+    {
+      "request": "POST /api/projects",
+      "body": { "prompt": "" },
+      "expected": "Request rejected with Chinese feedback",
+      "actual": { "status": 400, "body": { "messageZh": "请输入需求后再开始生成" } },
+      "result": "PASS"
+    },
+    {
+      "request": "POST /api/projects",
+      "body": "not-json (application/json)",
+      "expected": "Malformed body rejected safely",
+      "actual": { "status": 400, "body": { "messageZh": "请输入需求后再开始生成" } },
+      "result": "PASS"
+    }
+  ]
+}

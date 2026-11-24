@@ -1,0 +1,509 @@
+{
+  "version": 1,
+  "feature": "generate-loop",
+  "layerWeights": true,
+  "policy": {
+    "minEssentialPerLayer": 1,
+    "minPitfallsPerLayer": 1
+  },
+  "requirements": [
+    {
+      "id": "REQ-1",
+      "description": "Home page: central prompt input, ≥4 example prompt cards, and a \"我的项目\" grid (empty state OK until projects exist)."
+    },
+    {
+      "id": "REQ-2",
+      "description": "Submitting a prompt creates a `project` + `run` for the current `deviceId` and opens the workbench route."
+    },
+    {
+      "id": "REQ-3",
+      "description": "Server SSE stream emits ordered `agent_events` for Planner (mini-PRD + AC-1..n), Architect (file/component/data plan), and Engineer (structured `files[]`). Events persist to D1/`agent_events` with monotonic `seq`."
+    },
+    {
+      "id": "REQ-4",
+      "description": "Workbench left rail shows an Agent timeline (Planner / Architect / Engineer cards: status, elapsed time, expandable payload). Chinese copy."
+    },
+    {
+      "id": "REQ-5",
+      "description": "Workbench right pane has 预览 and 代码 tabs. Preview bundles generated multi-file React+TS via self-hosted `esbuild-wasm` into a sandboxed iframe (`sandbox=\"allow-scripts\"` only — no `allow-same-origin`). Code tab shows a file tree + source viewer."
+    },
+    {
+      "id": "REQ-6",
+      "description": "Vendor/self-host all preview runtime assets from our origin (esbuild.wasm, whitelisted ESM deps, Tailwind browser build). Zero runtime dependency on external CDNs."
+    },
+    {
+      "id": "REQ-7",
+      "description": "On successful Engineer completion, persist a `versions` row (`files` JSON, `acceptance` JSON, `summary`) and set `projects.current_version_id`. Messages (user + agent summaries) are stored."
+    },
+    {
+      "id": "REQ-8",
+      "description": "Model routing: Flash-class for Planner/Architect; Pro-class for Engineer (exact model ids configurable). Structured output via Gemini `responseSchema` with one automatic retry on parse failure."
+    },
+    {
+      "id": "REQ-9",
+      "description": "Interrupt handling: if SSE disconnects mid-run, mark run `interrupted` and surface a Chinese \"继续\" affordance (documented known limitation)."
+    },
+    {
+      "id": "REQ-10",
+      "description": "E2E (`LLM_PROVIDER=mock`): core journey generate → preview renders expected mock content; persistence journey refresh → project still listed."
+    }
+  ],
+  "items": [
+    {
+      "id": "RB-1",
+      "requirement": "REQ-1",
+      "layer": "L1-function",
+      "level": "essential",
+      "kind": "command",
+      "command": "pnpm exec playwright test e2e/generate-home.spec.ts",
+      "description": "Home shows central prompt, ≥4 example cards, and 我的项目 region",
+      "weight": 3
+    },
+    {
+      "id": "RB-2",
+      "requirement": "REQ-1",
+      "layer": "L3-ui",
+      "level": "essential",
+      "kind": "judge",
+      "anchor": "REF-1",
+      "evidence": ".harness/tasks/generate-loop/evaluation/judge-rb-2.json",
+      "description": "Home capture (pages.json static route /) matches REF-1: centered prompt, example cards, 我的项目 grid, Chinese chrome; workbench PNGs for other judges must use authenticated post-submit evidence, not /projects/demo",
+      "weight": 2
+    },
+    {
+      "id": "RB-3",
+      "requirement": "REQ-1",
+      "layer": "L3-ui",
+      "level": "pitfall",
+      "kind": "judge",
+      "anchor": "ANTI-1",
+      "evidence": ".harness/tasks/generate-loop/evaluation/judge-rb-3.json",
+      "description": "Pitfall absent: home is not English-only agent marketing chrome (ANTI-1)",
+      "weight": 1
+    },
+    {
+      "id": "RB-4",
+      "requirement": "REQ-2",
+      "layer": "L1-function",
+      "level": "essential",
+      "kind": "command",
+      "command": "pnpm exec playwright test e2e/generate-submit.spec.ts",
+      "description": "Submit creates project+run and navigates to /projects/[id]",
+      "weight": 3
+    },
+    {
+      "id": "RB-5",
+      "requirement": "REQ-2",
+      "layer": "L2-robustness",
+      "level": "pitfall",
+      "kind": "command",
+      "command": "pnpm exec vitest run src/app/api/projects src/lib/db",
+      "description": "Create path scopes project/run by deviceId (no cross-device leak in unit coverage)",
+      "weight": 1
+    },
+    {
+      "id": "RB-38",
+      "requirement": "REQ-2",
+      "layer": "L1-function",
+      "level": "pitfall",
+      "kind": "grep",
+      "path": "src",
+      "pattern": "createProject|createRun|/api/projects",
+      "expect": "present",
+      "description": "Fatal flaw absent: submit path must actually create project/run via API/repository helpers",
+      "weight": 1
+    },
+    {
+      "id": "RB-39",
+      "requirement": "REQ-4",
+      "layer": "L4-interaction",
+      "level": "essential",
+      "kind": "judge",
+      "anchor": "REF-1",
+      "evidence": ".harness/tasks/generate-loop/evaluation/judge-rb-39.json",
+      "description": "Timeline interaction matches REF-1: expandable payloads and live status updates are usable during a mock run; when data-run-status=completed, interrupt banner/继续 is hidden and header status is not stuck on 运行中",
+      "weight": 2
+    },
+    {
+      "id": "RB-6",
+      "requirement": "REQ-3",
+      "layer": "L1-function",
+      "level": "essential",
+      "kind": "command",
+      "command": "pnpm exec vitest run src/lib/agents",
+      "description": "Mock pipeline emits ordered Planner/Architect/Engineer agent_events with monotonic seq",
+      "weight": 3
+    },
+    {
+      "id": "RB-7",
+      "requirement": "REQ-3",
+      "layer": "L2-robustness",
+      "level": "essential",
+      "kind": "command",
+      "command": "pnpm exec vitest run src/lib/agents src/lib/db",
+      "description": "Persisted agent_events for a completed mock run are queryable in seq order",
+      "weight": 2
+    },
+    {
+      "id": "RB-8",
+      "requirement": "REQ-4",
+      "layer": "L1-function",
+      "level": "essential",
+      "kind": "command",
+      "command": "pnpm exec playwright test e2e/generate-timeline.spec.ts",
+      "description": "Workbench timeline shows Planner/Architect/Engineer cards with status",
+      "weight": 3
+    },
+    {
+      "id": "RB-9",
+      "requirement": "REQ-4",
+      "layer": "L3-ui",
+      "level": "essential",
+      "kind": "judge",
+      "anchor": "REF-1",
+      "evidence": ".harness/tasks/generate-loop/evaluation/judge-rb-9.json",
+      "description": "Timeline capture matches REF-1: Chinese agent labels, status, elapsed, expandable payload",
+      "weight": 2
+    },
+    {
+      "id": "RB-10",
+      "requirement": "REQ-4",
+      "layer": "L4-interaction",
+      "level": "pitfall",
+      "kind": "judge",
+      "anchor": "RL-3",
+      "evidence": ".harness/tasks/generate-loop/evaluation/judge-rb-10.json",
+      "description": "Pitfall absent after mock generate: timeline is not missing Chinese Planner/Architect/Engineer progress (RL-3 timeline half only; preview blankness is scored by RB-30, not here)",
+      "weight": 1
+    },
+    {
+      "id": "RB-11",
+      "requirement": "REQ-5",
+      "layer": "L1-function",
+      "level": "essential",
+      "kind": "command",
+      "command": "pnpm exec playwright test e2e/generate-preview.spec.ts",
+      "description": "预览/代码 tabs exist; preview iframe renders mock content; code tab shows file tree",
+      "weight": 3
+    },
+    {
+      "id": "RB-12",
+      "requirement": "REQ-5",
+      "layer": "L2-robustness",
+      "level": "essential",
+      "kind": "command",
+      "command": "pnpm exec vitest run src/lib/preview",
+      "description": "Preview iframe sandbox is allow-scripts only (no allow-same-origin) — RL-1",
+      "weight": 3
+    },
+    {
+      "id": "RB-13",
+      "requirement": "REQ-5",
+      "layer": "L3-ui",
+      "level": "important",
+      "kind": "judge",
+      "anchor": "REF-1",
+      "evidence": ".harness/tasks/generate-loop/evaluation/judge-rb-13.json",
+      "description": "Workbench right pane shows 预览/代码 with 代码 file tree+source and 预览 showing screenshot-identifiable mock UI pixels (not tabs or iframe srcdoc/DOM presence alone) consistent with REF-1",
+      "weight": 2
+    },
+    {
+      "id": "RB-14",
+      "requirement": "REQ-5",
+      "layer": "L2-robustness",
+      "level": "pitfall",
+      "kind": "grep",
+      "path": "src",
+      "pattern": "allow-same-origin",
+      "expect": "absent",
+      "description": "No allow-same-origin on preview sandbox (RL-1 / ANTI-1)",
+      "weight": 1
+    },
+    {
+      "id": "RB-15",
+      "requirement": "REQ-6",
+      "layer": "L1-function",
+      "level": "essential",
+      "kind": "command",
+      "command": "test -f public/preview/esbuild.wasm && rg -n \"esbuild.wasm|vendor|/preview/\" src/lib/preview public/preview",
+      "description": "esbuild.wasm and vendor/preview assets are self-hosted under our origin",
+      "weight": 3
+    },
+    {
+      "id": "RB-16",
+      "requirement": "REQ-6",
+      "layer": "L2-robustness",
+      "level": "pitfall",
+      "kind": "grep",
+      "path": "src",
+      "pattern": "esm\\.sh|unpkg\\.com|jsdelivr\\.net|cdn\\.tailwindcss\\.com|fonts\\.googleapis\\.com|fonts\\.gstatic\\.com",
+      "expect": "absent",
+      "description": "No external CDN URLs in src (RL-2 / ANTI-1)",
+      "weight": 1
+    },
+    {
+      "id": "RB-17",
+      "requirement": "REQ-6",
+      "layer": "L2-robustness",
+      "level": "pitfall",
+      "kind": "grep",
+      "path": "public",
+      "pattern": "esm\\.sh|unpkg\\.com|jsdelivr\\.net|cdn\\.tailwindcss\\.com",
+      "expect": "absent",
+      "description": "No external CDN URLs in public preview assets (RL-2)",
+      "weight": 1
+    },
+    {
+      "id": "RB-18",
+      "requirement": "REQ-7",
+      "layer": "L1-function",
+      "level": "essential",
+      "kind": "command",
+      "command": "pnpm exec vitest run src/lib/db src/lib/agents",
+      "description": "On Engineer success a versions row is persisted and projects.current_version_id is set; messages stored",
+      "weight": 3
+    },
+    {
+      "id": "RB-19",
+      "requirement": "REQ-8",
+      "layer": "L1-function",
+      "level": "essential",
+      "kind": "command",
+      "command": "pnpm exec vitest run src/lib/llm src/lib/agents",
+      "description": "Flash-class routing for Planner/Architect and Pro-class for Engineer; responseSchema parse retries once",
+      "weight": 3
+    },
+    {
+      "id": "RB-20",
+      "requirement": "REQ-8",
+      "layer": "L2-robustness",
+      "level": "pitfall",
+      "kind": "grep",
+      "path": "src/lib",
+      "pattern": "GEMINI_MODEL_FLASH|GEMINI_MODEL_PRO|responseSchema",
+      "expect": "present",
+      "description": "Configurable Flash/Pro model ids and responseSchema usage exist in lib",
+      "weight": 1
+    },
+    {
+      "id": "RB-21",
+      "requirement": "REQ-9",
+      "layer": "L1-function",
+      "level": "essential",
+      "kind": "command",
+      "command": "pnpm exec vitest run src/lib/agents && rg -n \"继续\" src",
+      "description": "Interrupted run status is set and Chinese 继续 affordance exists in source",
+      "weight": 3
+    },
+    {
+      "id": "RB-22",
+      "requirement": "REQ-9",
+      "layer": "L4-interaction",
+      "level": "important",
+      "kind": "judge",
+      "anchor": "REF-1",
+      "evidence": ".harness/tasks/generate-loop/evaluation/judge-rb-22.json",
+      "description": "Chinese 继续 / interrupt recovery chrome appears iff the run is interrupted (REF-1); score 1 only when interrupted runs show it and completed success runs do not",
+      "weight": 2
+    },
+    {
+      "id": "RB-23",
+      "requirement": "REQ-9",
+      "layer": "L4-interaction",
+      "level": "pitfall",
+      "kind": "grep",
+      "path": "src",
+      "pattern": "继续",
+      "expect": "present",
+      "description": "Continue affordance copy 继续 is present for interrupt recovery",
+      "weight": 1
+    },
+    {
+      "id": "RB-24",
+      "requirement": "REQ-10",
+      "layer": "L1-function",
+      "level": "essential",
+      "kind": "command",
+      "command": "pnpm exec playwright test e2e/generate-core.spec.ts e2e/generate-persistence.spec.ts",
+      "description": "Mock e2e: generate→preview mock content; refresh→project still listed",
+      "weight": 3
+    },
+    {
+      "id": "RB-25",
+      "requirement": "REQ-10",
+      "layer": "L1-function",
+      "level": "essential",
+      "kind": "verify",
+      "check": "e2e",
+      "description": "fh verify e2e is green under LLM_PROVIDER=mock",
+      "weight": 2
+    },
+    {
+      "id": "RB-26",
+      "requirement": "REQ-10",
+      "layer": "L1-function",
+      "level": "essential",
+      "kind": "verify",
+      "check": "unit",
+      "description": "fh verify unit is green",
+      "weight": 2
+    },
+    {
+      "id": "RB-27",
+      "requirement": "REQ-10",
+      "layer": "L1-function",
+      "level": "important",
+      "kind": "verify",
+      "check": "typecheck",
+      "description": "fh verify typecheck is green",
+      "weight": 2
+    },
+    {
+      "id": "RB-28",
+      "requirement": "REQ-10",
+      "layer": "L1-function",
+      "level": "important",
+      "kind": "verify",
+      "check": "lint",
+      "description": "fh verify lint is green",
+      "weight": 2
+    },
+    {
+      "id": "RB-29",
+      "requirement": "REQ-10",
+      "layer": "L1-function",
+      "level": "important",
+      "kind": "verify",
+      "check": "build",
+      "description": "fh verify build is green",
+      "weight": 2
+    },
+    {
+      "id": "RB-30",
+      "requirement": "REQ-5",
+      "layer": "L4-interaction",
+      "level": "important",
+      "kind": "judge",
+      "anchor": "RL-3",
+      "evidence": ".harness/tasks/generate-loop/evaluation/judge-rb-30.json",
+      "description": "After mock generate, 预览 is visually non-blank (RL-3 preview half): screenshot/clip shows identifiable mock app UI pixels or accessible probe text — srcdoc markers alone do not pass",
+      "weight": 2
+    },
+    {
+      "id": "RB-31",
+      "requirement": "REQ-1",
+      "layer": "L4-interaction",
+      "level": "important",
+      "kind": "judge",
+      "anchor": "REF-1",
+      "evidence": ".harness/tasks/generate-loop/evaluation/judge-rb-31.json",
+      "description": "Clicking an example card fills the prompt (REF-1 interaction model)",
+      "weight": 1
+    },
+    {
+      "id": "RB-32",
+      "requirement": "REQ-3",
+      "layer": "L3-ui",
+      "level": "pitfall",
+      "kind": "grep",
+      "path": "src",
+      "pattern": "Planner|Architect|Engineer|规划|架构|工程",
+      "expect": "present",
+      "description": "Agent role labels exist for timeline rendering",
+      "weight": 1
+    },
+    {
+      "id": "RB-33",
+      "requirement": "REQ-6",
+      "layer": "L3-ui",
+      "level": "pitfall",
+      "kind": "judge",
+      "anchor": "RL-2",
+      "evidence": ".harness/tasks/generate-loop/evaluation/judge-rb-33.json",
+      "description": "Preview load path shows no external CDN requests (RL-2) in captured evidence",
+      "weight": 1
+    },
+    {
+      "id": "RB-34",
+      "requirement": "REQ-2",
+      "layer": "L4-interaction",
+      "level": "pitfall",
+      "kind": "grep",
+      "path": "src",
+      "pattern": "/projects/",
+      "expect": "present",
+      "description": "Workbench route /projects/ is wired for post-submit navigation",
+      "weight": 1
+    },
+    {
+      "id": "RB-35",
+      "requirement": "REQ-7",
+      "layer": "L2-robustness",
+      "level": "pitfall",
+      "kind": "grep",
+      "path": "src/lib",
+      "pattern": "currentVersionId|current_version_id|createVersion|addMessage",
+      "expect": "present",
+      "description": "Version + message persistence helpers exist in lib",
+      "weight": 1
+    },
+    {
+      "id": "RB-36",
+      "requirement": "REQ-8",
+      "layer": "L4-interaction",
+      "level": "pitfall",
+      "kind": "grep",
+      "path": ".env.example",
+      "pattern": "GEMINI_MODEL_FLASH|GEMINI_MODEL_PRO",
+      "expect": "present",
+      "description": "Flash/Pro model env knobs are documented in .env.example",
+      "weight": 1
+    },
+    {
+      "id": "RB-37",
+      "requirement": "REQ-10",
+      "layer": "L2-robustness",
+      "level": "pitfall",
+      "kind": "grep",
+      "path": "playwright.config.ts",
+      "pattern": "LLM_PROVIDER\\s*:\\s*[\"']mock[\"']",
+      "expect": "present",
+      "description": "E2E webServer forces LLM_PROVIDER=mock",
+      "weight": 1
+    }
+  ],
+  "qualityWaivers": [
+    {
+      "requirement": "REQ-2",
+      "reason": "Create project+run and route navigation are functional/API concerns; post-submit workbench quality is judged under REQ-4/REQ-5 (REF-1 timeline + preview)."
+    },
+    {
+      "requirement": "REQ-3",
+      "reason": "SSE agent_events are a server/data contract; quality is enforced by ordered timeline UI judges on REQ-4/REF-1 plus unit seq checks — no separate visual surface for raw events."
+    },
+    {
+      "requirement": "REQ-6",
+      "reason": "Self-host/vendor assets are infrastructure; RL-2 CDN pitfalls + judge RB-33 cover the quality risk without a dedicated aesthetic judge."
+    },
+    {
+      "requirement": "REQ-7",
+      "reason": "Version/message persistence has no distinct visual chrome in F2 beyond the project list already judged under REQ-1/REQ-10."
+    },
+    {
+      "requirement": "REQ-8",
+      "reason": "Model routing and responseSchema retry are server-only; user-visible quality is covered by timeline/preview judges on the mock journey."
+    },
+    {
+      "requirement": "REQ-10",
+      "reason": "REQ-10 is the e2e/verify acceptance gate itself; visual quality of those journeys is judged via REQ-1/REQ-4/REQ-5 anchors."
+    }
+  ],
+  "e2eCategories": {
+    "core": 2,
+    "negative": 2,
+    "boundary": 1,
+    "crossFeature": 1,
+    "persistence": 1,
+    "uiJourney": 1
+  }
+}

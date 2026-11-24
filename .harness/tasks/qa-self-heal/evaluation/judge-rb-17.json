@@ -1,0 +1,10 @@
+{
+  "score": 1,
+  "note": "In an active preview, a report-shaped message from the host window and a malformed message posted by the iframe source left the QA timeline unchanged. The browser probe log records the inputs and result; no repair was triggered.",
+  "artifacts": [".harness/tasks/qa-self-heal/evidence/c3-confirm-20261124/workbench-browser-journey.png", ".harness/tasks/qa-self-heal/evidence/c3-confirm-20261124/browser-checks.md"],
+  "verify": ["typecheck", "lint", "unit", "e2e", "build"],
+  "heuristics": [],
+  "rubricRefinementSuggestions": [
+    { "type": "add-verification", "item": "RB-17", "problem": "The independent browser probe covers malformed and unexpected-source postMessages, but the rubric has no deterministic assertion that separately counts rejected probe, verdict, and fix events.", "suggestion": "Add an explicit browser or unit check for each message class and assert rejected messages add no probe/verdict/fix event and do not invoke Engineer repair." }
+  ]
+}

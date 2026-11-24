@@ -1,0 +1,134 @@
+[
+  {
+    "id": "E2E-1",
+    "category": "core",
+    "mapsTo": "REQ-1",
+    "blocking": true,
+    "severity": "critical",
+    "route": "/projects/[projectId]",
+    "steps": [
+      "Start with an owned project that has a completed version and visible preview under LLM_PROVIDER=mock.",
+      "Send a follow-up that changes a visible mock app marker.",
+      "Wait for the new run and version to complete, then inspect its parent relationship and files snapshot."
+    ],
+    "expect": [
+      "The follow-up run receives the existing project files and produces a new child version whose parent_id is the previous version.",
+      "The new version snapshot contains the changed marker and preserves unchanged files."
+    ]
+  },
+  {
+    "id": "E2E-2",
+    "category": "core",
+    "mapsTo": "REQ-2",
+    "blocking": true,
+    "severity": "critical",
+    "route": "/projects/[projectId]",
+    "steps": [
+      "Open an owned project with at least two versions.",
+      "Inspect the 版本 tab and select the earlier version's 回滚 action.",
+      "Wait for the workbench preview and code view to refresh."
+    ],
+    "expect": [
+      "The timeline is chronological and shows a summary and qa_score badge for each version.",
+      "The earlier version becomes current and both preview content and code match its snapshot.",
+      "Both version records remain present after rollback."
+    ]
+  },
+  {
+    "id": "E2E-3",
+    "category": "negative",
+    "mapsTo": "REQ-3",
+    "blocking": true,
+    "severity": "critical",
+    "route": "/share/[shareSlug]",
+    "steps": [
+      "Mint a share link for an owned project and open it in a fresh browser context with no deviceId cookie.",
+      "Attempt an owner mutation against the shared project from that context."
+    ],
+    "expect": [
+      "The public page loads the current version's preview and code without an owner cookie.",
+      "Mutation requests are denied with 401 or 403 and the project state does not change."
+    ]
+  },
+  {
+    "id": "E2E-4",
+    "category": "negative",
+    "mapsTo": "REQ-2",
+    "blocking": true,
+    "severity": "high",
+    "route": "/projects/[projectId]",
+    "steps": [
+      "Authenticate as one device and attempt to roll back a version belonging to another device's project.",
+      "Inspect the response and the target project's current version."
+    ],
+    "expect": [
+      "The foreign project or version is rejected as not found or unauthorized.",
+      "The target project's current_version_id remains unchanged."
+    ]
+  },
+  {
+    "id": "E2E-5",
+    "category": "boundary",
+    "mapsTo": "REQ-1",
+    "blocking": false,
+    "severity": "medium",
+    "route": "/projects/[projectId]",
+    "steps": [
+      "Run a mock follow-up whose Engineer delta contains no changed files.",
+      "Inspect the run result and version timeline."
+    ],
+    "expect": [
+      "The user sees a clear no-change result.",
+      "No empty version row is added and the current version pointer remains on the prior snapshot."
+    ]
+  },
+  {
+    "id": "E2E-6",
+    "category": "crossFeature",
+    "mapsTo": "REQ-1",
+    "blocking": false,
+    "severity": "medium",
+    "route": "/projects/[projectId]",
+    "steps": [
+      "Complete a generate-loop project and QA run using LLM_PROVIDER=mock.",
+      "Send a follow-up and inspect the resulting version and QA score."
+    ],
+    "expect": [
+      "The existing run and QA pipeline remains visible and its resulting qa_score is recorded on the new version.",
+      "The iteration creates a child snapshot without replacing the original generated version."
+    ]
+  },
+  {
+    "id": "E2E-7",
+    "category": "persistence",
+    "mapsTo": "REQ-2",
+    "blocking": true,
+    "severity": "critical",
+    "route": "/projects/[projectId]",
+    "steps": [
+      "Create two mock versions and roll back to the first version.",
+      "Navigate away, hard refresh, and reopen the project in the same device context."
+    ],
+    "expect": [
+      "The rolled-back version remains current after reload and its preview and code are restored.",
+      "The timeline still contains both immutable versions with their summaries and scores."
+    ]
+  },
+  {
+    "id": "E2E-8",
+    "category": "uiJourney",
+    "mapsTo": "REQ-6",
+    "blocking": true,
+    "severity": "critical",
+    "route": "/",
+    "steps": [
+      "With LLM_PROVIDER=mock, open a generated project and note its initial preview marker.",
+      "Send a follow-up that changes the marker and wait for the second version to appear.",
+      "Roll back to the first version and wait for preview refresh."
+    ],
+    "expect": [
+      "A new version appears after the follow-up.",
+      "Rollback restores the original preview content while retaining both timeline entries."
+    ]
+  }
+]

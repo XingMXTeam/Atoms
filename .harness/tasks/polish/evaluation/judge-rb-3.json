@@ -1,0 +1,29 @@
+{
+  "score": 1,
+  "note": "Confirm: at 1280×800 and 375×812, 我的项目 card titles are unclipped (titleClipped=false, cardOverflowX=0, docOverflow=0). Code pane long lines remain reachable via horizontal scroll (scrollWidth 1090 > clientWidth 296) plus 自动换行 control. Generic clipped-node count=1 is sr-only/hidden, not visible card text (H-UI-6.4).",
+  "artifacts": [
+    ".harness/tasks/polish/evidence/c1-2-browser/home-visual-system-1280.png",
+    ".harness/tasks/polish/evidence/c1-2-browser/home-visual-system-375.png",
+    ".harness/tasks/polish/evidence/c1-2-browser/workbench-code-pane.png",
+    ".harness/tasks/polish/evidence/c1-2-browser/journey-results.json"
+  ],
+  "verify": [
+    "typecheck",
+    "lint",
+    "unit",
+    "build",
+    "e2e"
+  ],
+  "heuristics": [
+    "H-UI-6.4",
+    "H-UI-6.6"
+  ],
+  "rubricRefinementSuggestions": [
+    {
+      "type": "refine",
+      "item": "RB-3",
+      "problem": "H-UI-6.4 raw clipped-node probe false-positives on sr-only labels",
+      "suggestion": "exclude aria-hidden/sr-only/visually-hidden nodes from clipped-text measurement"
+    }
+  ]
+}

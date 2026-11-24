@@ -1,0 +1,370 @@
+{
+  "version": 1,
+  "feature": "polish",
+  "layerWeights": true,
+  "policy": {
+    "minEssentialPerLayer": 1,
+    "minPitfallsPerLayer": 1,
+    "minPitfallsPerRequirement": 0
+  },
+  "requirements": [
+    {
+      "id": "REQ-1",
+      "description": "Visual system & micro-interactions: calm, high-craft Chinese UI across home + workbench + share pages; light/dark follows `prefers-color-scheme`; restrained refined micro-interactions (smooth tab indicator/panel transitions, subtle running pulse, timeline card expand polish) strictly respecting `prefers-reduced-motion: reduce`. Ensure zero clipped text in 我的项目 cards at 1280px & 375px, and ensure the code pane keeps long source lines readable at 1280px & 375px via clean horizontal scroll or wrap toggle."
+    },
+    {
+      "id": "REQ-2",
+      "description": "Empty / loading / error / UX completeness states: Discoverable Chinese follow-up prompt input + send control in the workbench left rail (starts an incremental iteration run directly from UI, disabled while a run is active or on read-only share view). Accurate persisted `runs.qa_rounds` reflected on workbench metadata including when hitting the 3-round exhaustion cap (`已达修复上限`). Clear Chinese empty / loading / error / interrupted (`继续`) / rate-limit / Gemini→replay fallback banner (`演示回放`) / preview compile error states, plus disabled pending feedback on ZIP export and share creation."
+    },
+    {
+      "id": "REQ-3",
+      "description": "Accessibility: keyboard focus-visible rings on primary controls, meaningful landmarks/headings, labelled tabs and iframe preview, contrast meets WCAG AA for text on backgrounds used (both light and dark modes)."
+    },
+    {
+      "id": "REQ-4",
+      "description": "Performance: fast home + workbench shell load, long-term `Cache-Control` headers for static preview runtime assets (`/preview/*`), idle preloading of `esbuild.wasm` (`requestIdleCallback` / low-priority fetch) when feasible, zero CLS from external font CDNs (system font stack only)."
+    },
+    {
+      "id": "REQ-5",
+      "description": "Desktop / Mobile preview width toggle (`桌面` / `移动 375px`) on the 预览 tab, keeping the preview sandboxed (`allow-scripts` only) and responsive."
+    },
+    {
+      "id": "REQ-6",
+      "description": "Delivery documentation (paraphrase only — never paste confidential hiring-brief text or secret keys): Polished `README.md`: project positioning (\"可验证的 AI 应用生成\"), architecture overview, local dev/test quickstart, and links to delivery docs. Detailed `docs/DELIVERY.md` (and `docs/writeup.md` symlink or matching write-up): (a) architecture & key trade-offs (Plan A `esbuild-wasm` vs WebContainer, China reachability, harness-in-product story), (b) completion status (what is done vs known limitations), (c) prioritized next-step roadmap, (d) step-by-step Cloudflare deployment commands (`npx wrangler login`, D1 database creation & schema migration, `npx wrangler secret put GEMINI_API_KEY`, `pnpm run build:cf` / deploy to `atoms.maoxunxing.com`)."
+    },
+    {
+      "id": "REQ-7",
+      "description": "Mainland-China reachability & security audit: scripted verification asserting zero runtime requests to external CDNs (`esm.sh`, `unpkg`, `jsdelivr`, `cdn.tailwindcss.com`, `fonts.googleapis.com`, `fonts.gstatic.com`) across home, workbench, and share routes, and custom domain path (`atoms.maoxunxing.com`) documented with `aws:us-east-1` placement."
+    }
+  ],
+  "items": [
+    {
+      "id": "RB-1",
+      "requirement": "REQ-1",
+      "layer": "L1-function",
+      "level": "essential",
+      "kind": "command",
+      "command": "LLM_PROVIDER=mock pnpm exec playwright test e2e/polish.spec.ts --grep \"visual-system|reduced-motion|card-clip|code-pane\"",
+      "description": "Home/workbench/share use the Chinese visual system with light/dark via prefers-color-scheme; reduced-motion suppresses decorative animation; project cards and code pane stay readable at 1280 and 375.",
+      "weight": 3
+    },
+    {
+      "id": "RB-2",
+      "requirement": "REQ-1",
+      "layer": "L3-ui",
+      "level": "essential",
+      "kind": "judge",
+      "anchor": "REF-1",
+      "evidence": ".harness/tasks/polish/evaluation/judge-rb-2.json",
+      "description": "Calm high-craft Chinese UI across home, workbench, and share matches REF-1 density, tab chrome, and card language without marketing flash.",
+      "weight": 2
+    },
+    {
+      "id": "RB-3",
+      "requirement": "REQ-1",
+      "layer": "L3-ui",
+      "level": "important",
+      "kind": "judge",
+      "anchor": "RL-1",
+      "evidence": ".harness/tasks/polish/evaluation/judge-rb-3.json",
+      "description": "Screenshots at 1280×800 and 375×812 show zero clipped 我的项目 card text and reachable long code lines.",
+      "weight": 2
+    },
+    {
+      "id": "RB-4",
+      "requirement": "REQ-1",
+      "layer": "L4-interaction",
+      "level": "pitfall",
+      "kind": "judge",
+      "anchor": "RL-2",
+      "evidence": ".harness/tasks/polish/evaluation/judge-rb-4.json",
+      "description": "Pitfall absent: tab/timeline/running-pulse animations continue when prefers-reduced-motion: reduce is set.",
+      "weight": 1
+    },
+    {
+      "id": "RB-5",
+      "requirement": "REQ-2",
+      "layer": "L1-function",
+      "level": "essential",
+      "kind": "command",
+      "command": "LLM_PROVIDER=mock pnpm exec playwright test e2e/polish.spec.ts --grep \"follow-up|qa-rounds|演示回放|ux-states\"",
+      "description": "Workbench follow-up input starts an incremental mock iteration; qa_rounds / 已达修复上限 and 演示回放 / interrupted / error states render as specified; ZIP/share show pending disabled feedback.",
+      "weight": 4
+    },
+    {
+      "id": "RB-6",
+      "requirement": "REQ-2",
+      "layer": "L4-interaction",
+      "level": "essential",
+      "kind": "judge",
+      "anchor": "REF-1",
+      "evidence": ".harness/tasks/polish/evaluation/judge-rb-6.json",
+      "description": "Follow-up control is discoverable in the left rail with clear disabled/pending feedback, and Chinese state banners are unambiguous.",
+      "weight": 2
+    },
+    {
+      "id": "RB-7",
+      "requirement": "REQ-2",
+      "layer": "L2-robustness",
+      "level": "pitfall",
+      "kind": "command",
+      "command": "LLM_PROVIDER=mock pnpm exec playwright test e2e/polish.spec.ts --grep \"follow-up-disabled|share-read-only\"",
+      "description": "Pitfall absent: follow-up remains enabled during an active run or on the read-only share view.",
+      "weight": 1
+    },
+    {
+      "id": "RB-8",
+      "requirement": "REQ-3",
+      "layer": "L1-function",
+      "level": "essential",
+      "kind": "command",
+      "command": "LLM_PROVIDER=mock pnpm exec playwright test e2e/polish.spec.ts --grep \"a11y|focus-visible|landmarks\"",
+      "description": "Keyboard tab order reaches prompt submit, follow-up, timeline expanders, preview width toggle, and preview/code/version tabs; tabs and iframe are labelled.",
+      "weight": 3
+    },
+    {
+      "id": "RB-9",
+      "requirement": "REQ-3",
+      "layer": "L4-interaction",
+      "level": "important",
+      "kind": "judge",
+      "anchor": "REF-1",
+      "evidence": ".harness/tasks/polish/evaluation/judge-rb-9.json",
+      "description": "Primary controls show focus-visible rings; landmarks/headings and contrast remain WCAG AA-ready in light and dark.",
+      "weight": 2
+    },
+    {
+      "id": "RB-10",
+      "requirement": "REQ-3",
+      "layer": "L4-interaction",
+      "level": "pitfall",
+      "kind": "judge",
+      "anchor": "ANTI-1",
+      "evidence": ".harness/tasks/polish/evaluation/judge-rb-10.json",
+      "description": "Pitfall absent: primary interactive controls lack a visible focus ring or the preview iframe/tabs are unlabelled.",
+      "weight": 1
+    },
+    {
+      "id": "RB-11",
+      "requirement": "REQ-4",
+      "layer": "L1-function",
+      "level": "essential",
+      "kind": "command",
+      "command": "pnpm exec vitest run src/lib/preview",
+      "description": "Preview runtime stays self-hosted; Cache-Control configuration for /preview/* and idle preload hooks for esbuild.wasm are present and covered by unit checks where applicable.",
+      "weight": 3
+    },
+    {
+      "id": "RB-12",
+      "requirement": "REQ-4",
+      "layer": "L2-robustness",
+      "level": "essential",
+      "kind": "grep",
+      "path": "src",
+      "pattern": "fonts\\.googleapis\\.com|fonts\\.gstatic\\.com",
+      "expect": "absent",
+      "description": "No Google Fonts or other external font CDN URLs are referenced from application source.",
+      "weight": 2
+    },
+    {
+      "id": "RB-13",
+      "requirement": "REQ-4",
+      "layer": "L3-ui",
+      "level": "important",
+      "kind": "judge",
+      "anchor": "REF-1",
+      "evidence": ".harness/tasks/polish/evaluation/judge-rb-13.json",
+      "description": "Home and workbench shells feel fast with system fonts only and no font-CDN-induced CLS.",
+      "weight": 2
+    },
+    {
+      "id": "RB-14",
+      "requirement": "REQ-4",
+      "layer": "L2-robustness",
+      "level": "pitfall",
+      "kind": "grep",
+      "path": "src/app",
+      "pattern": "cdn\\.tailwindcss\\.com|fonts\\.googleapis\\.com",
+      "expect": "absent",
+      "description": "Pitfall absent: app routes pull Tailwind CDN or Google Fonts at runtime.",
+      "weight": 1
+    },
+    {
+      "id": "RB-15",
+      "requirement": "REQ-5",
+      "layer": "L1-function",
+      "level": "essential",
+      "kind": "command",
+      "command": "LLM_PROVIDER=mock pnpm exec playwright test e2e/polish.spec.ts --grep \"preview-width|sandbox\"",
+      "description": "预览 tab exposes 桌面 / 移动 375px toggle; mobile mode constrains width; iframe sandbox remains allow-scripts only.",
+      "weight": 3
+    },
+    {
+      "id": "RB-16",
+      "requirement": "REQ-5",
+      "layer": "L4-interaction",
+      "level": "important",
+      "kind": "judge",
+      "anchor": "REF-1",
+      "evidence": ".harness/tasks/polish/evaluation/judge-rb-16.json",
+      "description": "Preview width toggle is discoverable on the 预览 tab and the framed preview remains responsive inside the chosen width.",
+      "weight": 2
+    },
+    {
+      "id": "RB-17",
+      "requirement": "REQ-5",
+      "layer": "L2-robustness",
+      "level": "pitfall",
+      "kind": "command",
+      "command": "pnpm exec vitest run src/lib/preview/sandbox.test.ts",
+      "description": "Pitfall absent: preview sandbox gains allow-same-origin or drops allow-scripts.",
+      "weight": 1
+    },
+    {
+      "id": "RB-18",
+      "requirement": "REQ-6",
+      "layer": "L1-function",
+      "level": "essential",
+      "kind": "command",
+      "command": "test -f README.md && test -f docs/DELIVERY.md && (test -f docs/writeup.md || test -L docs/writeup.md) && rg -n \"思路与取舍|完成度|后续规划|Cloudflare|可验证的 AI 应用生成\" README.md docs/DELIVERY.md docs/writeup.md",
+      "description": "README.md, docs/DELIVERY.md, and docs/writeup.md exist with positioning and the required delivery sections.",
+      "weight": 3
+    },
+    {
+      "id": "RB-19",
+      "requirement": "REQ-6",
+      "layer": "L2-robustness",
+      "level": "essential",
+      "kind": "command",
+      "command": "! rg -n \"GEMINI_API_KEY\\s*=\\s*[^\\s]+|AIza[0-9A-Za-z_-]{20,}|BEGIN (RSA |OPENSSH )?PRIVATE KEY\" README.md docs/DELIVERY.md docs/writeup.md",
+      "description": "Delivery docs contain no secret key material.",
+      "weight": 2
+    },
+    {
+      "id": "RB-20",
+      "requirement": "REQ-6",
+      "layer": "L3-ui",
+      "level": "important",
+      "kind": "judge",
+      "anchor": "REF-1",
+      "evidence": ".harness/tasks/polish/evaluation/judge-rb-20.json",
+      "description": "Delivery write-up is clear and evaluator-ready: trade-offs, completion, roadmap, and Cloudflare steps are understandable without confidential brief text.",
+      "weight": 2
+    },
+    {
+      "id": "RB-21",
+      "requirement": "REQ-6",
+      "layer": "L2-robustness",
+      "level": "pitfall",
+      "kind": "judge",
+      "anchor": "RL-4",
+      "evidence": ".harness/tasks/polish/evaluation/judge-rb-21.json",
+      "description": "Pitfall absent: README or delivery docs paste confidential hiring-brief text or secret keys.",
+      "weight": 1
+    },
+    {
+      "id": "RB-22",
+      "requirement": "REQ-7",
+      "layer": "L1-function",
+      "level": "essential",
+      "kind": "command",
+      "command": "LLM_PROVIDER=mock pnpm exec playwright test e2e/polish.spec.ts --grep \"cdn-audit\"",
+      "description": "Scripted network audit across home, workbench, and share records zero requests to the forbidden CDN hosts.",
+      "weight": 4
+    },
+    {
+      "id": "RB-23",
+      "requirement": "REQ-7",
+      "layer": "L2-robustness",
+      "level": "essential",
+      "kind": "command",
+      "command": "rg -n \"atoms\\.maoxunxing\\.com|aws:us-east-1\" docs/DELIVERY.md docs/writeup.md README.md",
+      "description": "Custom domain atoms.maoxunxing.com and aws:us-east-1 placement are documented for evaluators.",
+      "weight": 2
+    },
+    {
+      "id": "RB-24",
+      "requirement": "REQ-7",
+      "layer": "L4-interaction",
+      "level": "important",
+      "kind": "judge",
+      "anchor": "RL-3",
+      "evidence": ".harness/tasks/polish/evaluation/judge-rb-24.json",
+      "description": "Reachability story is credible: self-hosted preview assets and documented custom domain/placement match the audit evidence.",
+      "weight": 2
+    },
+    {
+      "id": "RB-25",
+      "requirement": "REQ-7",
+      "layer": "L1-function",
+      "level": "pitfall",
+      "kind": "judge",
+      "anchor": "RL-3",
+      "evidence": ".harness/tasks/polish/evaluation/judge-rb-25.json",
+      "description": "Pitfall absent: any runtime request from home/workbench/share to esm.sh, unpkg, jsdelivr, cdn.tailwindcss.com, fonts.googleapis.com, or fonts.gstatic.com.",
+      "weight": 1
+    },
+    {
+      "id": "RB-26",
+      "requirement": "REQ-1",
+      "layer": "L2-robustness",
+      "level": "essential",
+      "kind": "command",
+      "command": "LLM_PROVIDER=mock pnpm exec playwright test e2e/polish.spec.ts --grep \"no-page-overflow\"",
+      "description": "At 1280×800 and 375×812 the page has zero horizontal overflow from project cards or workbench chrome.",
+      "weight": 2
+    },
+    {
+      "id": "RB-27",
+      "requirement": "REQ-2",
+      "layer": "L3-ui",
+      "level": "important",
+      "kind": "judge",
+      "anchor": "REF-1",
+      "evidence": ".harness/tasks/polish/evaluation/judge-rb-27.json",
+      "description": "Empty/loading/error/interrupted/rate-limit/replay/compile-error states use clear Chinese copy consistent with the calm workbench.",
+      "weight": 2
+    },
+    {
+      "id": "RB-28",
+      "requirement": "REQ-5",
+      "layer": "L3-ui",
+      "level": "essential",
+      "kind": "judge",
+      "anchor": "REF-1",
+      "evidence": ".harness/tasks/polish/evaluation/judge-rb-28.json",
+      "description": "Desktop and mobile preview frames are visually distinct and remain sandboxed without breaking the workbench layout.",
+      "weight": 2
+    },
+    {
+      "id": "RB-29",
+      "requirement": "REQ-3",
+      "layer": "L3-ui",
+      "level": "pitfall",
+      "kind": "command",
+      "command": "LLM_PROVIDER=mock pnpm exec playwright test e2e/polish.spec.ts --grep \"a11y\"",
+      "description": "Pitfall absent: keyboard users cannot reach follow-up, tabs, or preview width toggle.",
+      "weight": 1
+    },
+    {
+      "id": "RB-30",
+      "requirement": "REQ-4",
+      "layer": "L3-ui",
+      "level": "pitfall",
+      "kind": "judge",
+      "anchor": "ANTI-1",
+      "evidence": ".harness/tasks/polish/evaluation/judge-rb-30.json",
+      "description": "Pitfall absent: external font CDN flash or missing system-font fallback causes visible CLS on first paint.",
+      "weight": 1
+    }
+  ],
+  "qualityWaivers": [],
+  "e2eCategories": {
+    "core": 2,
+    "negative": 2,
+    "boundary": 1,
+    "crossFeature": 1,
+    "persistence": 1,
+    "uiJourney": 1
+  }
+}

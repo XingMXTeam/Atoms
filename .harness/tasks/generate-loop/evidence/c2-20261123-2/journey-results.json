@@ -1,0 +1,18 @@
+{
+  "viewport": { "width": 1280, "height": 800 },
+  "probes": [
+    { "id": "explore-rapid-double-click", "result": "PASS", "apiCreateRequests": 1, "route": "/projects/82418d7f-9cfd-4b18-9eb5-b67377938397" },
+    { "id": "explore-long-emoji-rtl-input", "result": "PASS", "characters": 1260, "routeOpened": true, "engineerCompleted": true },
+    { "id": "explore-back-forward-after-generation", "result": "PASS", "timelineRestored": true }
+  ],
+  "screenshots": {
+    "timelinePath": ".harness/tasks/generate-loop/evidence/c2-20261123-2/workbench-timeline.png",
+    "previewPath": ".harness/tasks/generate-loop/evidence/c2-20261123-2/workbench-preview.png",
+    "previewClipPath": ".harness/tasks/generate-loop/evidence/c2-20261123-2/preview-clip.png",
+    "codePath": ".harness/tasks/generate-loop/evidence/c2-20261123-2/workbench-code.png"
+  },
+  "home": { "promptBounds": { "x": 304, "y": 228, "width": 672, "height": 122 }, "mainBounds": { "x": 256, "y": 0, "width": 768, "height": 876 }, "exampleCards": 4, "visibleContentClipped": false },
+  "timeline": { "completedStatus": "completed", "agents": ["规划师", "架构师", "工程师"], "clippedElements": 0 },
+  "preview": { "probeText": "我的待办 添加 体验 Atoms Studio", "sandbox": "allow-scripts", "externalCdnRequests": [] },
+  "code": { "fileTree": ["src/App.tsx", "src/components/TodoList.tsx", "src/main.tsx"], "selectedFile": "src/App.tsx", "sourceContainsMock": true, "sourceHorizontalScroll": { "scrollWidth": 624, "clientWidth": 296, "overflowX": "auto" } }
+}

@@ -1,0 +1,30 @@
+{
+  "score": 1,
+  "note": "Confirm pass: home/workbench/share keep REF-1 calm Chinese zinc UI — 可验证的 AI 应用生成 heading, 我的项目 cards, Agent 时间线, 预览/代码/版本 chrome, QA badges — without marketing flash. Dark scheme (home-dark) preserves the same system.",
+  "artifacts": [
+    ".harness/tasks/polish/evidence/c1-2-browser/home-visual-system-1280.png",
+    ".harness/tasks/polish/evidence/c1-2-browser/workbench-follow-up-ready.png",
+    ".harness/tasks/polish/evidence/c1-2-browser/share-read-only-polish.png",
+    ".harness/tasks/polish/evidence/c1-2-browser/home-dark.png",
+    ".harness/tasks/polish/evidence/20261124-043110/home-visual-system.png"
+  ],
+  "verify": [
+    "typecheck",
+    "lint",
+    "unit",
+    "build",
+    "e2e"
+  ],
+  "heuristics": [
+    "H-UI-5.1",
+    "H-UI-7.1"
+  ],
+  "rubricRefinementSuggestions": [
+    {
+      "type": "add-verification",
+      "item": "pages.json",
+      "problem": "harness capture cannot resolve /projects/[projectId] or /share/[shareSlug] placeholders",
+      "suggestion": "require seeded/demo capture hooks or concrete routes so automated capture covers workbench/share"
+    }
+  ]
+}

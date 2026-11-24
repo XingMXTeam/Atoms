@@ -1,0 +1,271 @@
+{
+  "version": 1,
+  "feature": "qa-self-heal",
+  "layerWeights": true,
+  "policy": {
+    "minEssentialPerLayer": 1,
+    "minPitfallsPerLayer": 1,
+    "minPitfallsPerRequirement": 0
+  },
+  "requirements": [
+    {
+      "id": "REQ-1",
+      "description": "Preview iframe posts a probe report to the host via `postMessage`: compile errors, runtime errors, blank-screen detection, and a DOM summary."
+    },
+    {
+      "id": "REQ-2",
+      "description": "QA agent (Flash-class) receives the Planner acceptance criteria + probe report and emits per-criterion verdicts (`pass` / `fail` + reason) plus an overall `qa_score` (0–100)."
+    },
+    {
+      "id": "REQ-3",
+      "description": "Self-heal loop: if compile/runtime errors exist or any critical AC fails, QA emits a fix instruction; Engineer returns a patch (`files` delta only); preview rebuilds; QA re-judges. Hard cap ≤3 fix rounds per run (`runs.qa_rounds`)."
+    },
+    {
+      "id": "REQ-4",
+      "description": "Each QA / fix step is an `agent_events` row (`type`: `probe` | `verdict` | `fix` | `error`) streamed to the timeline UI."
+    },
+    {
+      "id": "REQ-5",
+      "description": "Final `qa_score` is stored on the `runs` and `versions` rows and shown as a score badge on the workbench and project cards."
+    },
+    {
+      "id": "REQ-6",
+      "description": "Timeline QA card expands to show per-AC verdicts and which fix round resolved (or exhausted) each failure."
+    },
+    {
+      "id": "REQ-7",
+      "description": "E2E negative path with mock provider: force a compile error in first Engineer output → self-heal succeeds within ≤3 rounds → preview healthy and score badge visible."
+    }
+  ],
+  "items": [
+    {
+      "id": "RB-1",
+      "requirement": "REQ-1",
+      "layer": "L1-function",
+      "level": "essential",
+      "kind": "command",
+      "command": "pnpm exec vitest run src/lib/preview",
+      "description": "Probe report validation covers compile errors, runtime errors, blank-screen detection, and DOM summary.",
+      "weight": 3
+    },
+    {
+      "id": "RB-2",
+      "requirement": "REQ-1",
+      "layer": "L4-interaction",
+      "level": "important",
+      "kind": "judge",
+      "anchor": "REF-1",
+      "evidence": ".harness/tasks/qa-self-heal/evaluation/judge-rb-2.json",
+      "description": "Probe events appear in the existing workbench timeline with clear Chinese status.",
+      "weight": 2
+    },
+    {
+      "id": "RB-3",
+      "requirement": "REQ-2",
+      "layer": "L1-function",
+      "level": "essential",
+      "kind": "command",
+      "command": "pnpm exec vitest run src/lib/agents",
+      "description": "QA aggregation returns a pass/fail verdict with reason for every Planner criterion and a qa_score from 0 to 100.",
+      "weight": 3
+    },
+    {
+      "id": "RB-4",
+      "requirement": "REQ-2",
+      "layer": "L4-interaction",
+      "level": "important",
+      "kind": "judge",
+      "anchor": "REF-1",
+      "evidence": ".harness/tasks/qa-self-heal/evaluation/judge-rb-4.json",
+      "description": "QA card makes each criterion verdict, reason, and overall score easy to inspect.",
+      "weight": 2
+    },
+    {
+      "id": "RB-5",
+      "requirement": "REQ-3",
+      "layer": "L1-function",
+      "level": "essential",
+      "kind": "command",
+      "command": "pnpm exec vitest run src/lib/agents src/lib/preview",
+      "description": "Compile/runtime failures or critical criterion failures trigger a files-delta repair, preview rebuild, and re-judgment; no fourth repair is called.",
+      "weight": 3
+    },
+    {
+      "id": "RB-6",
+      "requirement": "REQ-3",
+      "layer": "L2-robustness",
+      "level": "essential",
+      "kind": "command",
+      "command": "pnpm exec vitest run src/lib/agents",
+      "description": "Round-cap unit coverage proves runs.qa_rounds never exceeds three and exhaustion preserves the last score/version.",
+      "weight": 3
+    },
+    {
+      "id": "RB-7",
+      "requirement": "REQ-3",
+      "layer": "L2-robustness",
+      "level": "pitfall",
+      "kind": "command",
+      "command": "pnpm exec vitest run src/lib/agents",
+      "description": "Pitfall absent: the repair loop never starts a fourth Engineer fix attempt.",
+      "weight": 1
+    },
+    {
+      "id": "RB-8",
+      "requirement": "REQ-3",
+      "layer": "L4-interaction",
+      "level": "important",
+      "kind": "judge",
+      "anchor": "RL-2",
+      "evidence": ".harness/tasks/qa-self-heal/evaluation/judge-rb-8.json",
+      "description": "A deterministic persistent-failure mock journey reaches exhaustion after exactly three fix rounds; a test-only assertion records exactly three Engineer repair calls and verifies the final run and version rows retain the same qa_score, alongside the clear Chinese exhausted state and retained score/version UI.",
+      "weight": 2
+    },
+    {
+      "id": "RB-9",
+      "requirement": "REQ-4",
+      "layer": "L1-function",
+      "level": "essential",
+      "kind": "command",
+      "command": "pnpm exec vitest run src/lib/agents src/lib/db",
+      "description": "Probe, verdict, fix, and error event types are persisted with the run and streamed in sequence.",
+      "weight": 3
+    },
+    {
+      "id": "RB-10",
+      "requirement": "REQ-4",
+      "layer": "L4-interaction",
+      "level": "important",
+      "kind": "judge",
+      "anchor": "REF-1",
+      "evidence": ".harness/tasks/qa-self-heal/evaluation/judge-rb-10.json",
+      "description": "QA and repair events appear in order in the Chinese timeline without hiding the current run status, and the streamed timeline journey remains stable when the configured E2E worker concurrency runs multiple journeys in parallel.",
+      "weight": 2
+    },
+    {
+      "id": "RB-11",
+      "requirement": "REQ-5",
+      "layer": "L1-function",
+      "level": "essential",
+      "kind": "command",
+      "command": "pnpm exec vitest run src/lib/db",
+      "description": "Final qa_score is stored consistently on the run and version and returned for project-card display.",
+      "weight": 3
+    },
+    {
+      "id": "RB-12",
+      "requirement": "REQ-5",
+      "layer": "L3-ui",
+      "level": "essential",
+      "kind": "judge",
+      "anchor": "REF-1",
+      "evidence": ".harness/tasks/qa-self-heal/evaluation/judge-rb-12.json",
+      "description": "A deterministic repository-level verification artifact reports one identical qa_score for the completed run row, resulting version row, completed workbench badge, and reloaded home project-card badge.",
+      "weight": 3
+    },
+    {
+      "id": "RB-13",
+      "requirement": "REQ-6",
+      "layer": "L1-function",
+      "level": "essential",
+      "kind": "command",
+      "command": "pnpm exec playwright test e2e/qa-self-heal.spec.ts",
+      "description": "The QA timeline card expands and exposes per-AC verdicts plus the round that resolved or exhausted each failure.",
+      "weight": 3
+    },
+    {
+      "id": "RB-14",
+      "requirement": "REQ-6",
+      "layer": "L4-interaction",
+      "level": "important",
+      "kind": "judge",
+      "anchor": "RL-3",
+      "evidence": ".harness/tasks/qa-self-heal/evaluation/judge-rb-14.json",
+      "description": "Expanded QA history is scannable and explicitly connects failed criteria to resolution or exhaustion rounds.",
+      "weight": 2
+    },
+    {
+      "id": "RB-15",
+      "requirement": "REQ-7",
+      "layer": "L1-function",
+      "level": "essential",
+      "kind": "command",
+      "command": "LLM_PROVIDER=mock pnpm exec playwright test e2e/qa-self-heal.spec.ts",
+      "description": "Mock negative path begins with a compile error, self-heals within three rounds, and ends with a healthy preview and visible score badge.",
+      "weight": 4
+    },
+    {
+      "id": "RB-16",
+      "requirement": "REQ-7",
+      "layer": "L4-interaction",
+      "level": "important",
+      "kind": "judge",
+      "anchor": "RL-3",
+      "evidence": ".harness/tasks/qa-self-heal/evaluation/judge-rb-16.json",
+      "description": "The mock recovery journey passes repeatedly at configured E2E worker concurrency; completion waits for ready status and non-empty painted preview content, and the workbench shows the final score and inspectable repair history.",
+      "weight": 2
+    },
+    {
+      "id": "RB-17",
+      "requirement": "REQ-1",
+      "layer": "L2-robustness",
+      "level": "pitfall",
+      "kind": "judge",
+      "anchor": "RL-1",
+      "evidence": ".harness/tasks/qa-self-heal/evaluation/judge-rb-17.json",
+      "description": "Pitfall absent: untrusted or malformed iframe messages cannot trigger a probe result or repair.",
+      "weight": 1
+    },
+    {
+      "id": "RB-18",
+      "requirement": "REQ-5",
+      "layer": "L3-ui",
+      "level": "pitfall",
+      "kind": "judge",
+      "anchor": "RL-3",
+      "evidence": ".harness/tasks/qa-self-heal/evaluation/judge-rb-18.json",
+      "description": "Pitfall absent: a displayed score is not separated from its QA verdict and repair history.",
+      "weight": 1
+    },
+    {
+      "id": "RB-19",
+      "requirement": "REQ-1",
+      "layer": "L1-function",
+      "level": "pitfall",
+      "kind": "command",
+      "command": "pnpm exec vitest run src/lib/preview",
+      "description": "Pitfall absent: the host accepts a probe report from an unexpected iframe source or invalid payload.",
+      "weight": 1
+    },
+    {
+      "id": "RB-20",
+      "requirement": "REQ-4",
+      "layer": "L4-interaction",
+      "level": "essential",
+      "kind": "command",
+      "command": "pnpm exec playwright test e2e/qa-self-heal.spec.ts",
+      "description": "The workbench visibly streams QA lifecycle events and provides immediate status feedback during the run.",
+      "weight": 2
+    },
+    {
+      "id": "RB-21",
+      "requirement": "REQ-6",
+      "layer": "L4-interaction",
+      "level": "pitfall",
+      "kind": "judge",
+      "anchor": "RL-3",
+      "evidence": ".harness/tasks/qa-self-heal/evaluation/judge-rb-21.json",
+      "description": "Pitfall absent: a completed score has no inspectable per-criterion verdict and fix-round history.",
+      "weight": 1
+    }
+  ],
+  "qualityWaivers": [],
+  "e2eCategories": {
+    "core": 2,
+    "negative": 2,
+    "boundary": 1,
+    "crossFeature": 1,
+    "persistence": 1,
+    "uiJourney": 1
+  }
+}

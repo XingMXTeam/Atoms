@@ -1,0 +1,19 @@
+{
+  "capture": { "runId": "c2-20261123-1", "status": "PASS", "pages": 1, "artifact": ".harness/tasks/generate-loop/evidence/c2-20261123-1/home.png" },
+  "browserSuite": { "result": "13 passed", "artifact": ".harness/tasks/generate-loop/evidence/c2-20261123-2/e2e-run.log" },
+  "cases": [
+    { "id": "E2E-1", "result": "PASS", "evidence": [".harness/tasks/generate-loop/evidence/c2-20261123-2/e2e-run.log", ".harness/tasks/generate-loop/evidence/c2-20261123-2/preview-clip.png"] },
+    { "id": "E2E-2", "result": "PASS", "evidence": [".harness/tasks/generate-loop/evidence/c2-20261123-2/e2e-run.log", ".harness/tasks/generate-loop/evidence/c2-20261123-2/workbench-expanded.png"] },
+    { "id": "E2E-3", "result": "PASS", "evidence": [".harness/tasks/generate-loop/evidence/c2-20261123-2/e2e-run.log", ".harness/tasks/generate-loop/evidence/c2-20261123-2/workbench-interrupted.png"] },
+    { "id": "E2E-4", "result": "PASS", "evidence": [".harness/tasks/generate-loop/evidence/c2-20261123-2/e2e-run.log"] },
+    { "id": "E2E-5", "result": "PASS", "evidence": [".harness/tasks/generate-loop/evidence/c2-20261123-2/e2e-run.log"] },
+    { "id": "E2E-6", "result": "PASS", "evidence": [".harness/tasks/generate-loop/evidence/c2-20261123-2/e2e-run.log"] },
+    { "id": "E2E-7", "result": "PASS", "evidence": [".harness/tasks/generate-loop/evidence/c2-20261123-2/e2e-run.log", ".harness/tasks/generate-loop/evidence/c2-20261123-2/workbench-preview.png", ".harness/tasks/generate-loop/evidence/c2-20261123-2/workbench-code.png"] },
+    { "id": "E2E-8", "result": "PASS", "evidence": [".harness/tasks/generate-loop/evidence/c2-20261123-2/e2e-run.log"] }
+  ],
+  "exploratoryProbes": [
+    { "id": "rapid-double-click", "result": "PASS", "apiCreateRequests": 1, "artifact": ".harness/tasks/generate-loop/evidence/c2-20261123-2/journey-results.json" },
+    { "id": "long-emoji-rtl-input", "result": "PASS", "characters": 1260, "generationCompleted": true, "artifact": ".harness/tasks/generate-loop/evidence/c2-20261123-2/long-input-probe.json" },
+    { "id": "back-forward-after-generation", "result": "PASS", "timelineRestored": true, "artifact": ".harness/tasks/generate-loop/evidence/c2-20261123-2/journey-results.json" }
+  ]
+}

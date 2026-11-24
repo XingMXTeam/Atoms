@@ -1,0 +1,8 @@
+{
+  "probe": "long input with emoji and RTL text",
+  "characters": 1260,
+  "routeOpened": true,
+  "engineerCompleted": true,
+  "result": "PASS",
+  "observation": "A 1,260 character Unicode prompt completed generation and opened its workbench."
+}

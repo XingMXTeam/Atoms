@@ -1,0 +1,266 @@
+{
+  "version": 1,
+  "feature": "iterate-versions",
+  "title": "",
+  "phase": "done",
+  "createdAt": 1795458370995,
+  "updatedAt": 1795463193067,
+  "macroCycle": {
+    "current": 1,
+    "max": 5
+  },
+  "consecutivePasses": 2,
+  "clarificationComplete": true,
+  "tasks": [
+    {
+      "id": "TASK-1",
+      "title": "Persist incremental runs and immutable child version snapshots",
+      "requirements": [
+        "REQ-1"
+      ],
+      "status": "done",
+      "attempts": 0,
+      "commitSha": "bd387ac"
+    },
+    {
+      "id": "TASK-2",
+      "title": "Add the version timeline and snapshot rollback to the workbench",
+      "requirements": [
+        "REQ-2",
+        "REQ-6"
+      ],
+      "status": "done",
+      "attempts": 0,
+      "commitSha": "c8f48ea"
+    },
+    {
+      "id": "TASK-3",
+      "title": "Expose cookie-free read-only project sharing",
+      "requirements": [
+        "REQ-3"
+      ],
+      "status": "done",
+      "attempts": 0,
+      "commitSha": "25187b3"
+    },
+    {
+      "id": "TASK-4",
+      "title": "Export the current version as a ZIP download",
+      "requirements": [
+        "REQ-4"
+      ],
+      "status": "done",
+      "attempts": 0,
+      "commitSha": "08d8d30"
+    },
+    {
+      "id": "TASK-5",
+      "title": "Seed completed examples and cover version journeys with mock E2E",
+      "requirements": [
+        "REQ-5",
+        "REQ-6"
+      ],
+      "status": "done",
+      "attempts": 0,
+      "commitSha": "8d8813e"
+    }
+  ],
+  "history": [
+    {
+      "at": 1795458370996,
+      "event": "prd-imported",
+      "from": "docs/prd/F4-iterate-versions.md",
+      "requirements": 6,
+      "numberingComplete": true
+    },
+    {
+      "at": 1795458672949,
+      "event": "clarify-done",
+      "tasks": 5
+    },
+    {
+      "at": 1795459098564,
+      "event": "task-done",
+      "task": "TASK-1",
+      "commitSha": "bd387ac"
+    },
+    {
+      "at": 1795459862116,
+      "event": "task-done",
+      "task": "TASK-2",
+      "commitSha": "c8f48ea"
+    },
+    {
+      "at": 1795460540593,
+      "event": "task-done",
+      "task": "TASK-3",
+      "commitSha": "25187b3"
+    },
+    {
+      "at": 1795460759098,
+      "event": "task-done",
+      "task": "TASK-4",
+      "commitSha": "08d8d30"
+    },
+    {
+      "at": 1795462101869,
+      "event": "task-done",
+      "task": "TASK-5",
+      "commitSha": "8d8813e"
+    },
+    {
+      "at": 1795462802365,
+      "event": "rubric-refinements-recorded",
+      "ids": [
+        "RS-1",
+        "RS-2",
+        "RS-3"
+      ]
+    },
+    {
+      "at": 1795462802366,
+      "event": "evaluation-passed",
+      "score": 0.985,
+      "consecutivePasses": 1,
+      "phaseAtEval": "implement"
+    },
+    {
+      "at": 1795463183766,
+      "event": "rubric-refinements-recorded",
+      "ids": [
+        "RS-4",
+        "RS-5",
+        "RS-6"
+      ]
+    },
+    {
+      "at": 1795463193067,
+      "event": "evaluation-passed",
+      "score": 0.985,
+      "consecutivePasses": 2,
+      "phaseAtEval": "verify"
+    },
+    {
+      "at": 1795463193067,
+      "event": "done",
+      "score": 0.985
+    }
+  ],
+  "lastEvaluation": {
+    "at": 1795463183764,
+    "verdict": "pass",
+    "score": 0.985,
+    "vetoed": []
+  },
+  "lastFailure": null,
+  "prd": {
+    "source": "imported",
+    "from": "docs/prd/F4-iterate-versions.md",
+    "importedAt": "2026-11-23T18:26:10.995Z",
+    "requirements": 6,
+    "numberingComplete": true,
+    "missingNumbers": []
+  },
+  "baseSha": "5da2ad7",
+  "rubricBaseline": {
+    "RB-1": "essential",
+    "RB-2": "important",
+    "RB-3": "essential",
+    "RB-4": "important",
+    "RB-5": "essential",
+    "RB-6": "important",
+    "RB-7": "essential",
+    "RB-8": "important",
+    "RB-9": "essential",
+    "RB-10": "important",
+    "RB-11": "essential",
+    "RB-12": "important",
+    "RB-13": "pitfall",
+    "RB-14": "pitfall",
+    "RB-15": "pitfall",
+    "RB-16": "pitfall",
+    "RB-17": "essential",
+    "RB-18": "essential",
+    "RB-19": "essential",
+    "RB-20": "pitfall",
+    "RB-21": "pitfall"
+  },
+  "rubricHash": "5ed14b8a8b37aa85",
+  "pendingRefinements": [
+    {
+      "id": "RS-1",
+      "type": "add",
+      "item": "RB-2",
+      "problem": "REQ-1 follow-up can pass via API while the workbench still has no owner-facing follow-up prompt",
+      "suggestion": "Add an L4 essential that the workbench exposes a Chinese follow-up input + send control that starts the iteration run without using a raw API client",
+      "layer": null,
+      "level": null,
+      "source": ".harness/tasks/iterate-versions/evaluation/judge-rb-2.json",
+      "cycle": 1,
+      "at": 1795462802363
+    },
+    {
+      "id": "RS-2",
+      "type": "add",
+      "item": "RB-8",
+      "problem": "double-submit protection during ZIP export is not asserted",
+      "suggestion": "Add a pitfall that the export control stays disabled/pending while a download is in flight",
+      "layer": null,
+      "level": null,
+      "source": ".harness/tasks/iterate-versions/evaluation/judge-rb-8.json",
+      "cycle": 1,
+      "at": 1795462802363
+    },
+    {
+      "id": "RS-3",
+      "type": "refine",
+      "item": "RB-10",
+      "problem": "does not require measuring overflow on the seeded grid",
+      "suggestion": "Require zero clipped text in 我的项目 cards at 1280px",
+      "layer": null,
+      "level": null,
+      "source": ".harness/tasks/iterate-versions/evaluation/judge-rb-10.json",
+      "cycle": 1,
+      "at": 1795462802363
+    },
+    {
+      "id": "RS-4",
+      "type": "add",
+      "item": "RB-2",
+      "problem": "Follow-up can fully pass via API without any workbench composer, so discoverability is untested",
+      "suggestion": "Add an L4 essential: owner workbench exposes a Chinese follow-up input + send that starts a continue run",
+      "layer": null,
+      "level": null,
+      "source": ".harness/tasks/iterate-versions/evaluation/judge-rb-2.json",
+      "cycle": 1,
+      "at": 1795463183764
+    },
+    {
+      "id": "RS-5",
+      "type": "add",
+      "item": "RB-8",
+      "problem": "No pitfall for double-export while the request is in flight",
+      "suggestion": "Add an L4 pitfall: export control stays pending/disabled while a ZIP request is in flight",
+      "layer": null,
+      "level": null,
+      "source": ".harness/tasks/iterate-versions/evaluation/judge-rb-8.json",
+      "cycle": 1,
+      "at": 1795463183764
+    },
+    {
+      "id": "RS-6",
+      "type": "refine",
+      "item": "RB-10",
+      "problem": "Overflow / clipping is not required by the item text",
+      "suggestion": "Require zero clipped text in 我的项目 at 1280px (measure H-UI-6.4)",
+      "layer": null,
+      "level": null,
+      "source": ".harness/tasks/iterate-versions/evaluation/judge-rb-10.json",
+      "cycle": 1,
+      "at": 1795463183764
+    }
+  ],
+  "refinementLog": [],
+  "remediationFixedAt": null,
+  "remediation": []
+}

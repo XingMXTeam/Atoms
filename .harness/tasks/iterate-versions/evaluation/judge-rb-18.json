@@ -1,0 +1,10 @@
+{
+  "score": 1,
+  "note": "Essential 版本 tab is complete and legible: ordered rows, Chinese summaries, QA scores, and rollback/current affordances sit beside the existing preview/code tabs without competing for hierarchy (REF-1). Matches vision layout intent.",
+  "artifacts": [
+    ".harness/tasks/iterate-versions/evidence/c1-2-browser/workbench-version-timeline.png",
+    ".harness/tasks/iterate-versions/evidence/c1-2-browser/workbench-after-rollback-versions.png"
+  ],
+  "verify": ["typecheck", "lint", "unit", "build", "e2e"],
+  "heuristics": []
+}

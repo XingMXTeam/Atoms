@@ -1,0 +1,7 @@
+{
+  "score": 1,
+  "note": "After a mock generate, the timeline visibly contains Chinese Planner/Architect/Engineer labels and progress. The RL-3 missing-timeline pitfall is absent.",
+  "artifacts": [".harness/tasks/generate-loop/evidence/c2-confirm-20261123/workbench-timeline.png", ".harness/tasks/generate-loop/evaluation/e2e-cases-c2.md"],
+  "verify": ["typecheck", "lint", "unit", "e2e", "build"],
+  "heuristics": ["H-UI-7.2", "H-PR-3.1"]
+}

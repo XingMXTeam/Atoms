@@ -1,0 +1,79 @@
+{
+  "e2e7": {
+    "main": true,
+    "h1Largest": true,
+    "overflowX": false,
+    "contrast": {
+      "h1": {
+        "ratio": 17.71676507806213,
+        "fg": [
+          24,
+          24,
+          27
+        ],
+        "bg": [
+          255,
+          255,
+          255
+        ],
+        "fontSize": 36,
+        "fontWeight": "600"
+      },
+      "eyebrow": {
+        "ratio": 4.827358601247048,
+        "fg": [
+          113,
+          113,
+          123
+        ],
+        "bg": [
+          255,
+          255,
+          255
+        ],
+        "fontSize": 14,
+        "fontWeight": "500"
+      },
+      "body": {
+        "ratio": 7.719945827625962,
+        "fg": [
+          82,
+          82,
+          92
+        ],
+        "bg": [
+          255,
+          255,
+          255
+        ],
+        "fontSize": 16,
+        "fontWeight": "400"
+      }
+    }
+  },
+  "exploratory": {
+    "rapidReloads": {
+      "count": 5,
+      "timesMs": [
+        528,
+        533,
+        531,
+        529,
+        536
+      ],
+      "h1": "可验证的 AI 应用生成"
+    },
+    "twoTabs": {
+      "deviceIdCookieCount": 1,
+      "sameDeviceId": true,
+      "tab2H1": "可验证的 AI 应用生成"
+    },
+    "backNavigation": {
+      "h1": "可验证的 AI 应用生成"
+    },
+    "slowNetwork": {
+      "reloadMs": 496,
+      "h1Visible": true
+    }
+  }
+}

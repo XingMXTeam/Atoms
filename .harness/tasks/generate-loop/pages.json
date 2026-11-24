@@ -1,0 +1,13 @@
+{
+  "baseUrl": "http://127.0.0.1:3000",
+  "viewport": { "width": 1280, "height": 800 },
+  "fullPage": false,
+  "pages": [
+    {
+      "name": "home",
+      "route": "/",
+      "waitFor": "main"
+    }
+  ],
+  "captureNotes": "Workbench routes are not listed here: /projects/[id] requires the creating deviceId cookie and a real project id. Official harness capture covers home only. Workbench / timeline / preview judge artifacts must come from an authenticated post-submit Playwright journey (create project via UI or API in the same browser context), never from a bare /projects/demo URL."
+}

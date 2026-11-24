@@ -1,0 +1,360 @@
+{
+  "version": 1,
+  "feature": "foundation",
+  "layerWeights": true,
+  "policy": {
+    "minEssentialPerLayer": 1,
+    "minPitfallsPerLayer": 1,
+    "layerNA": {
+      "L3": "Foundation UI is a single Chinese placeholder home; deeper multi-screen L3 density quotas wait for generate-loop. One essential + pitfalls still apply."
+    }
+  },
+  "requirements": [
+    {
+      "id": "REQ-1",
+      "description": "Next.js App Router + TypeScript + Tailwind v4 project runs locally with `pnpm dev` and produces a Chinese placeholder home: title Atoms Studio — 可验证的 AI 应用生成."
+    },
+    {
+      "id": "REQ-2",
+      "description": "OpenNext Cloudflare adapter configured (`next.config.ts` calls `initOpenNextCloudflareForDev`, `open-next.config.ts`, `wrangler.jsonc` name `atoms-demo`, placement `aws:us-east-1`, custom-domain route `atoms.maoxunxing.com`, D1 binding `DB`)"
+    },
+    {
+      "id": "REQ-3",
+      "description": "Drizzle schema + repository interface for D1 tables: `projects`, `messages`, `runs`, `agent_events`, `versions`, `usage`. Local Next.js / Vitest / Playwright use better-sqlite3 (or libsql) behind the same interface; Workers use the D1 binding."
+    },
+    {
+      "id": "REQ-4",
+      "description": "Anonymous `deviceId` cookie issued on first visit (HttpOnly, SameSite=Lax, long-lived); all project/run/usage rows are scoped by it."
+    },
+    {
+      "id": "REQ-5",
+      "description": "LLM provider abstraction with modes `gemini` | `mock` | `replay`, selected by `LLM_PROVIDER`. `mock` is deterministic for tests; `replay` auto-fallback is labelled clearly when activated."
+    },
+    {
+      "id": "REQ-6",
+      "description": "Rate limits: per-`deviceId` daily run cap (`DEVICE_DAILY_RUN_LIMIT`) and global daily token cap (`DAILY_TOKEN_CAP`); over-cap paths degrade to `replay` (or refuse with a clear Chinese message)."
+    },
+    {
+      "id": "REQ-7",
+      "description": "Env documented in `.env.example` (`GEMINI_API_KEY`, `LLM_PROVIDER`, `DAILY_TOKEN_CAP`, `DEVICE_DAILY_RUN_LIMIT`). Secrets never committed."
+    },
+    {
+      "id": "REQ-8",
+      "description": "Verify gates green: `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm test:e2e` (with `LLM_PROVIDER=mock`), `pnpm build`. `fh verify` records all five check ids."
+    }
+  ],
+  "items": [
+    {
+      "id": "RB-1",
+      "requirement": "REQ-1",
+      "layer": "L1-function",
+      "level": "essential",
+      "kind": "command",
+      "command": "pnpm exec playwright test e2e/smoke.spec.ts",
+      "description": "Playwright smoke: home shows Chinese H1 可验证的 AI 应用生成",
+      "weight": 3
+    },
+    {
+      "id": "RB-2",
+      "requirement": "REQ-1",
+      "layer": "L3-ui",
+      "level": "essential",
+      "kind": "judge",
+      "anchor": "REF-1",
+      "evidence": ".harness/tasks/foundation/evaluation/judge-rb-2.json",
+      "description": "Home capture matches REF-1: brand eyebrow Atoms Studio, Chinese H1, calm centered layout, zh-CN",
+      "weight": 2
+    },
+    {
+      "id": "RB-3",
+      "requirement": "REQ-1",
+      "layer": "L3-ui",
+      "level": "pitfall",
+      "kind": "judge",
+      "anchor": "RL-1",
+      "evidence": ".harness/tasks/foundation/evaluation/judge-rb-3.json",
+      "description": "Pitfall absent: primary heading is not English-only and includes 可验证的 AI 应用生成",
+      "weight": 1
+    },
+    {
+      "id": "RB-4",
+      "requirement": "REQ-1",
+      "layer": "L2-robustness",
+      "level": "pitfall",
+      "kind": "grep",
+      "path": "src",
+      "pattern": "fonts\\.googleapis\\.com|fonts\\.gstatic\\.com|cdn\\.tailwindcss\\.com|esm\\.sh|unpkg\\.com|jsdelivr\\.net",
+      "expect": "absent",
+      "description": "No external font/CDN URLs in src (RL-2 / ANTI-1)",
+      "weight": 1
+    },
+    {
+      "id": "RB-5",
+      "requirement": "REQ-2",
+      "layer": "L1-function",
+      "level": "essential",
+      "kind": "command",
+      "command": "rg -n \"initOpenNextCloudflareForDev\" next.config.ts && rg -n \"defineCloudflareConfig\" open-next.config.ts && rg -n \"\\\"name\\\": \\\"atoms-demo\\\"\" wrangler.jsonc && rg -n \"aws:us-east-1\" wrangler.jsonc && rg -n \"atoms\\.maoxunxing\\.com\" wrangler.jsonc && rg -n \"\\\"binding\\\": \\\"DB\\\"\" wrangler.jsonc",
+      "description": "OpenNext + wrangler fields required by REQ-2 are present",
+      "weight": 3
+    },
+    {
+      "id": "RB-6",
+      "requirement": "REQ-2",
+      "layer": "L2-robustness",
+      "level": "pitfall",
+      "kind": "grep",
+      "path": "wrangler.jsonc",
+      "pattern": "workers\\.dev",
+      "expect": "absent",
+      "description": "Deploy config does not rely on *.workers.dev for evaluators",
+      "weight": 1
+    },
+    {
+      "id": "RB-7",
+      "requirement": "REQ-3",
+      "layer": "L1-function",
+      "level": "essential",
+      "kind": "command",
+      "command": "pnpm exec vitest run src/lib/db",
+      "description": "Repository smoke inserts/reads a project via SQLite adapter",
+      "weight": 3
+    },
+    {
+      "id": "RB-8",
+      "requirement": "REQ-3",
+      "layer": "L1-function",
+      "level": "important",
+      "kind": "grep",
+      "path": "src/lib/db",
+      "pattern": "projects|messages|runs|agent_events|versions|usage",
+      "expect": "present",
+      "description": "Schema/repository sources name all six required tables",
+      "weight": 2
+    },
+    {
+      "id": "RB-9",
+      "requirement": "REQ-4",
+      "layer": "L1-function",
+      "level": "essential",
+      "kind": "command",
+      "command": "pnpm exec vitest run src/lib/auth",
+      "description": "deviceId mint/read unit path passes",
+      "weight": 3
+    },
+    {
+      "id": "RB-10",
+      "requirement": "REQ-4",
+      "layer": "L2-robustness",
+      "level": "essential",
+      "kind": "command",
+      "command": "pnpm exec vitest run src/lib/auth src/lib/db",
+      "description": "Cookie attributes and device-scoped repository writes covered by unit tests",
+      "weight": 2
+    },
+    {
+      "id": "RB-11",
+      "requirement": "REQ-5",
+      "layer": "L1-function",
+      "level": "essential",
+      "kind": "command",
+      "command": "pnpm exec vitest run src/lib/llm",
+      "description": "Provider mode selection: mock returns deterministic fixed payload",
+      "weight": 3
+    },
+    {
+      "id": "RB-12",
+      "requirement": "REQ-5",
+      "layer": "L4-interaction",
+      "level": "essential",
+      "kind": "judge",
+      "anchor": "REF-1",
+      "evidence": ".harness/tasks/foundation/evaluation/judge-rb-12.json",
+      "description": "When replay activates, the label 演示回放 is explicit in meta/UI-facing copy",
+      "weight": 2
+    },
+    {
+      "id": "RB-13",
+      "requirement": "REQ-6",
+      "layer": "L1-function",
+      "level": "essential",
+      "kind": "command",
+      "command": "pnpm exec vitest run src/lib/limits",
+      "description": "Rate-limit gate fails closed when daily runs exceeded",
+      "weight": 3
+    },
+    {
+      "id": "RB-14",
+      "requirement": "REQ-6",
+      "layer": "L4-interaction",
+      "level": "important",
+      "kind": "judge",
+      "anchor": "REF-1",
+      "evidence": ".harness/tasks/foundation/evaluation/judge-rb-14.json",
+      "description": "Over-cap path surfaces Chinese 演示回放 or a clear Chinese refuse message — never a silent English-only failure",
+      "weight": 2
+    },
+    {
+      "id": "RB-15",
+      "requirement": "REQ-6",
+      "layer": "L2-robustness",
+      "level": "pitfall",
+      "kind": "grep",
+      "path": "src/lib",
+      "pattern": "Something went wrong|quota exceeded(?!.*[\\u4e00-\\u9fff])",
+      "expect": "absent",
+      "description": "No English-only opaque over-cap errors without Chinese guidance",
+      "weight": 1
+    },
+    {
+      "id": "RB-16",
+      "requirement": "REQ-7",
+      "layer": "L1-function",
+      "level": "essential",
+      "kind": "command",
+      "command": "rg -n \"^GEMINI_API_KEY=\" .env.example && rg -n \"^LLM_PROVIDER=\" .env.example && rg -n \"^DAILY_TOKEN_CAP=\" .env.example && rg -n \"^DEVICE_DAILY_RUN_LIMIT=\" .env.example",
+      "description": ".env.example documents all four required env vars",
+      "weight": 3
+    },
+    {
+      "id": "RB-17",
+      "requirement": "REQ-7",
+      "layer": "L2-robustness",
+      "level": "pitfall",
+      "kind": "command",
+      "command": "rg -n \"GEMINI_API_KEY\\s*=\\s*AIza\" --glob '!**/.env.example' --glob '!**/node_modules/**' . ; test $? -eq 1",
+      "description": "No committed Gemini API key material (RL-3)",
+      "weight": 1
+    },
+    {
+      "id": "RB-18",
+      "requirement": "REQ-8",
+      "layer": "L1-function",
+      "level": "essential",
+      "kind": "verify",
+      "check": "typecheck",
+      "description": "fh verify typecheck is green",
+      "weight": 2
+    },
+    {
+      "id": "RB-19",
+      "requirement": "REQ-8",
+      "layer": "L1-function",
+      "level": "essential",
+      "kind": "verify",
+      "check": "lint",
+      "description": "fh verify lint is green",
+      "weight": 2
+    },
+    {
+      "id": "RB-20",
+      "requirement": "REQ-8",
+      "layer": "L1-function",
+      "level": "essential",
+      "kind": "verify",
+      "check": "unit",
+      "description": "fh verify unit is green",
+      "weight": 2
+    },
+    {
+      "id": "RB-21",
+      "requirement": "REQ-8",
+      "layer": "L1-function",
+      "level": "essential",
+      "kind": "verify",
+      "check": "e2e",
+      "description": "fh verify e2e is green under LLM_PROVIDER=mock",
+      "weight": 2
+    },
+    {
+      "id": "RB-22",
+      "requirement": "REQ-8",
+      "layer": "L1-function",
+      "level": "essential",
+      "kind": "verify",
+      "check": "build",
+      "description": "fh verify build is green",
+      "weight": 2
+    },
+    {
+      "id": "RB-23",
+      "requirement": "REQ-2",
+      "layer": "L1-function",
+      "level": "pitfall",
+      "kind": "grep",
+      "path": "wrangler.jsonc",
+      "pattern": "aws:ap-east-1|aws:ap-southeast",
+      "expect": "absent",
+      "description": "Worker placement is not left on Asia regions that block Gemini egress",
+      "weight": 1
+    },
+    {
+      "id": "RB-26",
+      "requirement": "REQ-5",
+      "layer": "L4-interaction",
+      "level": "pitfall",
+      "kind": "grep",
+      "path": "src",
+      "pattern": "演示回放",
+      "expect": "present",
+      "description": "Replay label string 演示回放 exists in source so auto-fallback can be labelled",
+      "weight": 1
+    },
+    {
+      "id": "RB-24",
+      "requirement": "REQ-1",
+      "layer": "L4-interaction",
+      "level": "important",
+      "kind": "judge",
+      "anchor": "ANTI-1",
+      "evidence": ".harness/tasks/foundation/evaluation/judge-rb-24.json",
+      "description": "Home does not resemble a busy AI marketing landing or Atoms pixel-copy (ANTI-1)",
+      "weight": 1
+    },
+    {
+      "id": "RB-25",
+      "requirement": "REQ-8",
+      "layer": "L2-robustness",
+      "level": "pitfall",
+      "kind": "grep",
+      "path": "playwright.config.ts",
+      "pattern": "LLM_PROVIDER\\s*:\\s*[\"']mock[\"']",
+      "expect": "present",
+      "description": "E2E webServer forces LLM_PROVIDER=mock",
+      "weight": 1
+    }
+  ],
+  "qualityWaivers": [
+    {
+      "requirement": "REQ-2",
+      "reason": "Deploy/adapter configuration has no end-user quality surface in F1; correctness is enforced by essential config commands and placement pitfalls."
+    },
+    {
+      "requirement": "REQ-3",
+      "reason": "Persistence layer is infrastructure-only in F1 with no UI; repository unit smoke is the acceptance surface."
+    },
+    {
+      "requirement": "REQ-4",
+      "reason": "deviceId is a silent HttpOnly cookie with no visual chrome in F1; persistence e2e + unit cover behaviour."
+    },
+    {
+      "requirement": "REQ-7",
+      "reason": "Env documentation and secret hygiene are file/process concerns, not a visual quality surface."
+    },
+    {
+      "requirement": "REQ-8",
+      "reason": "Verify gates are command evidence (typecheck/lint/unit/e2e/build), not a judgeable UI quality surface."
+    }
+  ],
+  "e2eCategories": {
+    "core": 2,
+    "negative": 2,
+    "boundary": 1,
+    "crossFeature": 1,
+    "persistence": 1,
+    "uiJourney": 1,
+    "na": {
+      "crossFeature": "F1 is the first feature; no sibling feature exists yet to observe cross-feature state."
+    }
+  }
+}

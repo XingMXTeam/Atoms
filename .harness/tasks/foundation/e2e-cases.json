@@ -1,0 +1,72 @@
+[
+  {
+    "id": "E2E-1",
+    "category": "core",
+    "mapsTo": "REQ-1",
+    "blocking": true,
+    "severity": "critical",
+    "route": "/",
+    "steps": ["open /", "wait for main h1"],
+    "expect": ["heading 可验证的 AI 应用生成 is visible", "document title includes Atoms Studio"]
+  },
+  {
+    "id": "E2E-2",
+    "category": "core",
+    "mapsTo": "REQ-4",
+    "blocking": true,
+    "severity": "critical",
+    "route": "/",
+    "steps": ["open / with clean cookies", "read Set-Cookie / document.cookie bridge via response headers in Playwright context"],
+    "expect": ["deviceId cookie is present", "cookie is HttpOnly"]
+  },
+  {
+    "id": "E2E-3",
+    "category": "negative",
+    "mapsTo": "REQ-6",
+    "blocking": true,
+    "severity": "critical",
+    "route": "/",
+    "steps": ["seed usage row at DEVICE_DAILY_RUN_LIMIT", "invoke rate-limit decision helper via test hook or unit-backed e2e fixture"],
+    "expect": ["decision degrades to replay with label 演示回放 or returns a clear Chinese refuse message"]
+  },
+  {
+    "id": "E2E-4",
+    "category": "negative",
+    "mapsTo": "REQ-5",
+    "blocking": true,
+    "severity": "high",
+    "route": "/",
+    "steps": ["start app with LLM_PROVIDER=mock", "request provider complete once"],
+    "expect": ["response meta.mode is mock", "payload matches deterministic fixture"]
+  },
+  {
+    "id": "E2E-5",
+    "category": "boundary",
+    "mapsTo": "REQ-6",
+    "blocking": false,
+    "severity": "medium",
+    "route": "/",
+    "steps": ["seed global tokens at DAILY_TOKEN_CAP", "invoke rate-limit decision"],
+    "expect": ["soft-cap path selects replay rather than gemini"]
+  },
+  {
+    "id": "E2E-6",
+    "category": "persistence",
+    "mapsTo": "REQ-4",
+    "blocking": true,
+    "severity": "critical",
+    "route": "/",
+    "steps": ["open /", "capture deviceId cookie", "reload /"],
+    "expect": ["same deviceId cookie value after reload"]
+  },
+  {
+    "id": "E2E-7",
+    "category": "uiJourney",
+    "mapsTo": "REQ-1",
+    "blocking": false,
+    "severity": "medium",
+    "route": "/",
+    "steps": ["open /", "assert layout landmarks"],
+    "expect": ["main landmark present", "H1 is the largest text block", "no horizontal overflow at 1280x800"]
+  }
+]

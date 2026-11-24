@@ -1,0 +1,416 @@
+{
+  "version": 1,
+  "feature": "generate-loop",
+  "title": "",
+  "phase": "done",
+  "createdAt": 1795426798303,
+  "updatedAt": 1795447651026,
+  "macroCycle": {
+    "current": 2,
+    "max": 5
+  },
+  "consecutivePasses": 2,
+  "clarificationComplete": true,
+  "tasks": [
+    {
+      "id": "TASK-1",
+      "title": "Home prompt, example cards, and 我的项目 grid",
+      "requirements": [
+        "REQ-1",
+        "REQ-2"
+      ],
+      "status": "done",
+      "attempts": 0,
+      "commitSha": "6409e80"
+    },
+    {
+      "id": "TASK-2",
+      "title": "SSE agent pipeline + repository persistence for events/versions",
+      "requirements": [
+        "REQ-3",
+        "REQ-7",
+        "REQ-8"
+      ],
+      "status": "done",
+      "attempts": 0,
+      "commitSha": "3b56b93"
+    },
+    {
+      "id": "TASK-3",
+      "title": "Workbench Agent timeline + interrupt 继续 affordance",
+      "requirements": [
+        "REQ-4",
+        "REQ-9"
+      ],
+      "status": "done",
+      "attempts": 0,
+      "commitSha": "0401dca"
+    },
+    {
+      "id": "TASK-4",
+      "title": "Self-hosted esbuild-wasm preview + 代码 tab",
+      "requirements": [
+        "REQ-5",
+        "REQ-6"
+      ],
+      "status": "done",
+      "attempts": 0,
+      "commitSha": "d513cde"
+    },
+    {
+      "id": "TASK-5",
+      "title": "Mock e2e core+persistence journeys and verify green",
+      "requirements": [
+        "REQ-10",
+        "REQ-1",
+        "REQ-5"
+      ],
+      "status": "done",
+      "attempts": 0,
+      "commitSha": "e76120c"
+    },
+    {
+      "id": "TASK-6",
+      "title": "Fix open eval gaps: sandbox/CDN greps, interrupt chrome scoping, painted preview",
+      "requirements": [
+        "REQ-5",
+        "REQ-6",
+        "REQ-9",
+        "REQ-4",
+        "REQ-10"
+      ],
+      "status": "done",
+      "attempts": 1,
+      "commitSha": "0e436d5"
+    }
+  ],
+  "history": [
+    {
+      "at": 1795426798305,
+      "event": "prd-imported",
+      "from": "docs/prd/F2-generate-loop.md",
+      "requirements": 10,
+      "numberingComplete": true
+    },
+    {
+      "at": 1795427038454,
+      "event": "clarify-done",
+      "tasks": 5
+    },
+    {
+      "at": 1795427307596,
+      "event": "task-done",
+      "task": "TASK-1",
+      "commitSha": "6409e80"
+    },
+    {
+      "at": 1795427654040,
+      "event": "task-done",
+      "task": "TASK-2",
+      "commitSha": "3b56b93"
+    },
+    {
+      "at": 1795427950474,
+      "event": "task-done",
+      "task": "TASK-3",
+      "commitSha": "0401dca"
+    },
+    {
+      "at": 1795428484963,
+      "event": "task-done",
+      "task": "TASK-4",
+      "commitSha": "d513cde"
+    },
+    {
+      "at": 1795428817141,
+      "event": "task-done",
+      "task": "TASK-5",
+      "commitSha": "e76120c"
+    },
+    {
+      "at": 1795430111332,
+      "event": "rubric-refinements-recorded",
+      "ids": [
+        "RS-1",
+        "RS-2",
+        "RS-3",
+        "RS-4",
+        "RS-5"
+      ]
+    },
+    {
+      "at": 1795430111333,
+      "event": "evaluation-failed",
+      "score": 0.881,
+      "vetoed": [
+        {
+          "id": "RB-14",
+          "reason": "pitfall triggered: pattern /allow-same-origin/ in src: found (src/lib/preview/bundle.ts), expected absent"
+        },
+        {
+          "id": "RB-16",
+          "reason": "pitfall triggered: pattern /esm\\.sh|unpkg\\.com|jsdelivr\\.net|cdn\\.tailwindcss\\.com|fonts\\.googleapis\\.com|fonts\\.gstatic\\.com/ in src: found (src/lib/preview/bundle.test.ts), expected absent"
+        }
+      ],
+      "nextMacroCycle": 2
+    },
+    {
+      "at": 1795430316876,
+      "event": "replanned",
+      "accepted": [
+        "RS-1",
+        "RS-2",
+        "RS-3",
+        "RS-4",
+        "RS-5"
+      ],
+      "rejected": [],
+      "newTasks": [
+        "TASK-6"
+      ]
+    },
+    {
+      "at": 1795432680263,
+      "event": "task-check-failed",
+      "task": "TASK-6",
+      "check": "pnpm exec playwright test e2e/generate-preview.spec.ts e2e/generate-timeline.spec.ts e2e/generate-core.spec.ts",
+      "attempts": 1
+    },
+    {
+      "at": 1795432913389,
+      "event": "task-done",
+      "task": "TASK-6",
+      "commitSha": "0e436d5"
+    },
+    {
+      "at": 1795432933071,
+      "event": "remediation-fixed",
+      "items": [
+        "RB-39",
+        "RB-13",
+        "RB-14",
+        "RB-16",
+        "RB-22",
+        "RB-30"
+      ],
+      "commitSha": "0e436d5"
+    },
+    {
+      "at": 1795445367805,
+      "event": "rubric-refinements-recorded",
+      "ids": [
+        "RS-6"
+      ]
+    },
+    {
+      "at": 1795445367807,
+      "event": "evaluation-passed",
+      "score": 0.967,
+      "consecutivePasses": 1,
+      "phaseAtEval": "implement"
+    },
+    {
+      "at": 1795447643297,
+      "event": "rubric-refinements-recorded",
+      "ids": [
+        "RS-7"
+      ]
+    },
+    {
+      "at": 1795447651026,
+      "event": "evaluation-passed",
+      "score": 0.967,
+      "consecutivePasses": 2,
+      "phaseAtEval": "verify"
+    },
+    {
+      "at": 1795447651026,
+      "event": "done",
+      "score": 0.967
+    }
+  ],
+  "lastEvaluation": {
+    "at": 1795447643296,
+    "verdict": "pass",
+    "score": 0.967,
+    "vetoed": []
+  },
+  "lastFailure": {
+    "at": 1795430111331,
+    "kind": "evaluation",
+    "vetoed": [
+      {
+        "id": "RB-14",
+        "reason": "pitfall triggered: pattern /allow-same-origin/ in src: found (src/lib/preview/bundle.ts), expected absent"
+      },
+      {
+        "id": "RB-16",
+        "reason": "pitfall triggered: pattern /esm\\.sh|unpkg\\.com|jsdelivr\\.net|cdn\\.tailwindcss\\.com|fonts\\.googleapis\\.com|fonts\\.gstatic\\.com/ in src: found (src/lib/preview/bundle.test.ts), expected absent"
+      }
+    ],
+    "openItems": [
+      "RB-39",
+      "RB-13",
+      "RB-14",
+      "RB-16",
+      "RB-22",
+      "RB-30"
+    ]
+  },
+  "prd": {
+    "source": "imported",
+    "from": "docs/prd/F2-generate-loop.md",
+    "importedAt": "2026-11-23T09:39:58.303Z",
+    "requirements": 10,
+    "numberingComplete": true,
+    "missingNumbers": []
+  },
+  "baseSha": "83e04e4",
+  "rubricBaseline": {
+    "RB-1": "essential",
+    "RB-2": "essential",
+    "RB-3": "pitfall",
+    "RB-4": "essential",
+    "RB-5": "pitfall",
+    "RB-38": "pitfall",
+    "RB-39": "essential",
+    "RB-6": "essential",
+    "RB-7": "essential",
+    "RB-8": "essential",
+    "RB-9": "essential",
+    "RB-10": "pitfall",
+    "RB-11": "essential",
+    "RB-12": "essential",
+    "RB-13": "important",
+    "RB-14": "pitfall",
+    "RB-15": "essential",
+    "RB-16": "pitfall",
+    "RB-17": "pitfall",
+    "RB-18": "essential",
+    "RB-19": "essential",
+    "RB-20": "pitfall",
+    "RB-21": "essential",
+    "RB-22": "important",
+    "RB-23": "pitfall",
+    "RB-24": "essential",
+    "RB-25": "essential",
+    "RB-26": "essential",
+    "RB-27": "important",
+    "RB-28": "important",
+    "RB-29": "important",
+    "RB-30": "important",
+    "RB-31": "important",
+    "RB-32": "pitfall",
+    "RB-33": "pitfall",
+    "RB-34": "pitfall",
+    "RB-35": "pitfall",
+    "RB-36": "pitfall",
+    "RB-37": "pitfall"
+  },
+  "rubricHash": "2f12277001d0b9fd",
+  "pendingRefinements": [
+    {
+      "id": "RS-6",
+      "type": "add",
+      "item": "REQ-5",
+      "problem": "The source viewer shows code but long lines are cut off at the target width, with no visible horizontal scroll affordance in the captured state.",
+      "suggestion": "Add a check that code-view lines remain reachable at 1280px through wrapping or horizontal scrolling.",
+      "layer": null,
+      "level": null,
+      "source": ".harness/tasks/generate-loop/evaluation/judge-rb-13.json",
+      "cycle": 2,
+      "at": 1795445367804
+    },
+    {
+      "id": "RS-7",
+      "type": "refine",
+      "item": "RB-13",
+      "problem": "Code source is technically present but long lines are clipped in the screenshot, and the rubric does not state how the source remains accessible at 1280px.",
+      "suggestion": "Require selected source to remain readable through visible horizontal scrolling or wrapping at 1280px and 375px.",
+      "layer": null,
+      "level": null,
+      "source": ".harness/tasks/generate-loop/evaluation/judge-rb-13.json",
+      "cycle": 2,
+      "at": 1795447643296
+    }
+  ],
+  "refinementLog": [
+    {
+      "id": "RS-1",
+      "type": "refine",
+      "item": "RB-2",
+      "problem": "pages.json workbench routes use /projects/demo which 404s (no seed + deviceId cookie), so harness capture cannot produce official workbench PNGs",
+      "suggestion": "Document a capture precondition (seed project or post-submit route) or change pages.json workbench routes to a deterministic seeded fixture reachable without prior device cookie",
+      "layer": null,
+      "level": null,
+      "source": ".harness/tasks/generate-loop/evaluation/judge-rb-2.json",
+      "cycle": 1,
+      "at": 1795430111331,
+      "decision": "accepted",
+      "note": "pages.json keeps only capturable static home; workbench evidence requires authenticated post-submit Playwright journeys (documented in tech-design + RB-2). /projects/demo is not a seeded fixture in F2.",
+      "decidedAt": 1795430316876
+    },
+    {
+      "id": "RS-2",
+      "type": "refine",
+      "item": "RB-10",
+      "problem": "RL-3 covers both missing Chinese timeline progress AND blank 预览; this pitfall only checks the timeline half, leaving blank preview to RB-30",
+      "suggestion": "Keep RB-10 timeline-only but explicitly say preview blankness is scored by RB-30 so judges do not double-count or miss either half",
+      "layer": null,
+      "level": null,
+      "source": ".harness/tasks/generate-loop/evaluation/judge-rb-10.json",
+      "cycle": 1,
+      "at": 1795430111331,
+      "decision": "accepted",
+      "note": "RB-10 description now states timeline-only RL-3 half; preview blankness is scored exclusively by RB-30.",
+      "decidedAt": 1795430316876
+    },
+    {
+      "id": "RS-3",
+      "type": "refine",
+      "item": "RB-13",
+      "problem": "Current wording allows passing on tabs alone while preview paint can still fail RL-3",
+      "suggestion": "Require screenshot evidence of identifiable mock UI pixels in 预览 (not only srcdoc/DOM presence)",
+      "layer": null,
+      "level": null,
+      "source": ".harness/tasks/generate-loop/evaluation/judge-rb-13.json",
+      "cycle": 1,
+      "at": 1795430111331,
+      "decision": "accepted",
+      "note": "RB-13 now requires screenshot evidence of identifiable mock UI pixels in 预览, not tabs/srcdoc alone.",
+      "decidedAt": 1795430316876
+    },
+    {
+      "id": "RS-4",
+      "type": "refine",
+      "item": "RB-22",
+      "problem": "Item checks presence of 继续 on interrupt but not absence on completed success",
+      "suggestion": "Score 1 only when 继续 appears iff run is interrupted; completed runs must not show interrupt recovery chrome",
+      "layer": null,
+      "level": null,
+      "source": ".harness/tasks/generate-loop/evaluation/judge-rb-22.json",
+      "cycle": 1,
+      "at": 1795430111331,
+      "decision": "accepted",
+      "note": "RB-22 (and RB-39) now require 继续 / interrupt recovery chrome iff run is interrupted; completed runs must not show it and must not keep 运行中.",
+      "decidedAt": 1795430316876
+    },
+    {
+      "id": "RS-5",
+      "type": "add-verification",
+      "item": "RB-30",
+      "problem": "Existing e2e asserts srcdoc markers only; that can pass while the painted iframe is blank",
+      "suggestion": "Add a visual assertion (non-uniform iframe clip / accessible text via probe) so blank paint cannot greenwash srcdoc presence",
+      "layer": null,
+      "level": null,
+      "source": ".harness/tasks/generate-loop/evaluation/judge-rb-30.json",
+      "cycle": 1,
+      "at": 1795430111331,
+      "decision": "accepted",
+      "note": "RB-30 and E2E-1 now require a visual paint assertion (non-uniform iframe clip or accessible probe text); srcdoc markers alone cannot pass.",
+      "decidedAt": 1795430316876
+    }
+  ],
+  "remediationFixedAt": null,
+  "remediation": []
+}

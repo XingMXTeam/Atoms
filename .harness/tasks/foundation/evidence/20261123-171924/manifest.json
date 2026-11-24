@@ -1,0 +1,28 @@
+{
+  "feature": "foundation",
+  "runId": "20261123-171924",
+  "status": "pass",
+  "note": null,
+  "tool": "@playwright/test",
+  "baseUrl": "http://127.0.0.1:3000",
+  "viewport": {
+    "width": 1280,
+    "height": 800
+  },
+  "fullPage": false,
+  "minBytes": 2048,
+  "generatedAt": "2026-11-23T09:19:25.028Z",
+  "dir": ".harness/tasks/foundation/evidence/20261123-171924",
+  "pages": [
+    {
+      "name": "home",
+      "route": "/",
+      "url": "http://127.0.0.1:3000/",
+      "file": ".harness/tasks/foundation/evidence/20261123-171924/home.png",
+      "bytes": 27794,
+      "ok": true,
+      "usedFallback": false,
+      "error": null
+    }
+  ]
+}

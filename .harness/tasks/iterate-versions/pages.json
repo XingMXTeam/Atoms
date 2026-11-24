@@ -1,0 +1,26 @@
+{
+  "baseUrl": "http://127.0.0.1:3000",
+  "viewport": { "width": 1280, "height": 800 },
+  "fullPage": false,
+  "pages": [
+    {
+      "name": "home-seeded-project-grid",
+      "route": "/",
+      "waitFor": "main",
+      "notes": "Use a fresh deviceId browser context. Inspect at least two completed seeded project cards with QA score badges and the F2 example prompt cards."
+    },
+    {
+      "name": "workbench-version-timeline-and-rollback",
+      "route": "/projects/[projectId]",
+      "waitFor": "main",
+      "notes": "Create or select a project in the same deviceId context, complete a mock follow-up, and inspect the chronological version timeline, summaries, QA badges, rollback action, and restored preview/code."
+    },
+    {
+      "name": "public-read-only-share",
+      "route": "/share/[shareSlug]",
+      "waitFor": "main",
+      "notes": "Open a minted share URL in a fresh browser context without the owner's deviceId cookie. Inspect the current version preview and code and confirm the page exposes no mutation controls."
+    }
+  ],
+  "captureNotes": "Run with LLM_PROVIDER=mock. Project and share captures require creating the project and share link in the same owner context before opening the share route in a clean context."
+}

@@ -1,0 +1,10 @@
+{
+  "score": 1,
+  "note": "Pitfall absent (RL-3): first paint for a fresh device shows two completed seeded project cards with visible QA scores (94 分, 96 分) — not an empty or ambiguous project grid. Capture + journey home screenshots confirm.",
+  "artifacts": [
+    ".harness/tasks/iterate-versions/evidence/c1-2/home-seeded-project-grid.png",
+    ".harness/tasks/iterate-versions/evidence/c1-2-browser/home-seeded-project-grid.png"
+  ],
+  "verify": ["typecheck", "lint", "unit", "build", "e2e"],
+  "heuristics": []
+}

@@ -1,0 +1,40 @@
+[
+  {
+    "id": "TASK-1",
+    "title": "Design-system pass, reduced-motion, and responsive card/code readability",
+    "requirements": ["REQ-1", "REQ-3"],
+    "checks": [
+      "LLM_PROVIDER=mock pnpm exec playwright test e2e/polish.spec.ts --grep \"visual-system|reduced-motion|card-clip|a11y|no-page-overflow\"",
+      "pnpm typecheck"
+    ]
+  },
+  {
+    "id": "TASK-2",
+    "title": "Follow-up UX and complete empty/loading/error/replay states",
+    "requirements": ["REQ-2"],
+    "checks": [
+      "LLM_PROVIDER=mock pnpm exec playwright test e2e/polish.spec.ts --grep \"follow-up|qa-rounds|演示回放|ux-states|follow-up-disabled|share-read-only\"",
+      "pnpm typecheck"
+    ]
+  },
+  {
+    "id": "TASK-3",
+    "title": "Preview performance headers, idle wasm preload, and mobile width toggle",
+    "requirements": ["REQ-4", "REQ-5"],
+    "checks": [
+      "pnpm exec vitest run src/lib/preview",
+      "LLM_PROVIDER=mock pnpm exec playwright test e2e/polish.spec.ts --grep \"preview-width|sandbox\"",
+      "pnpm typecheck"
+    ]
+  },
+  {
+    "id": "TASK-4",
+    "title": "Delivery docs and China CDN reachability audit",
+    "requirements": ["REQ-6", "REQ-7"],
+    "checks": [
+      "test -f README.md && test -f docs/DELIVERY.md && (test -f docs/writeup.md || test -L docs/writeup.md)",
+      "LLM_PROVIDER=mock pnpm exec playwright test e2e/polish.spec.ts --grep \"cdn-audit\"",
+      "fh verify"
+    ]
+  }
+]

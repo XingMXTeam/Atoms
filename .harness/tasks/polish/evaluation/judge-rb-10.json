@@ -1,0 +1,21 @@
+{
+  "score": 1,
+  "note": "Pitfall absent (ANTI-1 a11y): primary interactive controls show visible focus rings; tabs labelled; share preview iframe has title 应用预览 and sandbox allow-scripts.",
+  "artifacts": [
+    ".harness/tasks/polish/evidence/c1-2-browser/home-focus-submit.png",
+    ".harness/tasks/polish/evidence/c1-2-browser/workbench-focus-tab.png",
+    ".harness/tasks/polish/evidence/c1-2-browser/share-read-only-polish.png",
+    ".harness/tasks/polish/evidence/c1-2-browser/journey-results.json"
+  ],
+  "verify": [
+    "typecheck",
+    "lint",
+    "unit",
+    "build",
+    "e2e"
+  ],
+  "heuristics": [
+    "H-UX-6.3",
+    "H-UI-7.2"
+  ]
+}

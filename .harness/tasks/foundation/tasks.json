@@ -1,0 +1,51 @@
+[
+  {
+    "id": "TASK-1",
+    "title": "Lock Chinese home + OpenNext/Workers config + env example",
+    "requirements": ["REQ-1", "REQ-2", "REQ-7"],
+    "checks": [
+      "pnpm typecheck",
+      "pnpm exec vitest run src/lib/cn.test.ts",
+      "test -f .env.example",
+      "rg -n \"atoms.maoxunxing.com|aws:us-east-1|initOpenNextCloudflareForDev\" wrangler.jsonc next.config.ts open-next.config.ts"
+    ]
+  },
+  {
+    "id": "TASK-2",
+    "title": "Drizzle schema + repository with better-sqlite3 adapter",
+    "requirements": ["REQ-3"],
+    "checks": [
+      "pnpm exec vitest run src/lib/db",
+      "pnpm typecheck"
+    ]
+  },
+  {
+    "id": "TASK-3",
+    "title": "Anonymous deviceId cookie mint/read and row scoping",
+    "requirements": ["REQ-4"],
+    "checks": [
+      "pnpm exec vitest run src/lib/auth",
+      "pnpm typecheck"
+    ]
+  },
+  {
+    "id": "TASK-4",
+    "title": "LLM provider modes + daily rate-limit gates",
+    "requirements": ["REQ-5", "REQ-6"],
+    "checks": [
+      "pnpm exec vitest run src/lib/llm src/lib/limits",
+      "pnpm typecheck"
+    ]
+  },
+  {
+    "id": "TASK-5",
+    "title": "Wire verify suite: unit coverage, e2e smoke, build green",
+    "requirements": ["REQ-8", "REQ-1", "REQ-4"],
+    "checks": [
+      "pnpm typecheck",
+      "pnpm lint",
+      "pnpm test",
+      "pnpm build"
+    ]
+  }
+]

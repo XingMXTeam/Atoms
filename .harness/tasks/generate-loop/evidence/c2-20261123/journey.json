@@ -1,0 +1,36 @@
+{
+  "projectUrl": "http://localhost:3000/projects/0b0795cc-7bf3-4385-8361-9ef0a2ccab21?run=0225067b-0b14-4a40-97b1-05d812436215",
+  "timelineCards": 3,
+  "payloadButtons": 3,
+  "finishedStatus": "completed",
+  "successHasContinue": 0,
+  "sandbox": "allow-scripts",
+  "paintProbe": "我的待办 添加 体验 Atoms Studio",
+  "codeHasFileContent": true,
+  "externalRequests": [],
+  "exploratory": {
+    "doubleSubmitResponses": [
+      200
+    ],
+    "longInputLength": 1109,
+    "longSubmitDisabled": false,
+    "emptySubmitDisabled": true
+  },
+  "api": [
+    {
+      "case": "POST /api/projects valid prompt",
+      "status": 200,
+      "body": "{\"projectId\":\"55c80ffb-84ef-4c69-b6cb-a75a344dc1bd\",\"runId\":\"dfee2867-2f01-49bf-945b-28e24e1b2d05\",\"mode\":\"mock\"}"
+    },
+    {
+      "case": "POST /api/projects empty prompt",
+      "status": 400,
+      "body": "{\"messageZh\":\"请输入需求后再开始生成\"}"
+    },
+    {
+      "case": "POST /api/projects malformed JSON",
+      "status": 400,
+      "body": "{\"messageZh\":\"请输入需求后再开始生成\"}"
+    }
+  ]
+}

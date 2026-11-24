@@ -1,0 +1,19 @@
+{
+  "score": 0.5,
+  "note": "Follow-up completion is clear in the Chinese workbench: after continue, the 版本 timeline shows a new child with summary «已为待办加入优先级标签。» and «QA 100 分» (workbench-version-timeline.png; journey E2E-1 codeHasPriority). The follow-up *action* itself is not discoverable in the UI — workbench-initial.png has only 下载 ZIP / 创建只读分享链接, so the owner path relies on the continue API (H-UX-6.1). Core result works; interaction incomplete.",
+  "artifacts": [
+    ".harness/tasks/iterate-versions/evidence/c1-2-browser/workbench-initial.png",
+    ".harness/tasks/iterate-versions/evidence/c1-2-browser/workbench-version-timeline.png",
+    ".harness/tasks/iterate-versions/evidence/c1-2-browser/journey-results.json"
+  ],
+  "verify": ["typecheck", "lint", "unit", "build", "e2e"],
+  "heuristics": ["H-UX-6.1"],
+  "rubricRefinementSuggestions": [
+    {
+      "type": "add",
+      "item": "RB-2",
+      "problem": "Follow-up can fully pass via API without any workbench composer, so discoverability is untested",
+      "suggestion": "Add an L4 essential: owner workbench exposes a Chinese follow-up input + send that starts a continue run"
+    }
+  ]
+}

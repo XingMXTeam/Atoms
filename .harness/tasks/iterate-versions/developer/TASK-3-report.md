@@ -1,0 +1,9 @@
+# TASK-3 implementation report
+
+- **Task:** Expose cookie-free read-only project sharing.
+- **Commit:** `25187b3`
+- **Changed files:** `src/app/api/projects/[projectId]/share/route.ts`, `src/app/api/projects/[projectId]/versions/route.ts`, `src/app/share/[shareSlug]/page.tsx`, `src/components/share/shared-project.tsx`, `src/components/workbench/workbench-client.tsx`, `src/lib/db/adapters/sqlite.ts`, `src/lib/db/repository.test.ts`, `src/lib/db/repository.ts`, `src/lib/db/schema.ts`, `e2e/iterate-versions.spec.ts`.
+- **Behavior:** Owner-authenticated share creation reuses a cryptographically random, unique slug. The dynamic public share route resolves the project's current immutable snapshot without reading the owner cookie and sends only title, summary, score, and files to the read-only preview/code view. Sharing is unavailable until a current version exists. Unauthenticated rollback requests return 401, and requests with a different device identity return 403.
+- **Checks:** `pnpm exec vitest run src/lib/db/repository.test.ts` → 1 test file passed, 5 tests passed; `pnpm typecheck` → passed; `pnpm exec playwright test e2e/iterate-versions.spec.ts` → 1 passed, 0 failed; `pnpm build` → passed; `pnpm lint` → 0 errors, 1 existing warning in `src/components/workbench/agent-timeline.test.tsx` (`_url` unused); `git diff --check` → passed.
+- **Root cause:** Middleware mints a visitor `deviceId` cookie on the public share response, so the subsequent owner-scoped rollback request had a mismatched cookie and returned 404. The rollback route now returns 403 for that ownership mismatch and 401 when no cookie is present.
+- **Decisions:** The public page deliberately omits owner identity and all mutation controls. A unique index enforces slug uniqueness in both repository schema and local SQLite initialization.

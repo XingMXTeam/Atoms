@@ -1,0 +1,7 @@
+{
+  "score": 1,
+  "note": "The post-submit Preview screenshot contains rendered mock app pixels, and the independent accessible paint probe reads 我的待办 添加 体验 Atoms Studio. This satisfies RL-3's non-blank preview condition.",
+  "artifacts": [".harness/tasks/generate-loop/evidence/c2-confirm-20261123/workbench-preview.png", ".harness/tasks/generate-loop/evaluation/e2e-cases-c2.md", ".harness/tasks/generate-loop/evidence/c2-confirm-20261123/exploratory-results.json"],
+  "verify": ["typecheck", "lint", "unit", "e2e", "build"],
+  "heuristics": ["H-UI-6.1", "H-UI-7.2", "H-PR-3.1"]
+}

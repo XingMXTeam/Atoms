@@ -1,0 +1,14 @@
+HTTP/1.1 200 OK
+Content-Length: 13978850
+Accept-Ranges: bytes
+Cache-Control: public, max-age=31536000, immutable
+Connection: keep-alive
+Content-Type: application/wasm
+Date: Mon, 23 Nov 2026 20:32:11 GMT
+Etag: W/"d54ce2-1a20817e9b6"
+Keep-Alive: timeout=4
+Last-Modified: Mon, 23 Nov 2026 11:08:34 GMT
+Proxy-Connection: keep-alive
+Set-Cookie: deviceId=d7b6e568-15df-41de-b75c-553f91bf096e; Path=/; Max-Age=31536000; HttpOnly; SameSite=Lax
+Vary: Accept-Encoding
+
