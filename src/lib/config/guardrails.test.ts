@@ -28,7 +28,15 @@ describe("production reliability guardrails", () => {
       expect(instruction).toContain("localStorage");
       expect(instruction).toMatch(/严禁.*document\.cookie/);
       expect(instruction).toMatch(/preventDefault|onClick/);
+      expect(instruction).toContain("*.test.tsx");
     }
+
+    const qaPrompt = buildPromptForStage({
+      stage: "qa",
+      acceptance: ["AC-1"],
+    }).systemInstruction;
+    expect(qaPrompt).toContain(".test.tsx");
+    expect(qaPrompt).toContain("vitest");
 
     const srcdoc = buildPreviewSrcdoc("console.log(1)", "", "", "", {
       demo: "1",

@@ -64,8 +64,17 @@ export default async function WorkbenchPage({
   const versions = await repo.listVersions(projectId);
   const initialProjectState = await repo.getProjectState(projectId);
 
-  const preferredRunId = runIdFromQuery ?? version?.runId ?? null;
-  const run = preferredRunId ? await repo.getRun(preferredRunId) : null;
+  const latestRun =
+    !runIdFromQuery && !version?.runId
+      ? await repo.getLatestRun(projectId)
+      : null;
+  const preferredRunId =
+    runIdFromQuery ?? version?.runId ?? latestRun?.id ?? null;
+  const run = preferredRunId
+    ? latestRun && latestRun.id === preferredRunId
+      ? latestRun
+      : await repo.getRun(preferredRunId)
+    : null;
   if (runIdFromQuery && (!run || run.projectId !== projectId)) {
     notFound();
   }
@@ -79,13 +88,19 @@ export default async function WorkbenchPage({
     initialFiles = filesFromVersion(version.files);
   } else if (runId) {
     const events = await repo.listAgentEvents(runId);
-    const engineerFile = [...events]
+    const latestFileEvent = [...events]
       .reverse()
-      .find((e) => e.agent === "engineer" && e.type === "file");
-    if (engineerFile) {
-      initialFiles = filesFromVersion(
-        (engineerFile.payload as { files?: unknown } | null)?.files,
+      .find(
+        (e) =>
+          (e.agent === "qa" && e.type === "fix") ||
+          (e.agent === "engineer" && e.type === "file"),
       );
+    if (latestFileEvent) {
+      const payload = latestFileEvent.payload as {
+        currentFiles?: unknown;
+        files?: unknown;
+      } | null;
+      initialFiles = filesFromVersion(payload?.currentFiles ?? payload?.files);
     }
   }
 
