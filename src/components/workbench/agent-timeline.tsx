@@ -365,9 +365,10 @@ export function AgentTimeline({
             currentFiles?: unknown;
             exhausted?: unknown;
           } | null;
-          const files = event.agent === "qa"
-            ? extractFiles({ files: payload?.currentFiles })
-            : extractFiles(event.payload);
+          // Prefer the server-merged full file set; fall back to raw files for legacy events.
+          const files =
+            extractFiles({ files: payload?.currentFiles }) ??
+            (event.agent === "engineer" ? extractFiles(event.payload) : null);
           if (files) onFilesRef.current?.(files);
           if (payload?.exhausted !== true) {
             setErrorMessage(null);

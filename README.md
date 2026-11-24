@@ -7,7 +7,7 @@ Atoms Studio 是一个面向 mainland-China 可达网络的演示产品：用可
 ## 架构概览
 
 - **App shell**: Next.js App Router + TypeScript，中文界面，light/dark 跟随 `prefers-color-scheme`。
-- **Agent loop**: 服务端 SSE 流水线；Provider 模式 `gemini` / `mock` / `replay`（首轮 Gemini 失败或配额不足时自动回退并标注「演示回放」；增量迭代显式报错保护现有版本）。流水线实时统计 Gemini `usageMetadata` token 用量，并在 QA 环节通过 `POST /api/.../probe` + D1 `preview_probes` 接入浏览器沙箱真实 DOM/错误探测报告（超时回退到服务端静态探测）。
+- **Agent loop**: 服务端 SSE 流水线；Provider 模式 `gemini` / `mock` / `replay`（默认采用低成本 Gemini Flash/Lite，配额耗尽、鉴权失败或上游异常时自动切换 DeepSeek 实时兜底，主备均不可用时首轮回退到高质量「演示回放」，增量迭代显式报错保护现有版本）。流水线实时统计上游 `usageMetadata` / `usage` token 用量，并在 QA 环节通过 `POST /api/.../probe` + D1 `preview_probes` 接入浏览器沙箱真实 DOM/错误探测报告（超时回退到服务端静态探测）。
 - **Preview (Plan A)**: 浏览器内 `esbuild-wasm` 打包 + `sandbox="allow-scripts allow-forms"`（严禁 `allow-same-origin`）iframe 预览。**不使用 WebContainer。**
 - **China reachability**: 运行时不依赖外部 CDN。`esbuild.wasm`、白名单 ESM vendor、Tailwind 浏览器构建均自托管在同源 `/preview/*`。
 - **Persistence**: Cloudflare D1 + Drizzle（本地/e2e 用 better-sqlite3，同一 repository 接口）。

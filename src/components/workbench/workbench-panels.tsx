@@ -23,7 +23,7 @@ type WorkbenchPanelsProps = {
   activeTab?: TabId;
   onTabChange?: (tab: TabId) => void;
   onRestore: (versionId: string) => void;
-  onProbeReport?: (report: PreviewProbeReport) => void;
+  onProbeReport?: (report: PreviewProbeReport, sourceFiles: CodeFile[]) => void;
 };
 
 export function WorkbenchPanels({

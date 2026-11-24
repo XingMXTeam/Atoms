@@ -85,4 +85,36 @@ describe("structured QA verdicts", () => {
       }),
     ).rejects.toThrow();
   });
+
+  it("accepts empty or null fixInstruction when all criteria pass and omits it from QaResult", async () => {
+    for (const emptyValue of ["", "   ", null]) {
+      const provider: LlmProvider = {
+        mode: "mock",
+        async complete() {
+          return {
+            text: JSON.stringify({
+              verdicts: [
+                { criterion: "页面显示标题", verdict: "pass", reason: "标题可见" },
+              ],
+              fixInstruction: emptyValue,
+            }),
+            meta: { mode: "mock" },
+          };
+        },
+      };
+
+      const result = await runQa(provider, {
+        acceptance: ["页面显示标题"],
+        probe: healthyProbe,
+      });
+
+      expect(result).toEqual({
+        verdicts: [
+          { criterion: "页面显示标题", verdict: "pass", reason: "标题可见" },
+        ],
+        qa_score: 100,
+      });
+      expect("fixInstruction" in result).toBe(false);
+    }
+  });
 });

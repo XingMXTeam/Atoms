@@ -20,11 +20,12 @@ import {
 
 type PreviewPaneProps = {
   files: PreviewFile[];
-  onProbeReport?: (report: PreviewProbeReport) => void;
+  /** `sourceFiles` identifies which file set produced the report (stale-probe guard). */
+  onProbeReport?: (report: PreviewProbeReport, sourceFiles: PreviewFile[]) => void;
 };
 
 type BundleResult =
-  | { status: "ready"; srcdoc: string; filesRef: PreviewFile[] }
+  | { status: "ready"; srcdoc: string; filesRef: PreviewFile[]; generation: number }
   | { status: "error"; messageZh: string; filesRef: PreviewFile[] };
 
 type PreviewPaintMessage = {
@@ -38,6 +39,9 @@ export function PreviewPane({ files, onProbeReport }: PreviewPaneProps) {
   const [paintedText, setPaintedText] = useState("");
   const [widthMode, setWidthMode] = useState<PreviewWidthMode>("desktop");
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  // Files that produced the currently mounted iframe; probes are attributed to them.
+  const renderedFilesRef = useRef<PreviewFile[] | null>(null);
+  const generationRef = useRef(0);
 
   useEffect(() => scheduleEsbuildWasmPreload(), []);
 
@@ -53,7 +57,8 @@ export function PreviewPane({ files, onProbeReport }: PreviewPaneProps) {
       if (cancelled) return;
       if (!result.ok) {
         setPaintedText("");
-        onProbeReport?.(createCompileErrorProbeReport(result.messageZh));
+        renderedFilesRef.current = files;
+        onProbeReport?.(createCompileErrorProbeReport(result.messageZh), files);
         setBundle({
           status: "error",
           messageZh: result.messageZh,
@@ -62,8 +67,11 @@ export function PreviewPane({ files, onProbeReport }: PreviewPaneProps) {
         return;
       }
       setPaintedText("");
+      renderedFilesRef.current = files;
+      generationRef.current += 1;
       setBundle({
         status: "ready",
+        generation: generationRef.current,
         srcdoc: buildPreviewSrcdoc(
           result.js,
           result.css,
@@ -84,7 +92,9 @@ export function PreviewPane({ files, onProbeReport }: PreviewPaneProps) {
       const data = event.data;
       if (event.source !== iframeRef.current?.contentWindow) return;
       const report = isPreviewProbeMessage(event, iframeRef.current?.contentWindow);
-      if (report) onProbeReport?.(report);
+      if (report && renderedFilesRef.current) {
+        onProbeReport?.(report, renderedFilesRef.current);
+      }
       if (!data || typeof data !== "object") return;
       const message = data as PreviewPaintMessage;
       const text = message.text?.trim();
@@ -188,6 +198,9 @@ export function PreviewPane({ files, onProbeReport }: PreviewPaneProps) {
           </span>
         ) : null}
         <iframe
+          // Fresh element per bundle so late messages from a prior document
+          // cannot pass the event.source check and be attributed to new files.
+          key={bundle.generation}
           ref={iframeRef}
           title="应用预览"
           data-testid="preview-iframe"

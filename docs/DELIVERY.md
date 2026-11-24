@@ -23,10 +23,10 @@
 
 ### LLM 与区域
 
-- Gemini **只走服务端** REST SSE；前端永不接触密钥。
+- Gemini / DeepSeek **只走服务端** REST SSE；前端永不接触密钥。
 - Worker 固定 `placement.region = "aws:us-east-1"`，避开部分区域（例如 HKG）对 Gemini 出口的限制。
-- Provider 三态：`gemini`（生产）、`mock`（确定性 e2e）、`replay`（首轮错误/配额自动回退，UI 标注「演示回放」；增量追问拒绝破坏性回退，保留既有版本）。
-- 基于真实 `usageMetadata` 统计 `tokens_in / tokens_out` 与每日 `usage.tokens`，联合 `DEVICE_DAILY_RUN_LIMIT` 与 `DAILY_TOKEN_CAP` 在 SSE 入口执行限流降级。
+- Provider 三态：`gemini`（生产主链 + `DEEPSEEK_API_KEY` 二级实时兜底）、`mock`（确定性 e2e）、`replay`（主备均不可用时首轮自动回退至高质量待办示例并在 UI 标注「演示回放」；增量追问拒绝破坏性回退，保留既有版本）。
+- 基于真实 `usageMetadata` / DeepSeek `usage` 统计 `tokens_in / tokens_out` 与每日 `usage.tokens`，联合 `DEVICE_DAILY_RUN_LIMIT` 与 `DAILY_TOKEN_CAP` 在 SSE 入口执行限流降级。
 
 ### Harness-in-product
 
@@ -58,7 +58,7 @@
 ### 已知限制
 
 - 生成规模有意受限（少量文件的前端原型），不是任意全栈应用工厂；预览运行于 `sandbox="allow-scripts allow-forms"`（无 `allow-same-origin`），不开放 `localStorage`。
-- Live Gemini 质量受模型波动影响；首次生成兜底依赖 `mock` / `replay`，增量追问遇到上游失败则直接报错并保留当前版本。
+- 实时模型质量受上游模型波动影响；主模型遇到额度/鉴权/网络故障时自动切换 DeepSeek 实时备选，仅在所有实时模型都不可用时首次生成回退到 `replay`，增量追问则直接报错并保留当前版本。
 - 若浏览器端在轮询窗口（第 0 轮 12s / 后续轮 6s）内未提交 `POST /probe`，QA 自动回退到服务端静态探测。
 - OpenNext 增量缓存目前使用 dummy override，未接 R2。
 - 移动端是预览框宽度约束，不是独立响应式产品站。
@@ -107,6 +107,7 @@ npx wrangler d1 migrations apply atoms-demo --remote
 ```bash
 # 交互写入；不要在 shell history 文档里粘贴真实值
 npx wrangler secret put GEMINI_API_KEY
+npx wrangler secret put DEEPSEEK_API_KEY   # 可选：Gemini 不可用时的实时二级兜底
 
 # 可选：在 Dashboard / wrangler 中设置
 #   LLM_PROVIDER=gemini
@@ -134,7 +135,7 @@ npx wrangler deploy
 1. 打开 https://atoms.maoxunxing.com — 中文首页与「我的项目」示例可见。
 2. 生成一个简单应用，确认 Agent 时间线与预览。
 3. 开发者工具 Network：无外部 CDN 主机名。
-4. 人为制造 Gemini 失败/配额场景时，应出现「演示回放」而不是白屏。
+4. 当 Gemini 与 DeepSeek 同时失效或未配置可用密钥时，首轮应出现「演示回放」而不是白屏。
 
 ---
 
