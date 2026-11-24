@@ -256,6 +256,7 @@ export async function runAgentPipeline(
     let qaRounds = 0;
     let exhausted = false;
     let qaResult: QaResult;
+    let prevFailureSignature: string | null = null;
 
     while (true) {
       const probeStarted = Date.now();
@@ -308,6 +309,43 @@ export async function runAgentPipeline(
 
       const needsRepair = hasProbeFailure(probe) || hasQaFailure(qaResult);
       if (!needsRepair) break;
+
+      const failureSignature = JSON.stringify({
+        compile: probe.compileErrors,
+        runtime: probe.runtimeErrors,
+        blank: probe.blankScreen,
+        failedCriteria: qaResult.verdicts
+          .filter((v) => v.verdict === "fail")
+          .map((v) => v.criterion)
+          .sort(),
+      });
+      const stalled =
+        qaRounds > 0 &&
+        prevFailureSignature !== null &&
+        failureSignature === prevFailureSignature &&
+        !hasProbeFailure(probe);
+      prevFailureSignature = failureSignature;
+
+      if (stalled) {
+        exhausted = true;
+        await persistEvent(
+          repo,
+          {
+            runId,
+            seq: nextSeq(),
+            agent: "qa",
+            type: "fix",
+            payload: {
+              round: qaRounds,
+              exhausted: true,
+              messageZh: "连续两轮判定无变化，已停止自动重试，可直接在下方补充需求继续修改",
+              qa_score: qaResult.qa_score,
+            },
+          },
+          onEvent,
+        );
+        break;
+      }
       const fixInstruction =
         qaResult.fixInstruction ??
         (hasProbeFailure(probe)

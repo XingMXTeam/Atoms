@@ -34,6 +34,7 @@ type AgentTimelineProps = {
   onQaRoundsChange?: (rounds: number) => void;
   onProviderLabel?: (label: string | null) => void;
   onRunIdChange?: (runId: string) => void;
+  onTitleChange?: (title: string) => void;
 };
 
 function extractFiles(payload: unknown): GeneratedFile[] | null {
@@ -188,6 +189,7 @@ export function AgentTimeline({
   onQaRoundsChange,
   onProviderLabel,
   onRunIdChange,
+  onTitleChange,
 }: AgentTimelineProps) {
   const [runId, setRunId] = useState(initialRunId);
   const initialStatus = (initialRunStatus as RunStatus) || "running";
@@ -214,6 +216,7 @@ export function AgentTimeline({
   const onQaRoundsChangeRef = useRef(onQaRoundsChange);
   const onProviderLabelRef = useRef(onProviderLabel);
   const onRunIdChangeRef = useRef(onRunIdChange);
+  const onTitleChangeRef = useRef(onTitleChange);
   const skippedInitialInterrupted = useRef(
     initialRunStatus === "interrupted",
   );
@@ -254,6 +257,10 @@ export function AgentTimeline({
   useEffect(() => {
     onRunIdChangeRef.current = onRunIdChange;
   }, [onRunIdChange]);
+
+  useEffect(() => {
+    onTitleChangeRef.current = onTitleChange;
+  }, [onTitleChange]);
 
   useEffect(() => {
     onRunStatusChangeRef.current?.(runStatus);
@@ -343,6 +350,18 @@ export function AgentTimeline({
             onProviderLabelRef.current?.("演示回放");
           }
         }
+        if (
+          event.agent === "planner" &&
+          event.type === "plan" &&
+          event.payload &&
+          typeof event.payload === "object"
+        ) {
+          const planTitle = (event.payload as { title?: unknown }).title;
+          if (typeof planTitle === "string" && planTitle.trim().length > 0) {
+            onTitleChangeRef.current?.(planTitle.trim());
+          }
+        }
+
         if (event.agent === "qa") {
           setQaEvents((prev) =>
             prev.some((existing) => existing.id === event.id)
@@ -585,9 +604,23 @@ export function AgentTimeline({
         ? "连接已中断。可点击「继续」重新生成。"
         : null;
   const exhaustedBanner =
-    !showContinue && errorMessage === "已达修复上限" ? errorMessage : null;
+    !showContinue &&
+    errorMessage &&
+    (errorMessage === "已达修复上限" || errorMessage.includes("停止自动重试"))
+      ? errorMessage
+      : null;
   const followUpDisabled =
     runStatus === "running" || continuePending || followUpPending;
+  const engineerCompleted =
+    cards.find((card) => card.agent === "engineer")?.status === "completed";
+  const qaCardStatus: AgentCardStatus =
+    runStatus === "running"
+      ? qaEvents.length > 0 || engineerCompleted
+        ? "running"
+        : "pending"
+      : runStatus === "failed"
+        ? "error"
+        : runStatus;
 
   return (
     <aside
@@ -617,13 +650,7 @@ export function AgentTimeline({
         ))}
         <QaTimelineCard
           events={qaEvents}
-          status={
-            runStatus === "running" && qaEvents.length > 0
-              ? "running"
-              : runStatus === "failed"
-                ? "error"
-                : runStatus
-          }
+          status={qaCardStatus}
         />
       </div>
 
@@ -638,13 +665,16 @@ export function AgentTimeline({
       ) : null}
 
       {exhaustedBanner ? (
-        <p
+        <div
           data-testid="ux-banner-qa-cap"
-          className="text-sm text-amber-700 dark:text-amber-300"
+          className="rounded-xl border border-amber-200/80 bg-amber-50/80 px-3 py-2 text-xs leading-5 text-amber-800 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200"
           role="status"
         >
-          {exhaustedBanner}
-        </p>
+          <p className="font-medium">{exhaustedBanner}</p>
+          <p className="mt-0.5 text-amber-700/90 dark:text-amber-300/90">
+            你可以在下方「后续需求」中输入修改指令继续迭代，或直接接受当前预览版本。
+          </p>
+        </div>
       ) : null}
 
       {showContinue ? (

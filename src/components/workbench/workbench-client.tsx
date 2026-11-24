@@ -11,6 +11,7 @@ type RunStatus = "running" | "completed" | "interrupted" | "failed";
 
 type WorkbenchClientProps = {
   projectId: string;
+  initialTitle: string;
   initialRunId: string;
   initialRunStatus?: string;
   initialRunQaRounds: number;
@@ -40,6 +41,7 @@ function statusLabelZh(status: RunStatus | string): string {
 
 export function WorkbenchClient({
   projectId,
+  initialTitle,
   initialRunId,
   initialRunStatus,
   initialRunQaRounds,
@@ -53,10 +55,12 @@ export function WorkbenchClient({
   initialVersions,
   initialProviderLabel = null,
 }: WorkbenchClientProps) {
+  const [projectTitle, setProjectTitle] = useState(initialTitle);
   const [files, setFiles] = useState<CodeFile[]>(initialFiles);
   const [qaScore, setQaScore] = useState<number | null>(initialQaScore);
   const [qaRounds, setQaRounds] = useState(initialRunQaRounds);
   const [activeRunId, setActiveRunId] = useState(initialRunId);
+  const [shareCopied, setShareCopied] = useState(false);
   const [providerLabel, setProviderLabel] = useState<string | null>(
     initialProviderLabel,
   );
@@ -260,9 +264,60 @@ export function WorkbenchClient({
   }, [projectId]);
 
   const hitQaCap = qaRounds >= 3;
+  const fullShareUrl =
+    shareUrl && typeof window !== "undefined"
+      ? `${window.location.origin}${shareUrl}`
+      : shareUrl;
+
+  const copyShareUrl = useCallback(async () => {
+    if (!fullShareUrl) return;
+    try {
+      await navigator.clipboard.writeText(fullShareUrl);
+      setShareCopied(true);
+      setTimeout(() => setShareCopied(false), 2500);
+    } catch {
+      setShareCopied(false);
+    }
+  }, [fullShareUrl]);
+
+  const handleTitleChange = useCallback(
+    (nextTitle: string) => {
+      // Sync Planner title on initial creation to match home page card (#15).
+      if (versions.length === 0 && nextTitle) {
+        setProjectTitle(nextTitle);
+      }
+    },
+    [versions.length],
+  );
 
   return (
     <div className="flex flex-col gap-4">
+      <div className="flex min-w-0 items-center justify-between gap-4">
+        <div className="min-w-0">
+          <p className="text-sm text-zinc-500 dark:text-zinc-400">工作台</p>
+          <h1
+            data-testid="workbench-project-title"
+            className="mt-1 truncate text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50"
+          >
+            {projectTitle}
+          </h1>
+          {activeRunId ? (
+            <p
+              data-testid="workbench-run-id"
+              className="mt-2 text-sm tabular-nums text-zinc-500 dark:text-zinc-400"
+            >
+              {/* Label avoids the substring 「运行中」 (false-match on completed). */}
+              编号 · {activeRunId}
+            </p>
+          ) : null}
+        </div>
+        <Link
+          href="/"
+          className="atoms-focus-ring shrink-0 rounded-full border border-zinc-200 px-4 py-2 text-sm text-zinc-700 transition hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900"
+        >
+          返回首页
+        </Link>
+      </div>
       {providerLabel === "演示回放" ? (
         <p
           data-testid="ux-banner-replay"
@@ -335,12 +390,22 @@ export function WorkbenchClient({
           {sharing ? "正在创建…" : "创建只读分享链接"}
         </button>
         {shareUrl ? (
-          <Link
-            href={shareUrl}
-            className="break-all text-sm text-blue-700 underline underline-offset-2 dark:text-blue-300"
-          >
-            {shareUrl}
-          </Link>
+          <div className="flex flex-wrap items-center gap-2">
+            <Link
+              href={shareUrl}
+              className="break-all text-sm text-blue-700 underline underline-offset-2 dark:text-blue-300"
+            >
+              {fullShareUrl}
+            </Link>
+            <button
+              type="button"
+              data-testid="share-copy-btn"
+              onClick={copyShareUrl}
+              className="atoms-focus-ring rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-xs font-medium text-zinc-700 transition hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
+            >
+              {shareCopied ? "已复制" : "复制分享链接"}
+            </button>
+          </div>
         ) : null}
         {shareError ? (
           <p role="alert" className="text-sm text-red-700 dark:text-red-300">
@@ -364,6 +429,7 @@ export function WorkbenchClient({
           onQaRoundsChange={handleQaRoundsChange}
           onProviderLabel={setProviderLabel}
           onRunIdChange={handleRunIdChange}
+          onTitleChange={handleTitleChange}
         />
         <WorkbenchPanels
           projectId={projectId}

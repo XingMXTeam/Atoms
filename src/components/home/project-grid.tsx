@@ -15,12 +15,17 @@ type ProjectGridProps = {
 export function ProjectGrid({ projects }: ProjectGridProps) {
   return (
     <section className="w-full max-w-2xl min-w-0" aria-labelledby="my-projects-heading">
-      <h2
-        id="my-projects-heading"
-        className="mb-4 text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-50"
-      >
-        我的项目
-      </h2>
+      <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
+        <h2
+          id="my-projects-heading"
+          className="text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-50"
+        >
+          我的项目
+        </h2>
+        <p className="text-xs text-zinc-500 dark:text-zinc-400" data-testid="projects-storage-notice">
+          项目存于当前浏览器会话，清除缓存或换设备后将无法找回
+        </p>
+      </div>
 
       {projects.length === 0 ? (
         <p className="rounded-xl border border-dashed border-zinc-300 px-4 py-8 text-center text-sm text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">

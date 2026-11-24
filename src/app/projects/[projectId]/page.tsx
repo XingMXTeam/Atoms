@@ -106,30 +106,10 @@ export default async function WorkbenchPage({
 
   return (
     <main className="mx-auto flex w-full max-w-5xl min-w-0 flex-1 flex-col gap-6 overflow-x-clip px-4 py-10 sm:px-6">
-      <div className="flex min-w-0 items-center justify-between gap-4">
-        <div className="min-w-0">
-          <p className="text-sm text-zinc-500 dark:text-zinc-400">工作台</p>
-          <h1 className="mt-1 truncate text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
-            {project.title}
-          </h1>
-          {runId ? (
-            <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
-              {/* Label avoids the substring 「运行中」 (false-match on completed). */}
-              编号 · {runId}
-            </p>
-          ) : null}
-        </div>
-        <Link
-          href="/"
-          className="atoms-focus-ring shrink-0 rounded-full border border-zinc-200 px-4 py-2 text-sm text-zinc-700 transition hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900"
-        >
-          返回首页
-        </Link>
-      </div>
-
       {runId ? (
         <WorkbenchClient
           projectId={projectId}
+          initialTitle={project.title}
           initialRunId={runId}
           initialRunStatus={run?.status ?? "running"}
           initialRunQaRounds={run?.qaRounds ?? 0}
@@ -148,24 +128,40 @@ export default async function WorkbenchPage({
           }))}
         />
       ) : (
-        <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
-          <aside className="min-h-64 rounded-2xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950">
-            <p className="text-sm font-medium text-zinc-900 dark:text-zinc-50">
-              Agent 时间线
-            </p>
-            <p className="mt-2 text-sm leading-6 text-zinc-500 dark:text-zinc-400">
-              暂无运行记录。请从首页提交需求开始生成。
-            </p>
-          </aside>
-          <section className="min-h-64 rounded-2xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950">
-            <p className="text-sm font-medium text-zinc-900 dark:text-zinc-50">
-              预览 · 代码
-            </p>
-            <p className="mt-2 text-sm leading-6 text-zinc-500 dark:text-zinc-400">
-              提交需求后，这里会显示预览与代码。
-            </p>
-          </section>
-        </div>
+        <>
+          <div className="flex min-w-0 items-center justify-between gap-4">
+            <div className="min-w-0">
+              <p className="text-sm text-zinc-500 dark:text-zinc-400">工作台</p>
+              <h1 className="mt-1 truncate text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-50">
+                {project.title}
+              </h1>
+            </div>
+            <Link
+              href="/"
+              className="atoms-focus-ring shrink-0 rounded-full border border-zinc-200 px-4 py-2 text-sm text-zinc-700 transition hover:bg-zinc-50 dark:border-zinc-700 dark:text-zinc-200 dark:hover:bg-zinc-900"
+            >
+              返回首页
+            </Link>
+          </div>
+          <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
+            <aside className="min-h-64 rounded-2xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950">
+              <p className="text-sm font-medium text-zinc-900 dark:text-zinc-50">
+                Agent 时间线
+              </p>
+              <p className="mt-2 text-sm leading-6 text-zinc-500 dark:text-zinc-400">
+                暂无运行记录。请从首页提交需求开始生成。
+              </p>
+            </aside>
+            <section className="min-h-64 rounded-2xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950">
+              <p className="text-sm font-medium text-zinc-900 dark:text-zinc-50">
+                预览 · 代码
+              </p>
+              <p className="mt-2 text-sm leading-6 text-zinc-500 dark:text-zinc-400">
+                提交需求后，这里会显示预览与代码。
+              </p>
+            </section>
+          </div>
+        </>
       )}
     </main>
   );

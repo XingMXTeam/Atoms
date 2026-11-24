@@ -25,4 +25,28 @@ describe("createVersionZip", () => {
       await expect(createVersionZip([{ path, content: "unsafe" }])).rejects.toThrow();
     },
   );
+
+  it("includes runnable Vite + React + Tailwind scaffold when includeScaffold is true", async () => {
+    const archive = await createVersionZip(
+      [
+        { path: "src/main.tsx", content: 'import App from "./App";\n' },
+        { path: "src/App.tsx", content: "export default function App() { return null; }" },
+      ],
+      { includeScaffold: true, title: "我的待办" },
+    );
+    const zip = await JSZip.loadAsync(archive);
+
+    for (const required of [
+      "package.json",
+      "index.html",
+      "vite.config.ts",
+      "tsconfig.json",
+      "src/index.css",
+      "README.md",
+    ]) {
+      expect(zip.file(required)).not.toBeNull();
+    }
+    expect(await zip.file("index.html")?.async("string")).toContain("<title>我的待办</title>");
+    expect(await zip.file("src/main.tsx")?.async("string")).toContain('import "./index.css";');
+  });
 });

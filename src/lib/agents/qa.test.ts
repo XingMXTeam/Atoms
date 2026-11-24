@@ -117,4 +117,29 @@ describe("structured QA verdicts", () => {
       expect("fixInstruction" in result).toBe(false);
     }
   });
+
+  it("scores only verifiable criteria when unverified verdicts are present and reports coverage", async () => {
+    const provider: LlmProvider = {
+      mode: "mock",
+      async complete() {
+        return {
+          text: JSON.stringify({
+            verdicts: [
+              { criterion: "AC-1 展示 25:00", verdict: "pass", reason: "标题与 25:00 均已渲染" },
+              { criterion: "AC-2 25 分钟结束后响铃", verdict: "unverified", reason: "静态探针无法等待 25 分钟归零，需人工复核" },
+            ],
+          }),
+          meta: { mode: "mock" },
+        };
+      },
+    };
+
+    const result = await runQa(provider, {
+      acceptance: ["AC-1 展示 25:00", "AC-2 25 分钟结束后响铃"],
+      probe: healthyProbe,
+    });
+
+    expect(result.qa_score).toBe(100);
+    expect(result.coverage).toEqual({ verified: 1, unverified: 1, total: 2 });
+  });
 });
