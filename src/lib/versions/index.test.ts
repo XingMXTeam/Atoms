@@ -66,6 +66,14 @@ describe("version snapshots", () => {
       runId: run.id,
       prompt: "更新页面",
       currentVersion: { id: parent.id, files: parentFiles },
+      verifySandbox: async () => ({
+        backend: "worker-static-verifier",
+        isolated: false,
+        ok: true,
+        commands: [],
+        errors: [],
+        durationMs: 1,
+      }),
     });
 
     const child = await repo.getVersion(result.versionId);
@@ -104,6 +112,14 @@ describe("version snapshots", () => {
       runId: run.id,
       prompt: "没有变化",
       currentVersion: { id: parent.id, files },
+      verifySandbox: async () => ({
+        backend: "worker-static-verifier",
+        isolated: false,
+        ok: true,
+        commands: [],
+        errors: [],
+        durationMs: 1,
+      }),
     });
 
     expect(result.versionId).toBe(parent.id);

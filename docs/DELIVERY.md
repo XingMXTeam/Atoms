@@ -46,8 +46,8 @@
 |---|---|
 | 中文壳与视觉 | Home / Workbench / Share；light/dark；`prefers-reduced-motion` 关闭装饰动画 |
 | 多 Agent 时间线 | Planner / Architect / Engineer / QA 可见状态与事件 |
-| 生成 → 预览 | SSE 流水线 + esbuild-wasm 同源预览 |
-| QA 自修复 | 浏览器 `postMessage` 探针 + D1 `preview_probes` 回传 + 验收标准判定，≤3 轮（超时回退静态探测）；达上限展示「已达修复上限」 |
+| 生成 → 预览 & 持久化 | SSE 流水线 + esbuild-wasm 同源预览 + 安全 `postMessage` 存储桥（D1 `project_state` 持久化，整页刷新保留待办/进度，不放开 `allow-same-origin`） |
+| QA 自修复 & 后台沙箱 | 浏览器 `postMessage` 探针 + 可插拔后台执行沙箱（Cloudflare Sandbox / Node 隔离 `tsc --noEmit` / Worker 校验器）+ 验收标准判定，≤3 轮自修复；达上限展示「已达修复上限」 |
 | 迭代与版本 | 工作台 follow-up、版本时间线、回滚 |
 | 分享与导出 | 只读 `/share/[slug]`、ZIP 下载（进行中禁用反馈） |
 | 预览宽度 | `桌面` / `移动 375px`，沙箱仍保持无 `allow-same-origin` |
@@ -57,7 +57,8 @@
 
 ### 已知限制
 
-- 生成规模有意受限（少量文件的前端原型），不是任意全栈应用工厂；预览运行于 `sandbox="allow-scripts allow-forms"`（无 `allow-same-origin`），不开放 `localStorage`。
+- 生成规模有意受限（少量文件的前端原型），不是任意全栈应用工厂；预览运行于 `sandbox="allow-scripts allow-forms"`（无 `allow-same-origin`），通过安全 `postMessage` 桥代理 `localStorage` 并持久化到 D1 `project_state`（上限 64KB / 100 键，仍禁止 `document.cookie`）。
+- 后台执行沙箱采用分层可插拔架构：配置 `SANDBOX_BRIDGE_URL` 时走 Cloudflare Sandbox 容器（仓库提供 `Dockerfile.sandbox`），本地 Node 环境自动走隔离临时目录 + 脱敏环境变量执行真实 `tsc --noEmit`，Cloudflare Workers 未开通 Containers 时自动降级为服务端静态/策略校验器并透明标注。
 - 实时模型质量受上游模型波动影响；主模型遇到额度/鉴权/网络故障时自动切换 DeepSeek 实时备选，仅在所有实时模型都不可用时首次生成回退到 `replay`，增量追问则直接报错并保留当前版本。
 - 若浏览器端在轮询窗口（第 0 轮 12s / 后续轮 6s）内未提交 `POST /probe`，QA 自动回退到服务端静态探测。
 - OpenNext 增量缓存目前使用 dummy override，未接 R2。
@@ -134,7 +135,7 @@ npx wrangler d1 create atoms-demo
 
 ### 3. 迁移 schema
 
-仓库已包含迁移文件 `migrations/0000_init.sql` 与 `migrations/0001_preview_probes.sql`（与 `src/lib/db/schema.ts` 一致，并在 `wrangler.jsonc` 中配好 `migrations_dir`）。直接应用到远程 D1：
+仓库已包含迁移文件 `migrations/0000_init.sql`、`migrations/0001_preview_probes.sql` 与 `migrations/0002_project_state.sql`（与 `src/lib/db/schema.ts` 一致，并在 `wrangler.jsonc` 中配好 `migrations_dir`）。直接应用到远程 D1：
 
 ```bash
 npx wrangler d1 migrations apply atoms-demo --remote

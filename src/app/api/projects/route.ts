@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { DEVICE_ID_COOKIE, getOrMintDeviceId, isSecureRequestUrl } from "@/lib/auth/device-id";
-import { getDb } from "@/lib/db";
+import { d1BookmarkSetCookie, getDb, readD1Bookmark } from "@/lib/db";
 import { assertRateLimit, utcDay } from "@/lib/limits/rate-limit";
 
 export const runtime = "nodejs";
@@ -18,11 +18,12 @@ function titleFromPrompt(prompt: string): string {
 }
 
 export async function POST(request: Request) {
+  const secure = isSecureRequestUrl(request);
   const cookieStore = await cookies();
   const existing = cookieStore.get(DEVICE_ID_COOKIE)?.value;
   const { deviceId, setCookie } = getOrMintDeviceId(
     existing ? `${DEVICE_ID_COOKIE}=${existing}` : null,
-    { secure: isSecureRequestUrl(request) },
+    { secure },
   );
 
   let json: unknown;
@@ -43,7 +44,7 @@ export async function POST(request: Request) {
     );
   }
 
-  const repo = getDb();
+  const repo = getDb({ d1Session: "first-primary" });
   const day = utcDay();
 
   const decision = await assertRateLimit(deviceId, {
@@ -92,5 +93,9 @@ export async function POST(request: Request) {
 
   const response = NextResponse.json(payload);
   if (setCookie) response.headers.append("Set-Cookie", setCookie);
+  const bookmark = readD1Bookmark(repo);
+  if (bookmark) {
+    response.headers.append("Set-Cookie", d1BookmarkSetCookie(bookmark, secure));
+  }
   return response;
 }

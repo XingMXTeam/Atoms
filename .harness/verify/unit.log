@@ -1,45 +1,60 @@
 
  RUN  v5.1.1 /Users/felix/Documents/atoms-worktrees/demo
 
- ✓ src/lib/llm/provider.test.ts (3 tests) 90ms
- ✓ src/lib/llm/model-routing.test.ts (3 tests) 98ms
- ✓ src/lib/preview/bundle.test.ts (2 tests) 587ms
+ ✓ src/lib/preview/bundle.test.ts (2 tests) 530ms
    ✓ preview bundle (REQ-5 / REQ-6) (2)
-     ✓ bundles the mock React fixture as classic IIFE without remote hosts 585ms
- ✓ src/lib/db/repository.test.ts (7 tests) 173ms
- ✓ src/lib/agents/pipeline.test.ts (9 tests) 66ms
- ✓ src/lib/llm/modes/gemini.test.ts (9 tests) 1056ms
+     ✓ bundles the mock React fixture as classic IIFE without remote hosts 529ms
+ ✓ src/lib/db/repository.test.ts (8 tests) 107ms
+ ✓ src/components/workbench/qa-timeline-card.test.tsx (2 tests) 140ms
+ ✓ src/components/workbench/agent-card.test.tsx (3 tests) 124ms
+ ✓ src/components/workbench/follow-up-form.test.tsx (1 test) 78ms
+ ✓ src/lib/llm/model-routing.test.ts (3 tests) 89ms
+ ✓ src/components/workbench/agent-timeline.test.tsx (3 tests) 200ms
+ ✓ src/lib/llm/modes/gemini.test.ts (9 tests) 1045ms
    ✓ Gemini REST transport (REQ-5 / REQ-8) (9)
-     ✓ falls back to replay labelled 演示回放 on HTTP 429 or network error 1010ms
- ✓ src/components/workbench/agent-card.test.tsx (1 test) 103ms
- ✓ src/components/workbench/qa-timeline-card.test.tsx (2 tests) 284ms
- ✓ src/components/workbench/agent-timeline.test.tsx (3 tests) 293ms
- ✓ src/lib/db/repository.events.test.ts (5 tests) 35ms
- ✓ src/lib/limits/rate-limit.test.ts (4 tests) 10ms
- ✓ src/lib/agents/qa.test.ts (4 tests) 11ms
- ✓ src/components/workbench/follow-up-form.test.tsx (1 test) 56ms
+     ✓ falls back to replay labelled 演示回放 on HTTP 429 or network error 1003ms
+ ✓ src/lib/llm/provider.test.ts (3 tests) 97ms
+ ✓ src/lib/http/security-headers.test.ts (2 tests) 30ms
+ ✓ src/lib/limits/rate-limit.test.ts (4 tests) 6ms
+ ✓ src/lib/auth/device-id.test.ts (9 tests) 6ms
+ ✓ src/lib/config/foundation-lock.test.ts (5 tests) 6ms
+ ✓ src/lib/db/repository.events.test.ts (5 tests) 38ms
+ ✓ src/lib/agents/qa.test.ts (4 tests) 5ms
+ ✓ src/lib/preview/vendor.test.ts (2 tests) 4ms
+ ✓ src/lib/exports/index.test.ts (6 tests) 10ms
+ ✓ src/lib/sandbox/runner.test.ts (3 tests) 2207ms
+   ✓ backend execution sandbox (3)
+     ✓ runs real isolated tsc --noEmit on valid React TSX files and exits 0 1261ms
+     ✓ catches real TypeScript compile errors in isolated subprocess sandbox 944ms
+ ✓ src/lib/preview/storage-bridge.test.ts (3 tests) 4ms
  ✓ src/lib/config/guardrails.test.ts (3 tests) 5ms
- ✓ src/lib/auth/device-id.test.ts (7 tests) 7ms
- ✓ src/lib/exports/index.test.ts (6 tests) 14ms
- ✓ src/lib/preview/preload.test.ts (3 tests) 7ms
- ✓ src/lib/config/foundation-lock.test.ts (4 tests) 5ms
+ ✓ src/lib/preview/cache-headers.test.ts (4 tests) 3ms
  ✓ src/lib/agents/events.test.ts (4 tests) 3ms
- ✓ src/lib/versions/index.test.ts (3 tests) 34ms
+ ✓ src/lib/versions/index.test.ts (3 tests) 31ms
+ ✓ src/lib/preview/preload.test.ts (3 tests) 5ms
  ✓ src/lib/cn.test.ts (1 test) 7ms
- ✓ src/lib/llm/modes/mock.test.ts (1 test) 3ms
+ ✓ src/lib/time/shanghai.test.ts (1 test) 4ms
  ✓ src/lib/preview/probe.test.ts (4 tests) 5ms
- ✓ src/lib/preview/vendor.test.ts (2 tests) 3ms
- ✓ src/lib/preview/cache-headers.test.ts (3 tests) 3ms
  ✓ src/app/globals.css.test.ts (3 tests) 2ms
+ ✓ src/lib/llm/modes/mock.test.ts (1 test) 5ms
  ✓ src/lib/preview/sandbox.test.ts (2 tests) 2ms
  ✓ src/lib/preview/width.test.ts (2 tests) 2ms
+ ✓ src/lib/agents/pipeline.test.ts (9 tests) 4802ms
+   ✓ agent pipeline (REQ-3 / REQ-7 / REQ-8) (9)
+     ✓ emits Planner → Architect → Engineer events with monotonic seq and persists version 849ms
+     ✓ applies only repair deltas and stops after the preview passes 1084ms
+     ✓ caps repairs at three rounds and keeps the final score and version 1157ms
+     ✓ retries structured parse once on failure then succeeds 476ms
+     ✓ tags initial-run SSE events with providerLabel when replay fallback triggers 432ms
+     ✓ accumulates Gemini token usage onto run + device/global totals and forwards probe round 431ms
+     ✓ emits the merged full file set on follow-up engineer events so preview never loses main.tsx 357ms
 
- Test Files  28 passed (28)
-      Tests  101 passed (101)
-   Start at  09:35:26
-   Duration  3.31s (environment 50%, import 16%, setup 15%, tests 14%, transform 4%, worker 1%)
+ Test Files  32 passed (32)
+      Tests  117 passed (117)
+   Start at  12:43:13
+   Duration  6.12s (tests 36%, environment 34%, setup 14%, import 12%, transform 3%, worker 1%)
 
-Environment  jsdom was created 28 times · 10.73s total, 50% of tracked time
+Environment  jsdom was created 32 times · 9.18s total, 34% of tracked time
              create it once per worker with pool: 'vmThreads' (keeps per-file isolation) or isolate: false (shares it across files)
              learn more: https://vitest.dev/guide/improving-performance#test-environments
 
@@ -47,14 +62,6 @@ $ vitest run
 (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
   - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
 Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
-stderr | src/lib/llm/provider.test.ts > LLM provider (REQ-5) > gemini mode falls back to replay with 演示回放 when key is missing
-[gemini-fallback] {
-  stage: 'general',
-  modelId: 'gemini-3.1-flash-lite',
-  hasKey: false,
-  reason: 'missing_api_key'
-}
-
 stderr | src/lib/llm/modes/gemini.test.ts > Gemini REST transport (REQ-5 / REQ-8) > falls back to replay labelled 演示回放 on HTTP 429 or network error
 [gemini-fallback] {
   stage: 'planner',
@@ -121,6 +128,14 @@ stderr | src/lib/llm/modes/gemini.test.ts > Gemini REST transport (REQ-5 / REQ-8
 [gemini-fallback] {
   stage: 'engineer',
   modelId: 'gemini-3.8-flash',
+  hasKey: false,
+  reason: 'missing_api_key'
+}
+
+stderr | src/lib/llm/provider.test.ts > LLM provider (REQ-5) > gemini mode falls back to replay with 演示回放 when key is missing
+[gemini-fallback] {
+  stage: 'general',
+  modelId: 'gemini-3.1-flash-lite',
   hasKey: false,
   reason: 'missing_api_key'
 }

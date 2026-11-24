@@ -31,8 +31,11 @@ test.describe("iterate-versions workbench (REQ-2 / REQ-6)", () => {
     expect(followUp.ok()).toBe(true);
     const { runId } = (await followUp.json()) as { runId: string };
     await page.goto(`/projects/${projectId}?run=${runId}`);
-    await expect(page.getByTestId("agent-card-engineer").getByText("已完成"))
-      .toBeVisible({ timeout: 30_000 });
+    await expect(page.getByTestId("agent-timeline")).toHaveAttribute(
+      "data-run-status",
+      "completed",
+      { timeout: 30_000 },
+    );
     await page.reload();
     await expect(page.getByTestId("code-source")).toContainText("优先级");
 

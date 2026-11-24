@@ -1,16 +1,16 @@
 ▲ Next.js 16.4.6 (Turbopack)
-✓ Running next.config.ts took 824ms
+✓ Running next.config.ts took 739ms
 
   Creating an optimized production build ...
-✓ Compiled successfully in 887ms
+✓ Compiled successfully in 1146ms
   Running TypeScript ...
-  Finished TypeScript in 2.1s ...
+  Finished TypeScript in 1427ms ...
   Collecting page data using 9 workers ...
-  Generating static pages using 9 workers (0/4) ...
-  Generating static pages using 9 workers (1/4) 
-  Generating static pages using 9 workers (2/4) 
-  Generating static pages using 9 workers (3/4) 
-✓ Generating static pages using 9 workers (4/4) in 86ms
+  Generating static pages using 9 workers (0/6) ...
+  Generating static pages using 9 workers (1/6) 
+  Generating static pages using 9 workers (2/6) 
+  Generating static pages using 9 workers (4/6) 
+✓ Generating static pages using 9 workers (6/6) in 65ms
   Finalizing page optimization ...
 
 Route (app)
@@ -22,9 +22,13 @@ Route (app)
 ├ ƒ /api/projects/[projectId]/runs/[runId]/probe
 ├ ƒ /api/projects/[projectId]/runs/[runId]/stream
 ├ ƒ /api/projects/[projectId]/share
+├ ƒ /api/projects/[projectId]/state
 ├ ƒ /api/projects/[projectId]/versions
+├ ƒ /api/session/projects
 ├ ƒ /projects/[projectId]
-└ ƒ /share/[shareSlug]
+├ ○ /robots.txt
+├ ƒ /share/[shareSlug]
+└ ○ /sitemap.xml
 
 
 ƒ Proxy (Middleware)
@@ -36,22 +40,26 @@ $ next build
 [33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mProxy environment variables detected. We'll use your proxy for fetch requests.[0m
 
 
+Warning: Custom Cache-Control headers detected for the following routes:
+  - /_next/static/:path*
+
+Setting a custom Cache-Control header can break Next.js development behavior.
 ⚠ The "middleware" file convention is deprecated. Please use "proxy" instead.
 
   To migrate automatically, run:
   npx @next/codemod@canary middleware-to-proxy .
 
   Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
-Turbopack build encountered 2 warnings:
-./src/lib/db/adapters/sqlite.ts:13:5
+Turbopack build encountered 3 warnings:
+./src/lib/db/adapters/sqlite.ts:17:5
 Warning: Dynamic filesystem access causes tracing of the whole project
-  [90m11 |[0m   [36mconst[0m base = path.join([90m/*turbopackIgnore: true*/[0m process.cwd(), [32m"migrations"[0m);
-  [90m12 |[0m   [36mreturn[0m [33mMIGRATION_FILES[0m.map((file) =>
-[33m[1m>[0m [90m13 |[0m     fs.readFileSync(path.join(base, file), [32m"utf8"[0m),
+  [90m15 |[0m   [36mconst[0m base = path.join([90m/*turbopackIgnore: true*/[0m process.cwd(), [32m"migrations"[0m);
+  [90m16 |[0m   [36mreturn[0m [33mMIGRATION_FILES[0m.map((file) =>
+[33m[1m>[0m [90m17 |[0m     fs.readFileSync(path.join(base, file), [32m"utf8"[0m),
   [90m   |[0m     [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
-  [90m14 |[0m   ).join([32m"\n"[0m);
-  [90m15 |[0m }
-  [90m16 |[0m
+  [90m18 |[0m   ).join([32m"\n"[0m);
+  [90m19 |[0m }
+  [90m20 |[0m
 
 Static analysis determined that this filesystem access causes the whole project to be traced and included in the output.
 This is usually unintentional and leads to all source files (including the public folder) to be deployed as part of the server code.
@@ -66,7 +74,7 @@ Import traces:
   #1 [App Route]:
     ./src/lib/db/adapters/sqlite.ts
     ./src/lib/db/index.ts
-    ./src/app/api/projects/[projectId]/versions/route.ts
+    ./src/app/api/session/projects/route.ts
 
   #2 [Server Component]:
     ./src/lib/db/adapters/sqlite.ts
@@ -77,18 +85,18 @@ Import traces:
     ./src/lib/db/adapters/sqlite.ts
     ./src/lib/db/adapters/sqlite.ts
     ./src/lib/db/index.ts
-    ./src/app/api/projects/[projectId]/runs/[runId]/probe/route.ts
+    ./src/app/api/projects/[projectId]/state/route.ts
 
 
-./src/lib/db/adapters/sqlite.ts:13:21
+./src/lib/db/adapters/sqlite.ts:17:21
 Warning: Dynamic filesystem access causes tracing of the whole project
-  [90m11 |[0m   [36mconst[0m base = path.join([90m/*turbopackIgnore: true*/[0m process.cwd(), [32m"migrations"[0m);
-  [90m12 |[0m   [36mreturn[0m [33mMIGRATION_FILES[0m.map((file) =>
-[33m[1m>[0m [90m13 |[0m     fs.readFileSync(path.join(base, file), [32m"utf8"[0m),
+  [90m15 |[0m   [36mconst[0m base = path.join([90m/*turbopackIgnore: true*/[0m process.cwd(), [32m"migrations"[0m);
+  [90m16 |[0m   [36mreturn[0m [33mMIGRATION_FILES[0m.map((file) =>
+[33m[1m>[0m [90m17 |[0m     fs.readFileSync(path.join(base, file), [32m"utf8"[0m),
   [90m   |[0m                     [33m[1m^^^^^^^^^^^^^^^^^^^^^[0m
-  [90m14 |[0m   ).join([32m"\n"[0m);
-  [90m15 |[0m }
-  [90m16 |[0m
+  [90m18 |[0m   ).join([32m"\n"[0m);
+  [90m19 |[0m }
+  [90m20 |[0m
 
 Static analysis determined that this filesystem access causes the whole project to be traced and included in the output.
 This is usually unintentional and leads to all source files (including the public folder) to be deployed as part of the server code.
@@ -103,7 +111,7 @@ Import traces:
   #1 [App Route]:
     ./src/lib/db/adapters/sqlite.ts
     ./src/lib/db/index.ts
-    ./src/app/api/projects/[projectId]/versions/route.ts
+    ./src/app/api/session/projects/route.ts
 
   #2 [Server Component]:
     ./src/lib/db/adapters/sqlite.ts
@@ -114,6 +122,39 @@ Import traces:
     ./src/lib/db/adapters/sqlite.ts
     ./src/lib/db/adapters/sqlite.ts
     ./src/lib/db/index.ts
-    ./src/app/api/projects/[projectId]/runs/[runId]/probe/route.ts
+    ./src/app/api/projects/[projectId]/state/route.ts
+
+
+./src/lib/sandbox/local-node.ts:65:22
+Warning: Dynamic filesystem access causes tracing of the whole project
+  [90m63 |[0m       [36mconst[0m rel = sanitizeRelativePath(file.path);
+  [90m64 |[0m       [36mif[0m (!rel) [36mcontinue[0m;
+[33m[1m>[0m [90m65 |[0m       [36mconst[0m target = path.join(tmpDir, rel);
+  [90m   |[0m                      [33m[1m^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m66 |[0m       fs.mkdirSync(path.dirname(target), { recursive: [36mtrue[0m });
+  [90m67 |[0m       fs.writeFileSync(target, file.content, [32m"utf8"[0m);
+  [90m68 |[0m       writtenPaths.push(rel);
+
+Static analysis determined that this filesystem access causes the whole project to be traced and included in the output.
+This is usually unintentional and leads to all source files (including the public folder) to be deployed as part of the server code.
+This can slow down deployments or lead to failures when size limits are exceeded.
+To resolve this, you can
+- make sure the path is statically scoped to some subfolder, for example path.join(process.cwd(), 'data', bar), or
+- only use them in development, or
+- opt out by adding an ignore comment to the highlighted call: path.join(/*turbopackIgnore: true*/ ...), or
+- remove them.
+
+Import traces:
+  #1 [App Route]:
+    ./src/lib/sandbox/local-node.ts
+    ./src/lib/db/adapters/sqlite.ts
+    ./src/lib/db/index.ts
+    ./src/app/api/projects/[projectId]/state/route.ts
+
+  #2 [App Route]:
+    ./src/lib/sandbox/local-node.ts
+    ./src/lib/sandbox/runner.ts
+    ./src/lib/agents/pipeline.ts
+    ./src/app/api/projects/[projectId]/runs/[runId]/stream/route.ts
 
 

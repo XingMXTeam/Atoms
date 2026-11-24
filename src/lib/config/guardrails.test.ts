@@ -3,6 +3,7 @@ import { existsSync, readFileSync, statSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { buildPromptForStage } from "@/lib/llm/modes/gemini";
+import { buildPreviewSrcdoc } from "@/lib/preview/bundle";
 import { PREVIEW_IFRAME_SANDBOX, isSecurePreviewSandbox } from "@/lib/preview/sandbox";
 
 const root = resolve(process.cwd());
@@ -24,10 +25,16 @@ describe("production reliability guardrails", () => {
     }).systemInstruction;
 
     for (const instruction of [engineerPrompt, repairPrompt]) {
-      expect(instruction).not.toContain("可用 localStorage");
-      expect(instruction).toMatch(/严禁.*localStorage/);
+      expect(instruction).toContain("localStorage");
+      expect(instruction).toMatch(/严禁.*document\.cookie/);
       expect(instruction).toMatch(/preventDefault|onClick/);
     }
+
+    const srcdoc = buildPreviewSrcdoc("console.log(1)", "", "", "", {
+      demo: "1",
+    });
+    expect(srcdoc).toContain('type: "storage"');
+    expect(srcdoc).toContain('Object.defineProperty(window, "localStorage"');
   });
 
   it("enforces layered preview Tailwind CSS and deduplicated minified vendor assets", () => {

@@ -64,19 +64,29 @@ export function AgentCard({ card }: AgentCardProps) {
     }
   }, [card.payload]);
 
+  const statusDotClass =
+    card.status === "completed"
+      ? "bg-emerald-500"
+      : card.status === "running"
+        ? "bg-indigo-500 atoms-running-pulse"
+        : card.status === "error"
+          ? "bg-rose-500"
+          : "bg-zinc-300 dark:bg-zinc-700";
+
   return (
     <article
       data-testid={`agent-card-${card.agent}`}
       data-agent={card.agent}
       data-status={card.status}
-      className="rounded-xl border border-zinc-200 bg-zinc-50/80 p-3 dark:border-zinc-800 dark:bg-zinc-900/50"
+      className="rounded-xl border border-zinc-200/90 bg-zinc-50/80 p-3 transition-colors hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-900/50 dark:hover:border-zinc-700"
     >
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h3 className="text-sm font-medium text-zinc-900 dark:text-zinc-50">
+          <h3 className="flex items-center gap-2 text-sm font-medium text-zinc-900 dark:text-zinc-50">
+            <span className={`h-2 w-2 shrink-0 rounded-full ${statusDotClass}`} aria-hidden="true" />
             {label}
           </h3>
-          <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+          <p className="mt-1 pl-4 text-xs tabular-nums text-zinc-500 dark:text-zinc-400">
             <span
               className={
                 card.status === "running" ? "atoms-running-pulse" : undefined

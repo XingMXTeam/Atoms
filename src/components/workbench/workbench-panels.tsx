@@ -14,6 +14,8 @@ export type VersionSummary = {
 export type TabId = "preview" | "code" | "versions";
 
 type WorkbenchPanelsProps = {
+  projectId?: string;
+  initialProjectState?: Record<string, string>;
   files: CodeFile[];
   versions: VersionSummary[];
   currentVersionId: string | null;
@@ -27,6 +29,8 @@ type WorkbenchPanelsProps = {
 };
 
 export function WorkbenchPanels({
+  projectId,
+  initialProjectState,
   files,
   versions,
   currentVersionId,
@@ -100,7 +104,12 @@ export function WorkbenchPanels({
         hidden={currentTab !== "preview"}
         className="min-h-56 flex-1"
       >
-        <PreviewPane files={files} onProbeReport={onProbeReport} />
+        <PreviewPane
+          projectId={projectId}
+          initialState={initialProjectState}
+          files={files}
+          onProbeReport={onProbeReport}
+        />
       </div>
 
       <div

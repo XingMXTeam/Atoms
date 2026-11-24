@@ -38,7 +38,7 @@ export const SEED_EXAMPLE_PROJECTS: SeedExampleProject[] = [
         "todos: Array<{ id: string; text: string; done: boolean }>",
         "filter: 'all' | 'active' | 'done'",
       ],
-      notes: "单页 React + Tailwind CSS，状态完全在浏览器内存中维护，无外部请求。",
+      notes: "单页 React + Tailwind CSS，状态通过安全存储桥持久化到服务端，刷新后不丢失，无外部请求。",
     },
     files: [
       {
@@ -48,18 +48,37 @@ export const SEED_EXAMPLE_PROJECTS: SeedExampleProject[] = [
       },
       {
         path: "src/App.tsx",
-        content: `import { useState } from "react";
+        content: `import { useEffect, useState } from "react";
 
 type Todo = { id: string; text: string; done: boolean };
 type Filter = "all" | "active" | "done";
 
+const STORAGE_KEY = "atoms_demo_todos_v1";
+const DEFAULT_TODOS: Todo[] = [
+  { id: "1", text: "体验 Atoms Studio", done: false },
+  { id: "2", text: "查看版本记录", done: true },
+];
+
+function loadTodos(): Todo[] {
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    if (!raw) return DEFAULT_TODOS;
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed)) return parsed;
+  } catch {}
+  return DEFAULT_TODOS;
+}
+
 export default function App() {
-  const [todos, setTodos] = useState<Todo[]>([
-    { id: "1", text: "体验 Atoms Studio", done: false },
-    { id: "2", text: "查看版本记录", done: true },
-  ]);
+  const [todos, setTodos] = useState<Todo[]>(loadTodos);
   const [draft, setDraft] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(todos));
+    } catch {}
+  }, [todos]);
 
   function handleAdd(e: React.FormEvent) {
     e.preventDefault();

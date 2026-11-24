@@ -88,5 +88,15 @@ export const previewProbes = sqliteTable(
   (table) => [primaryKey({ columns: [table.runId, table.round] })],
 );
 
+export const projectState = sqliteTable("project_state", {
+  projectId: text("project_id")
+    .primaryKey()
+    .references(() => projects.id),
+  stateJson: text("state_json", { mode: "json" })
+    .notNull()
+    .$type<Record<string, string>>(),
+  updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+});
+
 export type ProjectRow = typeof projects.$inferSelect;
 export type UsageRow = typeof usage.$inferSelect;
