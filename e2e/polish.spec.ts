@@ -15,6 +15,7 @@ async function assertNoPageOverflow(page: Page) {
 
 async function assertCardsNotClipped(page: Page) {
   const cards = page.locator('[data-testid="project-card"]');
+  await expect(cards.first()).toBeVisible();
   const count = await cards.count();
   expect(count).toBeGreaterThan(0);
 

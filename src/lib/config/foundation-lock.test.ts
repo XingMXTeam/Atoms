@@ -46,6 +46,17 @@ describe("foundation lock (REQ-1 / REQ-2 / REQ-7)", () => {
     }
 
     expect(envExample).not.toMatch(/GEMINI_API_KEY\s*=\s*[^\s#]+/);
+    expect(envExample.split("\n").find((line) => line.startsWith("DEEPSEEK_API_KEY="))).toBe(
+      "DEEPSEEK_API_KEY=",
+    );
+  });
+
+  it("does not seed example projects inside the homepage render", () => {
+    const page = read("src/app/page.tsx");
+    expect(page).not.toContain("ensureSeedProjects");
+    expect(page).toContain("seedOnMount");
+    expect(page).toContain("DEVICE_MINTED_HEADER");
+    expect(read("src/lib/auth/device-minted.ts")).toContain("x-atoms-device-minted");
   });
 
   it("keeps app source free of external CDN references", () => {

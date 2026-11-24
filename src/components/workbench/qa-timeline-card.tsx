@@ -2,6 +2,12 @@
 
 import { useMemo, useState } from "react";
 import type { AgentEventRecord } from "@/lib/agents/events";
+import {
+  aggregateTiming,
+  formatElapsed,
+  readDurationLabel,
+  UNRECORDED_DURATION_LABEL,
+} from "@/lib/agents/timing";
 import type { AgentCardStatus } from "./agent-card";
 
 type QaTimelineCardProps = {
@@ -86,6 +92,21 @@ export function QaTimelineCard({ events, status }: QaTimelineCardProps) {
   const exhaustedRound = exhaustedEvent
     ? payloadOf(exhaustedEvent).round ?? 0
     : null;
+  const presetLabel = events
+    .map((event) => readDurationLabel(event.payload))
+    .find((label): label is string => Boolean(label));
+  const timing = aggregateTiming(events.map((event) => event.payload));
+  const presetExample = events.some((event) => {
+    const payload = payloadOf(event);
+    return (payload as { evidenceKind?: unknown }).evidenceKind === "preset-example";
+  });
+  const durationText = timing
+    ? formatElapsed(timing.finishedAt - timing.startedAt)
+    : presetLabel
+      ? presetLabel
+      : status === "completed" || status === "error"
+        ? UNRECORDED_DURATION_LABEL
+        : null;
 
   return (
     <article
@@ -99,6 +120,7 @@ export function QaTimelineCard({ events, status }: QaTimelineCardProps) {
           <h3 className="text-sm font-medium text-zinc-900 dark:text-zinc-50">质检</h3>
           <p className="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
             {STATUS_LABEL[status]}
+            {durationText ? ` · ${durationText}` : null}
           </p>
         </div>
         {events.length > 0 ? (
@@ -115,6 +137,11 @@ export function QaTimelineCard({ events, status }: QaTimelineCardProps) {
 
       {expanded ? (
         <div className="atoms-expand-panel mt-3 space-y-3 text-xs leading-5 text-zinc-700 dark:text-zinc-300">
+          {presetExample ? (
+            <p data-testid="qa-preset-evidence">
+              以下为预置示例证据，不是这次打开时的实时探测结论。
+            </p>
+          ) : null}
           <ol aria-label="质检事件" className="space-y-1">
             {events.map((event) => {
               const payload = payloadOf(event);

@@ -28,7 +28,7 @@ function jsonContractForStage(stage?: string): string | undefined {
     case "engineer-repair":
       return '请严格只输出单个合法 JSON 对象（不要使用 Markdown 代码块），必须包含字段：{"files":[{"path":"src/App.tsx","content":"完整 TypeScript/TSX 源码"}],"summary":"一句话中文总结"}；files 数组每项必须同时包含 path 和完整源码 content 字符串。';
     case "qa":
-      return '请严格只输出单个合法 JSON 对象（不要使用 Markdown 代码块），必须包含字段：{"verdicts":[{"criterion":"与输入 acceptance 完全逐字一致","verdict":"pass"|"fail","reason":"中文判定理由"}]}；仅当存在 fail 项时再附加可选字段 "fixInstruction":"中文修复指令"，全部 pass 时请省略该字段。verdicts 必须逐条包含且仅包含输入 acceptance 中的每一条，不得遗漏、增删或改写 criterion 文本。';
+      return '请严格只输出单个合法 JSON 对象（不要使用 Markdown 代码块），必须包含字段：{"verdicts":[{"criterion":"与输入 acceptance 完全逐字一致","verdict":"pass"|"fail","reason":"引用该条标准自身证据的中文判定理由"}]}；仅当存在 fail 项时再附加可选字段 "fixInstruction":"中文修复指令"，全部 pass 时请省略该字段。verdicts 必须逐条包含且仅包含输入 acceptance 中的每一条，不得遗漏、增删或改写 criterion 文本。每条 reason 必须不同，禁止复用同一句理由。';
     default:
       return undefined;
   }

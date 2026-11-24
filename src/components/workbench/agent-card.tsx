@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import type { AgentName } from "@/lib/agents/events";
+import { formatElapsed } from "@/lib/agents/timing";
 
 export type AgentCardStatus =
   | "pending"
@@ -17,6 +18,8 @@ export type AgentCardModel = {
   finishedAt?: number;
   payload?: unknown;
   now?: number;
+  /** Honest label when a real elapsed time was not recorded. */
+  durationLabel?: string;
 };
 
 const AGENT_LABEL: Record<AgentName, string> = {
@@ -33,14 +36,6 @@ const STATUS_LABEL: Record<AgentCardStatus, string> = {
   error: "失败",
   interrupted: "已中断",
 };
-
-function formatElapsed(ms: number): string {
-  const totalSec = Math.max(0, Math.floor(ms / 1000));
-  const m = Math.floor(totalSec / 60);
-  const s = totalSec % 60;
-  if (m <= 0) return `${s}s`;
-  return `${m}m ${s.toString().padStart(2, "0")}s`;
-}
 
 type AgentCardProps = {
   card: AgentCardModel;
@@ -90,7 +85,11 @@ export function AgentCard({ card }: AgentCardProps) {
             >
               {statusLabel}
             </span>
-            {elapsedMs !== null ? ` · ${formatElapsed(elapsedMs)}` : null}
+            {card.durationLabel
+              ? ` · ${card.durationLabel}`
+              : elapsedMs !== null
+                ? ` · ${formatElapsed(elapsedMs)}`
+                : null}
           </p>
         </div>
         {payloadText ? (

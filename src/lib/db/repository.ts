@@ -2,7 +2,7 @@ import { and, asc, desc, eq, sql } from "drizzle-orm";
 import type { BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
 import type { DrizzleD1Database } from "drizzle-orm/d1";
 import * as schema from "./schema";
-import { SEED_EXAMPLE_PROJECTS } from "./seeds";
+import { persistSeedBundle } from "./seed-bundle";
 import {
   agentEvents,
   messages,
@@ -247,101 +247,7 @@ export function createAppRepository(db: AppDb): AppRepository {
 
     async ensureSeedProjects(deviceId) {
       if ((await this.listProjects(deviceId)).length > 0) return;
-
-      for (const example of SEED_EXAMPLE_PROJECTS) {
-        const project = await this.createProject({ deviceId, title: example.title });
-        const run = await this.createRun({ projectId: project.id, status: "completed" });
-        await this.updateRun(run.id, {
-          status: "completed",
-          qaScore: example.qaScore,
-          finishedAt: new Date(),
-        });
-        await this.addMessage({
-          projectId: project.id,
-          role: "user",
-          content: example.prd,
-        });
-        await this.addMessage({
-          projectId: project.id,
-          role: "agent",
-          content: example.summary,
-        });
-
-        await this.appendAgentEvent({
-          runId: run.id,
-          seq: 1,
-          agent: "planner",
-          type: "plan",
-          payload: {
-            title: example.title,
-            prd: example.prd,
-            acceptance: example.acceptance,
-          },
-        });
-        await this.appendAgentEvent({
-          runId: run.id,
-          seq: 2,
-          agent: "architect",
-          type: "design",
-          payload: example.design,
-        });
-        await this.appendAgentEvent({
-          runId: run.id,
-          seq: 3,
-          agent: "engineer",
-          type: "file",
-          payload: {
-            files: example.files,
-            summary: example.summary,
-          },
-        });
-        await this.appendAgentEvent({
-          runId: run.id,
-          seq: 4,
-          agent: "qa",
-          type: "probe",
-          payload: {
-            round: 0,
-            report: {
-              source: "atoms-preview",
-              type: "probe",
-              compileErrors: [],
-              runtimeErrors: [],
-              blankScreen: false,
-              domSummary: {
-                title: example.title,
-                text: example.summary,
-                elementCount: 12,
-              },
-            },
-          },
-        });
-        await this.appendAgentEvent({
-          runId: run.id,
-          seq: 5,
-          agent: "qa",
-          type: "verdict",
-          payload: {
-            round: 0,
-            verdicts: example.acceptance.map((criterion) => ({
-              criterion,
-              verdict: "pass",
-              reason: "预览正常渲染且交互可用",
-            })),
-            qa_score: example.qaScore,
-          },
-        });
-
-        const version = await this.createVersion({
-          projectId: project.id,
-          runId: run.id,
-          files: example.files,
-          acceptance: example.acceptance,
-          summary: example.summary,
-          qaScore: example.qaScore,
-        });
-        await this.setCurrentVersion(project.id, version.id);
-      }
+      await persistSeedBundle(db, deviceId);
     },
 
     async getProjectByShareSlug(shareSlug) {

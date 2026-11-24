@@ -18,6 +18,18 @@ export function previewAssetHeaderRules(): PreviewHeaderRule[] {
   ];
 }
 
+/** Hashed Next build assets. Filenames change when contents change. */
+export const STATIC_ASSET_CACHE_CONTROL = PREVIEW_CACHE_CONTROL;
+
+export function hashedStaticHeaderRules(): PreviewHeaderRule[] {
+  return [
+    {
+      source: "/_next/static/:path*",
+      headers: [{ key: "Cache-Control", value: STATIC_ASSET_CACHE_CONTROL }],
+    },
+  ];
+}
+
 export function isLongLivedPreviewCacheControl(
   value: string | null | undefined,
 ): boolean {

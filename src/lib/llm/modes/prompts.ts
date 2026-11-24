@@ -106,6 +106,7 @@ export function buildPromptForStage(input: GeminiCompleteInput): {
         "1. `verdicts` 数组必须包含且仅包含 `acceptance` 中的每一条标准，`criterion` 字段必须与输入完全一致。",
         "2. 如果 probe 中存在 compileErrors、runtimeErrors 或 blankScreen 为 true，相应标准必须判为 `fail`，并给出具体中文 reason 与清晰的 `fixInstruction`。",
         "3. 全部正常且 DOM 摘要显示有内容渲染时判为 `pass`。",
+        "4. 每条 `reason` 必须引用该条标准自己的证据（可见文案、控件名称或具体错误），禁止多条标准复用同一句理由。",
         "严格输出 JSON。",
       ].join("\n"),
       userPrompt: JSON.stringify({

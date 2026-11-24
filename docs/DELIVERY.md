@@ -51,7 +51,7 @@
 | 迭代与版本 | 工作台 follow-up、版本时间线、回滚 |
 | 分享与导出 | 只读 `/share/[slug]`、ZIP 下载（进行中禁用反馈） |
 | 预览宽度 | `桌面` / `移动 375px`，沙箱仍保持无 `allow-same-origin` |
-| 性能 | `/preview/*` 长缓存、空闲预加载 `esbuild.wasm` |
+| 性能 | 新会话首页先返回外壳，示例项目在首屏之后写入；`/preview/*` 与 `/_next/static/*` 长缓存、空闲预加载 `esbuild.wasm` |
 | 可达性审计 | 脚本化 CDN 网络审计 |
 | 验证门禁 | `fh verify`：typecheck / lint / unit / e2e / build |
 
@@ -62,6 +62,8 @@
 - 若浏览器端在轮询窗口（第 0 轮 12s / 后续轮 6s）内未提交 `POST /probe`，QA 自动回退到服务端静态探测。
 - OpenNext 增量缓存目前使用 dummy override，未接 R2。
 - 移动端是预览框宽度约束，不是独立响应式产品站。
+- 新设备的示例项目由 `POST /api/session/projects` 在首屏之后写入，并用稳定 id + `INSERT OR IGNORE` 避免并发播种出第二套项目。项目页读取使用 D1 session bookmark，没有 bookmark 时走 `first-primary`。
+- HTTPS 下 `deviceId` 为 `Secure; HttpOnly; SameSite=Lax`。安全响应头在应用内设置。若 Cloudflare Zone 仍托管默认 `robots.txt`，仓库里的 `/robots.txt` 要等关闭托管 robots 后才会在线上生效。未改 DNS，也未注册 `www`。
 
 ## 后续规划
 

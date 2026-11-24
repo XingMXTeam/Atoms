@@ -55,6 +55,18 @@ describe("getOrMintDeviceId", () => {
     expect(second.setCookie).toBeUndefined();
   });
 
+  it("sets Secure when the caller marks the request as HTTPS", () => {
+    const result = getOrMintDeviceId(null, { secure: true });
+    expect(result.setCookie).toContain("Secure");
+    expect(result.setCookie).toMatch(/SameSite=Lax/i);
+    expect(result.setCookie).toContain("HttpOnly");
+  });
+
+  it("omits Secure on non-HTTPS requests", () => {
+    const result = getOrMintDeviceId(null, { secure: false });
+    expect(result.setCookie).not.toContain("Secure");
+  });
+
   it("re-mints when the deviceId cookie value is not a UUID", () => {
     const result = getOrMintDeviceId(`${DEVICE_ID_COOKIE}=not-a-uuid`);
 

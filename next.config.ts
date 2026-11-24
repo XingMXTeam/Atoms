@@ -1,10 +1,15 @@
 import type { NextConfig } from "next";
 import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";
-import { previewAssetHeaderRules } from "./src/lib/preview/cache-headers";
+import { securityHeaders } from "./src/lib/http/security-headers";
+import {
+  hashedStaticHeaderRules,
+  previewAssetHeaderRules,
+} from "./src/lib/preview/cache-headers";
 
 initOpenNextCloudflareForDev();
 
 const nextConfig: NextConfig = {
+  poweredByHeader: false,
   serverExternalPackages: ["better-sqlite3"],
   turbopack: {
     rules: {
@@ -15,7 +20,14 @@ const nextConfig: NextConfig = {
     },
   },
   async headers() {
-    return previewAssetHeaderRules();
+    return [
+      ...previewAssetHeaderRules(),
+      ...hashedStaticHeaderRules(),
+      {
+        source: "/:path*",
+        headers: securityHeaders({ hsts: false }),
+      },
+    ];
   },
 };
 

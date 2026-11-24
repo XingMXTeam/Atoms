@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { DEVICE_ID_COOKIE, getOrMintDeviceId } from "@/lib/auth/device-id";
+import { DEVICE_ID_COOKIE, getOrMintDeviceId, isSecureRequestUrl } from "@/lib/auth/device-id";
 import { getDb } from "@/lib/db";
 import { assertRateLimit, utcDay } from "@/lib/limits/rate-limit";
 import { z } from "zod";
@@ -27,6 +27,7 @@ export async function POST(request: Request, context: RouteContext) {
   const existing = cookieStore.get(DEVICE_ID_COOKIE)?.value;
   const { deviceId, setCookie } = getOrMintDeviceId(
     existing ? `${DEVICE_ID_COOKIE}=${existing}` : null,
+    { secure: isSecureRequestUrl(request) },
   );
 
   const repo = getDb();
