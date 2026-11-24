@@ -44,12 +44,12 @@
 
 | 能力 | 说明 |
 |---|---|
-| 中文壳与视觉 | Home / Workbench / Share；light/dark；`prefers-reduced-motion` 关闭装饰动画 |
-| 多 Agent 时间线 | Planner / Architect / Engineer / QA 可见状态与事件 |
-| 生成 → 预览 & 持久化 | SSE 流水线 + esbuild-wasm 同源预览 + 安全 `postMessage` 存储桥（D1 `project_state` 持久化，整页刷新保留待办/进度，不放开 `allow-same-origin`） |
-| QA 自修复 & 后台沙箱 | 浏览器 `postMessage` 探针 + 可插拔后台执行沙箱（Cloudflare Sandbox / Node 隔离 `tsc --noEmit` / Worker 校验器）+ 验收标准判定，≤3 轮自修复；达上限展示「已达修复上限」 |
-| 迭代与版本 | 工作台 follow-up、版本时间线、回滚 |
-| 分享与导出 | 只读 `/share/[slug]`、ZIP 下载（进行中禁用反馈） |
+| 中文壳与视觉 | Home / Workbench / Share + 中文自定义 404 引导页（`not-found.tsx`）；light/dark；克制微动效（`prefers-reduced-motion` 关闭装饰动画） |
+| 多 Agent 时间线 | Planner / Architect / Engineer / QA 实时状态、真实耗时与事件同步；工作台页顶标题与运行编号随迭代实时更新 |
+| 生成 → 预览 & 持久化 | SSE 流水线 + esbuild-wasm 同源预览（560–620px 高度、8s 自动重挂载恢复、键盘聚焦与重载按钮）+ 安全 `postMessage` 存储桥（D1 `project_state` 持久化，整页刷新保留待办与 2048 完整盘面/分数，不放开 `allow-same-origin`） |
+| QA 自修复 & 后台沙箱 | 浏览器 `postMessage` 渲染与交互控件探针 + 可插拔后台执行沙箱（Cloudflare Sandbox / Node 隔离 `tsc --noEmit` / Worker 校验器）+ **三态判定（通过 / 未通过 / 需人工复核）与验证覆盖率** + 无进展早停 + 达上限不锁后续需求 |
+| 迭代与版本 | 工作台 follow-up、版本时间线、回滚；运行中断或刷新时自动回退恢复最新代码快照 |
+| 分享与导出 | 只读 `/share/[slug]`（展示完整 `https://` 链接 + 一键复制与「已复制」反馈）、**独立可运行 ZIP 脚手架导出**（含 `package.json` / `index.html` / `vite.config.ts` / `tsconfig.json` / `src/index.css` / `README.md`，解压 `npm install && npm run dev` 即跑） |
 | 预览宽度 | `桌面` / `移动 375px`，沙箱仍保持无 `allow-same-origin` |
 | 性能 | 新会话首页先返回外壳，示例项目在首屏之后写入；`/preview/*` 与 `/_next/static/*` 长缓存、空闲预加载 `esbuild.wasm` |
 | 可达性审计 | 脚本化 CDN 网络审计 |
@@ -74,13 +74,13 @@
 
 | 维度 | 实际投入 | 说明 |
 |---|---|---|
-| 总日历跨度 | 约 **18 小时** | `2026-11-23 16:15` 初始提交 → `2026-11-24 10:33` 完成全部修复、测试报告闭环与线上回填 |
-| 无人值守自动研发 | 约 **8.3 小时**（含夜间连续 **5.3 小时** 全自动推进） | `11-23 16:15–19:21`（约 3h）与 `11-23 23:28–11-24 04:44`（约 5.3h 夜间无人值守），由 Agent 按 `clarify → implement → verify → eval` 闭环自动完成 `F1–F5` 全部 5 个阶段与 54 次提交 |
-| 人工集中介入与验收 | 约 **3 小时** | `11-24 07:28–10:33`，聚焦真机实测、生产部署运维、容灾架构拍板、独立测试报告评审与线上回归 |
-| 关键人工介入次数 | **8 次** | 每次均围绕高杠杆决策、真实用户故事验收或生产环境问题，而非手写样板代码 |
-| 交付规模与验证 | **68+ 次提交 / 3 个核心 PR** | `fh verify`（`typecheck` / `lint` / `unit` / `build` / `e2e`）全绿 + 真实 DeepSeek 端到端实测 + 线上 Cloudflare Workers 多轮回归 |
+| 总日历跨度 | 约 **22.5 小时** | `2026-11-23 16:15` 初始提交 → `2026-11-24 14:35` 完成多轮实测、方案 B 与 15 个 GitHub Issue 闭环 |
+| 无人值守自动研发 | 约 **9.5 小时**（含夜间连续 **5.3 小时** + 午间 1h 全自动方案 B 打磨） | `11-23 16:15–19:21`（约 3h）、`11-23 23:28–11-24 04:44`（约 5.3h 夜间无人值守）及 `11-24 11:49–12:45`（约 1h `/goal` 自动交付），由 Agent 闭环完成 `F1–F5`、D1 持久化桥、后台沙箱与 UI 精修 |
+| 人工集中介入与验收 | 约 **4.5 小时** | `11-24 07:28–10:33` 与 `11-24 11:36–14:35`，聚焦真机实测、生产部署、架构取舍拍板、外部测试报告/Issue 巡检与线上回归 |
+| 关键人工介入次数 | **11 次** | 每次均围绕高杠杆决策、真实用户故事验收、外部测评引入或线上故障定位，而非手写样板代码 |
+| 交付规模与验证 | **75+ 次提交 / 7 个合并 PR / 关闭 15 个 Issue** | `fh verify`（`typecheck` / `lint` / `unit` 118+ / `build` / `e2e` 37）持续全绿 + 线上 `atoms.maoxunxing.com` 多轮真实实测 + 独立可运行 HTML 验收报告 |
 
-### 主要人工介入内容（8 次核心节点）
+### 主要人工介入内容（11 次核心节点）
 
 1. **初始方向与技术方案锁定（`11-23 16:15`）**
    确定「可验证的 AI 应用生成」产品定位、中国大陆可达性红线（零外部 CDN）、Plan A（`esbuild-wasm` 同源沙箱）与 `frontend-harness-cli` 五阶段拆分，随后放手让 Agent 夜间无人值守推进。
@@ -98,6 +98,12 @@
    引入独立 HTTP + 浏览器测试报告（识别新会话首屏 TTFB 3.3–4.2s、D1 读一致性、安全响应头与 `Secure` Cookie、示例项目 `0s` 耗时真实性等 P1–P4 问题），并行修复合入 PR #2（`3055e18`）后完成人工 Review、全量验证与重新部署，将新会话首屏 TTFB 压降至 `0.57s`。
 8. **存量老会话数据兼容性收尾（`11-24 10:30–10:33`）**
    使用老会话 Cookie 复测首页示例项目，发现早期 D1 存量无样式种子记录未自动刷新，定向原地回填 80 条存量历史版本，确保新老访客一致体验。
+9. **响应评测反馈：拍板「D1 持久化闭环 + 可插拔后台执行沙箱」方案 B（`11-24 11:36–12:45`）**
+   针对「应用状态刷新丢失」与「无真实后台执行沙箱」两条评测反馈，要求先分析与挑战问题定义再出 3 版对比方案，最终选定方案 B（不破坏 `allow-same-origin` 禁用前提下新增 D1 `project_state` + `postMessage` 安全存储桥；新增三级可插拔后台沙箱 + `Dockerfile.sandbox`；本地真跑隔离 `tsc --noEmit`）并生成离线可交互 HTML 验收报告，合入 PR #5。
+10. **真实 2048 刷新回归排障（`11-24 13:22–13:30`）**
+    人工试玩生成的 React 2048 并刷新，暴露出 3 个联动深坑（游戏只存最高分未存棋盘矩阵、QA 误要求生成 `.test.tsx` 触发无效自修复、运行未落正式版本时刷新落回「等待生成」）；直查线上 D1 根治修复并在生产复测 `exactMatch: true`（刷新后 4×4 棋盘与当前分 100% 恢复），合入 PR #6。
+11. **GitHub 21 个外部测评 Issue 系统化巡检与集中清零（`11-24 14:15–14:35`）**
+    将 21 个开放 Issue 按系统根因归类并选择半天高杠杆闭环版（方案 B），一次性解决并关闭 15 个 P0/P1/P2 核心 Issue（QA 三态评分与覆盖率、互动控件探针、无进展早停、预览 618px 高度与 8s 自动重挂载、可运行 Vite ZIP 脚手架、工作台标题/编号实时同步、完整分享 URL 一键复制、中文 404 引导等），线上实测全部通过，合入 PR #28。
 
 ### 人机分工心得
 
@@ -149,6 +155,7 @@ npx wrangler d1 migrations apply atoms-demo --remote
 # 交互写入；不要在 shell history 文档里粘贴真实值
 npx wrangler secret put GEMINI_API_KEY
 npx wrangler secret put DEEPSEEK_API_KEY   # 可选：Gemini 不可用时的实时二级兜底
+npx wrangler secret put SANDBOX_BRIDGE_URL # 可选：接入 Cloudflare Sandbox 容器桥接地址（配合 Dockerfile.sandbox）
 
 # 可选：在 Dashboard / wrangler 中设置
 #   LLM_PROVIDER=gemini
