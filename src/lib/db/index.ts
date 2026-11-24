@@ -1,3 +1,4 @@
+import { readCloudflareEnv } from "@/lib/cloudflare";
 import { createD1Repository, type D1Binding } from "./adapters/d1";
 import type { AppRepository } from "./repository";
 
@@ -14,7 +15,6 @@ export type { D1Binding } from "./adapters/d1";
 export * from "./schema";
 
 const DEFAULT_SQLITE_PATH = ".data/local.sqlite";
-const CLOUDFLARE_CONTEXT_SYMBOL = Symbol.for("__cloudflare-context__");
 
 let cached: AppRepository | null = null;
 
@@ -30,10 +30,7 @@ function isWorkersRuntime(): boolean {
 
 function tryGetCloudflareD1(): D1Binding | undefined {
   if (!isWorkersRuntime()) return undefined;
-  const ctx = (globalThis as Record<symbol, unknown>)[
-    CLOUDFLARE_CONTEXT_SYMBOL
-  ] as { env?: { DB?: D1Binding } } | undefined;
-  return ctx?.env?.DB;
+  return readCloudflareEnv()?.DB as D1Binding | undefined;
 }
 
 /**

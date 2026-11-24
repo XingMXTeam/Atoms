@@ -110,4 +110,35 @@ describe("AgentTimeline QA stream", () => {
     ).toBe("completed");
     expect(screen.queryByTestId("ux-banner-interrupted")).toBeNull();
   });
+
+  it("forwards providerLabel 演示回放 from streamed SSE events", async () => {
+    vi.stubGlobal("EventSource", MockEventSource);
+    const onProviderLabel = vi.fn();
+    render(
+      <AgentTimeline
+        projectId="project-replay"
+        initialRunId="run-replay"
+        onProviderLabel={onProviderLabel}
+      />,
+    );
+
+    await waitFor(() => expect(MockEventSource.current).toBeTruthy());
+    act(() =>
+      MockEventSource.current.send({
+        id: "plan-replay",
+        runId: "run-replay",
+        seq: 1,
+        agent: "planner",
+        type: "plan",
+        payload: {
+          title: "演示",
+          prd: "prd",
+          acceptance: ["AC-1"],
+          providerLabel: "演示回放",
+        },
+      }),
+    );
+
+    expect(onProviderLabel).toHaveBeenCalledWith("演示回放");
+  });
 });

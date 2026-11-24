@@ -19,12 +19,10 @@
     "drizzle-orm": "^0.45.4",
     "esbuild-wasm": "^0.28.2",
     "jszip": "^3.10.2",
-    "lucide-react": "^1.77.0",
     "next": "16.4.6",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "tailwind-merge": "^3.7.1",
-    "wrangler": "^4.166.0",
     "zod": "^4.6.7"
   },
   "devDependencies": {
@@ -43,7 +41,8 @@
     "jsdom": "^31.0.1",
     "tailwindcss": "4.3.3",
     "typescript": "^5",
-    "vitest": "^5.1.1"
+    "vitest": "^5.1.1",
+    "wrangler": "^4.166.0"
   },
   "packageManager": "pnpm@12.11.2"
 }

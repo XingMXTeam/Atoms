@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AgentTimeline } from "./agent-timeline";
-import { WorkbenchPanels, type VersionSummary } from "./workbench-panels";
+import { WorkbenchPanels, type TabId, type VersionSummary } from "./workbench-panels";
 import type { CodeFile } from "./code-pane";
 
 type RunStatus = "running" | "completed" | "interrupted" | "failed";
@@ -59,8 +59,10 @@ export function WorkbenchClient({
   );
   const [versions, setVersions] = useState(initialVersions);
   const [currentVersionId, setCurrentVersionId] = useState(initialVersionId);
+  const [activeTab, setActiveTab] = useState<TabId>("preview");
   const [restoringVersionId, setRestoringVersionId] = useState<string | null>(null);
   const [restoreMessage, setRestoreMessage] = useState("");
+  const [restoreError, setRestoreError] = useState("");
   const [shareUrl, setShareUrl] = useState("");
   const [shareError, setShareError] = useState("");
   const [sharing, setSharing] = useState(false);
@@ -69,6 +71,9 @@ export function WorkbenchClient({
   const initialStatus = (initialRunStatus as RunStatus) || "running";
   const liveRunStatusRef = useRef<RunStatus>(initialStatus);
   const [liveRunStatus, setLiveRunStatus] = useState(initialStatus);
+  const lastSyncedCompletedRunRef = useRef<string | null>(
+    initialStatus === "completed" ? initialRunId : null,
+  );
 
   const handleFiles = useCallback((next: CodeFile[]) => {
     if (liveRunStatusRef.current !== "completed") setFiles(next);
@@ -81,6 +86,7 @@ export function WorkbenchClient({
 
   useEffect(() => {
     if (liveRunStatus !== "completed") return;
+    if (lastSyncedCompletedRunRef.current === activeRunId) return;
     let cancelled = false;
     void (async () => {
       try {
@@ -94,12 +100,13 @@ export function WorkbenchClient({
           files: CodeFile[];
         };
         if (cancelled) return;
+        lastSyncedCompletedRunRef.current = activeRunId;
         setVersions(result.versions);
         setCurrentVersionId(result.currentVersionId);
         setFiles(result.files);
       } catch (error) {
         if (!cancelled) {
-          setRestoreMessage(
+          setRestoreError(
             error instanceof Error ? error.message : "无法加载版本记录，请刷新页面重试",
           );
         }
@@ -108,7 +115,7 @@ export function WorkbenchClient({
     return () => {
       cancelled = true;
     };
-  }, [liveRunStatus, projectId]);
+  }, [activeRunId, liveRunStatus, projectId]);
 
   const createShareLink = useCallback(async () => {
     setSharing(true);
@@ -163,27 +170,40 @@ export function WorkbenchClient({
   const restoreVersion = useCallback(async (versionId: string) => {
     setRestoringVersionId(versionId);
     setRestoreMessage("");
+    setRestoreError("");
     try {
       const response = await fetch(`/api/projects/${projectId}/versions`, {
         method: "POST",
+        cache: "no-store",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ versionId }),
       });
       const result = (await response.json()) as {
         messageZh?: string;
         versionId?: string;
+        runId?: string;
         files?: CodeFile[];
         qaScore?: number | null;
       };
       if (!response.ok || !result.versionId || !Array.isArray(result.files)) {
         throw new Error(result.messageZh ?? "恢复失败，请重试");
       }
+      if (result.runId) {
+        lastSyncedCompletedRunRef.current = result.runId;
+        setActiveRunId(result.runId);
+      }
+      if (typeof window !== "undefined") {
+        const url = new URL(window.location.href);
+        url.searchParams.delete("run");
+        window.history.replaceState({}, "", url.toString());
+      }
       setFiles(result.files);
       setQaScore(result.qaScore ?? null);
       setCurrentVersionId(result.versionId);
-      setRestoreMessage("已恢复所选版本");
+      setRestoreMessage("已恢复所选版本，预览已更新");
+      setActiveTab("preview");
     } catch (error) {
-      setRestoreMessage(
+      setRestoreError(
         error instanceof Error ? error.message : "恢复失败，请重试",
       );
     } finally {
@@ -303,6 +323,9 @@ export function WorkbenchClient({
           currentVersionId={currentVersionId}
           restoringVersionId={restoringVersionId}
           restoreMessage={restoreMessage}
+          restoreError={restoreError}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
           onRestore={restoreVersion}
         />
       </div>

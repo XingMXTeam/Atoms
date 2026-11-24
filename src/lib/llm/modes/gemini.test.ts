@@ -1,6 +1,6 @@
 /** @vitest-environment node */
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { createGeminiProvider } from "./gemini";
+import { buildPromptForStage, createGeminiProvider } from "./gemini";
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -69,9 +69,9 @@ describe("Gemini REST transport (REQ-5 / REQ-8)", () => {
   });
 
   it("falls back to replay labelled 演示回放 on HTTP 429 or network error", async () => {
-    vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
-      new Response("quota exceeded", { status: 429 }),
-    );
+    vi.spyOn(globalThis, "fetch")
+      .mockResolvedValueOnce(new Response("quota exceeded", { status: 429 }))
+      .mockResolvedValueOnce(new Response("quota exceeded", { status: 429 }));
     const provider = createGeminiProvider({ apiKey: "test-key-123" });
 
     const throttled = await provider.complete({
@@ -91,6 +91,61 @@ describe("Gemini REST transport (REQ-5 / REQ-8)", () => {
     });
     expect(networkFail.meta).toEqual({ mode: "replay", label: "演示回放" });
     expect(JSON.parse(networkFail.text).verdicts).toHaveLength(1);
+  });
+
+  it("refuses replay fallback on follow-up runs so currentVersion files cannot be overwritten", async () => {
+    vi.spyOn(globalThis, "fetch")
+      .mockResolvedValueOnce(new Response("pro overload", { status: 503 }))
+      .mockResolvedValueOnce(new Response("flash overload", { status: 503 }));
+
+    const provider = createGeminiProvider({ apiKey: "test-key-123" });
+    await expect(
+      provider.complete({
+        stage: "engineer",
+        modelClass: "pro",
+        prompt: "修复添加按钮没反应",
+        currentFiles: [{ path: "src/App.tsx", content: "export default () => <div>v2</div>" }],
+      }),
+    ).rejects.toThrow(/保留当前版本/);
+  });
+
+  it("includes conversation history and existing file context across follow-up prompts", () => {
+    const history = [
+      { role: "user" as const, content: "做一个待办" },
+      { role: "agent" as const, content: "已升级渐变卡片 UI" },
+      { role: "user" as const, content: "点击添加没反应" },
+    ];
+    const currentFiles = [
+      { path: "src/main.tsx", content: "// main" },
+      { path: "src/App.tsx", content: "// styled v2" },
+    ];
+
+    const planPrompt = buildPromptForStage({
+      stage: "planner",
+      prompt: "点击添加没反应",
+      history,
+      currentFiles,
+    });
+    expect(planPrompt.userPrompt).toContain("已升级渐变卡片 UI");
+    expect(planPrompt.userPrompt).toContain("src/App.tsx");
+
+    const archPrompt = buildPromptForStage({
+      stage: "architect",
+      prompt: "点击添加没反应",
+      history,
+      currentFiles,
+    });
+    expect(archPrompt.systemInstruction).toContain("沿用并保留现有文件结构");
+    expect(archPrompt.userPrompt).toContain("src/App.tsx");
+
+    const engPrompt = buildPromptForStage({
+      stage: "engineer",
+      prompt: "点击添加没反应",
+      history,
+      currentFiles,
+    });
+    expect(engPrompt.systemInstruction).toContain("禁止推倒重写");
+    expect(engPrompt.userPrompt).toContain("// styled v2");
   });
 
   it("falls back from Pro 429 to Flash before replay", async () => {

@@ -10,7 +10,7 @@
 
 - 评测与演示环境网络不确定，WebContainer 依赖的额外运行时/CDN 更容易失败。
 - 生成目标是小型前端原型（有限文件数），本机打包足够，复杂度更低、失败面更小。
-- iframe 保持 `allow-scripts` only（无 `allow-same-origin`），降低预览逃逸面。
+- iframe 保持 `allow-scripts allow-forms`（严禁 `allow-same-origin`），降低预览逃逸面同时支持交互式表单提交。
 
 ### 中国大陆可达性
 
@@ -50,7 +50,7 @@
 | QA 自修复 | 预览 probe + 验收标准判定，≤3 轮；达上限展示「已达修复上限」 |
 | 迭代与版本 | 工作台 follow-up、版本时间线、回滚 |
 | 分享与导出 | 只读 `/share/[slug]`、ZIP 下载（进行中禁用反馈） |
-| 预览宽度 | `桌面` / `移动 375px`，沙箱仍为 `allow-scripts` |
+| 预览宽度 | `桌面` / `移动 375px`，沙箱仍保持无 `allow-same-origin` |
 | 性能 | `/preview/*` 长缓存、空闲预加载 `esbuild.wasm` |
 | 可达性审计 | 脚本化 CDN 网络审计 |
 | 验证门禁 | `fh verify`：typecheck / lint / unit / e2e / build |
@@ -60,7 +60,6 @@
 - 生成规模有意受限（少量文件的前端原型），不是任意全栈应用工厂。
 - Live Gemini 质量受模型波动影响；确定性演示依赖 `mock` / `replay`。
 - OpenNext 增量缓存目前使用 dummy override，未接 R2。
-- `wrangler.jsonc` 中的 D1 `database_id` 在首次 `wrangler d1 create` 前仍是占位符，需部署者替换。
 - 移动端是预览框宽度约束，不是独立响应式产品站。
 
 ## 后续规划

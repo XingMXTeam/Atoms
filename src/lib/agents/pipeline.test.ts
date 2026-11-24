@@ -307,4 +307,110 @@ describe("agent pipeline (REQ-3 / REQ-7 / REQ-8)", () => {
     expect(updated?.status).toBe("interrupted");
     expect(updated?.finishedAt).toBeInstanceOf(Date);
   });
+
+  it("preserves project title, forwards history on follow-up, and aborts before overwriting on replay fallback", async () => {
+    const repo = createSqliteRepository(":memory:");
+    const project = await repo.createProject({ deviceId: "device-a", title: "精美待办清单" });
+    const v1Run = await repo.createRun({ projectId: project.id, status: "completed" });
+    const v1Files = [{ path: "src/App.tsx", content: "export default () => <div>Styled UI</div>;" }];
+    const v1 = await repo.createVersion({
+      projectId: project.id,
+      runId: v1Run.id,
+      files: v1Files,
+      acceptance: ["AC-1"],
+      summary: "V1 UI",
+      qaScore: 100,
+    });
+    await repo.setCurrentVersion(project.id, v1.id);
+
+    const run2 = await repo.createRun({ projectId: project.id, status: "running" });
+    const seenPlannerInputs: Array<Record<string, unknown>> = [];
+    const seenArchitectInputs: Array<Record<string, unknown>> = [];
+    const replayOnFollowUp = {
+      mode: "gemini" as const,
+      async complete(input: Record<string, unknown>) {
+        if (input.stage === "planner") {
+          seenPlannerInputs.push(input);
+          return {
+            text: JSON.stringify({ title: "新标题覆盖尝试", prd: "修复按钮", acceptance: ["AC-1"] }),
+            meta: { mode: "gemini" as const },
+          };
+        }
+        if (input.stage === "architect") {
+          seenArchitectInputs.push(input);
+          return {
+            text: JSON.stringify({ files: ["src/App.tsx"], components: ["App"], data: [], notes: "" }),
+            meta: { mode: "gemini" as const },
+          };
+        }
+        if (input.stage === "engineer") {
+          return {
+            text: JSON.stringify({ files: [{ path: "src/App.tsx", content: "skeleton" }], summary: "演示回放" }),
+            meta: { mode: "replay" as const, label: "演示回放" as const },
+          };
+        }
+        throw new Error(`Unexpected stage: ${String(input.stage)}`);
+      },
+    };
+
+    const history = [
+      { role: "user" as const, content: "做一个待办" },
+      { role: "user" as const, content: "点击添加没反应" },
+    ];
+
+    await expect(
+      runAgentPipeline({
+        repo,
+        provider: replayOnFollowUp,
+        projectId: project.id,
+        runId: run2.id,
+        prompt: "点击添加没反应",
+        history,
+        currentVersion: { id: v1.id, files: v1Files },
+      }),
+    ).rejects.toThrow(/演示回放降级/);
+
+    expect(seenPlannerInputs[0]).toMatchObject({ history, currentFiles: v1Files });
+    expect(seenArchitectInputs[0]).toMatchObject({ history, currentFiles: v1Files });
+    const afterProject = await repo.getProject(project.id, "device-a");
+    expect(afterProject?.title).toBe("精美待办清单");
+    expect(afterProject?.currentVersionId).toBe(v1.id);
+    expect(await repo.listVersions(project.id)).toHaveLength(1);
+    const failedRun = await repo.getRun(run2.id);
+    expect(failedRun?.status).toBe("failed");
+  });
+
+  it("tags initial-run SSE events with providerLabel when replay fallback triggers", async () => {
+    const repo = createSqliteRepository(":memory:");
+    const project = await repo.createProject({ deviceId: "device-a", title: "新项目" });
+    const run = await repo.createRun({ projectId: project.id, status: "running" });
+    const emitted: Array<{ agent: string; payload: unknown }> = [];
+
+    const fallbackProvider = {
+      mode: "gemini" as const,
+      async complete(input: Record<string, unknown>) {
+        if (input.stage === "planner") {
+          return {
+            text: JSON.stringify({ title: "回放项目", prd: "demo", acceptance: ["AC-1"] }),
+            meta: { mode: "replay" as const, label: "演示回放" as const },
+          };
+        }
+        return createLlmProvider({ mode: "replay" }).complete(input);
+      },
+    };
+
+    await runAgentPipeline({
+      repo,
+      provider: fallbackProvider,
+      projectId: project.id,
+      runId: run.id,
+      prompt: "做一个待办",
+      onEvent: (event) => {
+        emitted.push({ agent: event.agent, payload: event.payload });
+      },
+    });
+
+    const engineerEvent = emitted.find((item) => item.agent === "engineer");
+    expect((engineerEvent?.payload as { providerLabel?: string } | null)?.providerLabel).toBe("演示回放");
+  });
 });

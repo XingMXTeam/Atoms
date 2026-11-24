@@ -5,13 +5,10 @@ import type {
 import {
   PREVIEW_TAILWIND_PATH,
   PREVIEW_TAILWIND_RUNTIME_PATH,
-  PREVIEW_VENDOR_MAP,
-  PREVIEW_VENDOR_MODULE_ID,
   PREVIEW_VENDOR_RUNTIME_PATH,
   PREVIEW_WASM_PATH,
   containsBlockedCdnUrl,
   isPreviewVendorSpecifier,
-  type PreviewVendorSpecifier,
 } from "./vendor";
 
 export type PreviewFile = {
@@ -167,19 +164,6 @@ export async function loadVendorIife(
   if (vendorIifeCache) return vendorIifeCache;
   vendorIifeCache = await fetchImpl(PREVIEW_VENDOR_RUNTIME_PATH);
   return vendorIifeCache;
-}
-
-/** @deprecated Prefer loadVendorIife — kept for older call sites/tests. */
-export async function loadVendorSources(
-  fetchImpl: (url: string) => Promise<string> = fetchText,
-): Promise<Map<string, string>> {
-  const source = await loadVendorIife(fetchImpl);
-  const map = new Map<string, string>();
-  map.set(PREVIEW_VENDOR_MODULE_ID, source);
-  for (const specifier of Object.keys(PREVIEW_VENDOR_MAP) as PreviewVendorSpecifier[]) {
-    map.set(specifier, source);
-  }
-  return map;
 }
 
 export async function loadPreviewCss(

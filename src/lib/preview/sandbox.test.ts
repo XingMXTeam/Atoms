@@ -9,9 +9,9 @@ import {
 const FORBIDDEN = ["allow", "same", "origin"].join("-");
 
 describe("preview sandbox helpers (RL-1)", () => {
-  it("exposes allow-scripts only", () => {
-    expect(getPreviewSandboxAttribute()).toBe("allow-scripts");
-    expect(PREVIEW_IFRAME_SANDBOX).toBe("allow-scripts");
+  it("exposes allow-scripts and allow-forms without same-origin", () => {
+    expect(getPreviewSandboxAttribute()).toBe("allow-scripts allow-forms");
+    expect(PREVIEW_IFRAME_SANDBOX).toBe("allow-scripts allow-forms");
     expect(PREVIEW_IFRAME_SANDBOX.includes(FORBIDDEN)).toBe(false);
   });
 
@@ -21,5 +21,6 @@ describe("preview sandbox helpers (RL-1)", () => {
     expect(isSecurePreviewSandbox(`allow-scripts ${FORBIDDEN}`)).toBe(false);
     expect(isSecurePreviewSandbox(FORBIDDEN)).toBe(false);
     expect(isSecurePreviewSandbox("allow-scripts")).toBe(true);
+    expect(isSecurePreviewSandbox("allow-scripts allow-forms")).toBe(true);
   });
 });

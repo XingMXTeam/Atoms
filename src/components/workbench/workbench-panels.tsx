@@ -10,16 +10,19 @@ export type VersionSummary = {
   qaScore: number | null;
 };
 
+export type TabId = "preview" | "code" | "versions";
+
 type WorkbenchPanelsProps = {
   files: CodeFile[];
   versions: VersionSummary[];
   currentVersionId: string | null;
   restoringVersionId: string | null;
   restoreMessage: string;
+  restoreError?: string;
+  activeTab?: TabId;
+  onTabChange?: (tab: TabId) => void;
   onRestore: (versionId: string) => void;
 };
-
-type TabId = "preview" | "code" | "versions";
 
 export function WorkbenchPanels({
   files,
@@ -27,9 +30,14 @@ export function WorkbenchPanels({
   currentVersionId,
   restoringVersionId,
   restoreMessage,
+  restoreError = "",
+  activeTab,
+  onTabChange,
   onRestore,
 }: WorkbenchPanelsProps) {
-  const [activeTab, setActiveTab] = useState<TabId>("preview");
+  const [internalTab, setInternalTab] = useState<TabId>("preview");
+  const currentTab = activeTab ?? internalTab;
+  const setTab = onTabChange ?? setInternalTab;
 
   return (
     <section
@@ -44,28 +52,49 @@ export function WorkbenchPanels({
         <TabButton
           id="preview"
           label="预览"
-          selected={activeTab === "preview"}
-          onSelect={setActiveTab}
+          selected={currentTab === "preview"}
+          onSelect={setTab}
         />
         <TabButton
           id="code"
           label="代码"
-          selected={activeTab === "code"}
-          onSelect={setActiveTab}
+          selected={currentTab === "code"}
+          onSelect={setTab}
         />
         <TabButton
           id="versions"
           label="版本"
-          selected={activeTab === "versions"}
-          onSelect={setActiveTab}
+          selected={currentTab === "versions"}
+          onSelect={setTab}
         />
       </div>
+
+      {restoreError ? (
+        <p
+          data-testid="restore-error-banner"
+          role="alert"
+          className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300"
+        >
+          {restoreError}
+        </p>
+      ) : null}
+
+      {restoreMessage ? (
+        <p
+          data-testid="restore-status-banner"
+          role="status"
+          aria-live="polite"
+          className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-200"
+        >
+          {restoreMessage}
+        </p>
+      ) : null}
 
       <div
         role="tabpanel"
         id="workbench-panel-preview"
         aria-labelledby="workbench-tab-preview"
-        hidden={activeTab !== "preview"}
+        hidden={currentTab !== "preview"}
         className="min-h-56 flex-1"
       >
         <PreviewPane files={files} />
@@ -75,7 +104,7 @@ export function WorkbenchPanels({
         role="tabpanel"
         id="workbench-panel-code"
         aria-labelledby="workbench-tab-code"
-        hidden={activeTab !== "code"}
+        hidden={currentTab !== "code"}
         className="min-h-56 flex-1"
       >
         <CodePane files={files} />
@@ -85,14 +114,13 @@ export function WorkbenchPanels({
         role="tabpanel"
         id="workbench-panel-versions"
         aria-labelledby="workbench-tab-versions"
-        hidden={activeTab !== "versions"}
+        hidden={currentTab !== "versions"}
         className="min-h-56 flex-1"
       >
         <VersionTimeline
           versions={versions}
           currentVersionId={currentVersionId}
           restoringVersionId={restoringVersionId}
-          restoreMessage={restoreMessage}
           onRestore={onRestore}
         />
       </div>
@@ -104,22 +132,15 @@ function VersionTimeline({
   versions,
   currentVersionId,
   restoringVersionId,
-  restoreMessage,
   onRestore,
 }: {
   versions: VersionSummary[];
   currentVersionId: string | null;
   restoringVersionId: string | null;
-  restoreMessage: string;
   onRestore: (versionId: string) => void;
 }) {
   return (
     <div data-testid="version-timeline" className="flex flex-col gap-3">
-      {restoreMessage ? (
-        <p role="status" aria-live="polite" className="text-sm text-zinc-600 dark:text-zinc-300">
-          {restoreMessage}
-        </p>
-      ) : null}
       {versions.length === 0 ? (
         <p className="rounded-xl border border-dashed border-zinc-200 p-5 text-sm text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
           暂无版本记录。完成一次生成后，版本会显示在这里。

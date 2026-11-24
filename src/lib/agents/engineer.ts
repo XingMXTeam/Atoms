@@ -24,6 +24,7 @@ async function completeEngineer(
     prompt: string;
     plan: PlannerPayload;
     design: ArchitectPayload;
+    history?: Array<{ role: "user" | "agent"; content: string }>;
     currentFiles?: EngineerPayload["files"];
   },
 ): Promise<EngineerPayload> {
@@ -33,6 +34,7 @@ async function completeEngineer(
     modelClass: modelClassForStage("engineer"),
     plan: input.plan,
     design: input.design,
+    ...(input.history ? { history: input.history } : {}),
     ...(input.currentFiles ? { currentFiles: input.currentFiles } : {}),
     responseSchema: engineerSchema,
   });
@@ -46,6 +48,7 @@ export async function runEngineer(
     prompt: string;
     plan: PlannerPayload;
     design: ArchitectPayload;
+    history?: Array<{ role: "user" | "agent"; content: string }>;
     currentFiles?: EngineerPayload["files"];
   },
 ): Promise<EngineerPayload> {

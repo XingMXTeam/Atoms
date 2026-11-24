@@ -250,9 +250,9 @@ test.describe("polish preview performance and width (REQ-4 / REQ-5)", () => {
 
     const iframe = page.getByTestId("preview-iframe");
     await expect(iframe).toBeVisible({ timeout: 60_000 });
-    await expect(iframe).toHaveAttribute("sandbox", "allow-scripts");
+    await expect(iframe).toHaveAttribute("sandbox", "allow-scripts allow-forms");
     const sandbox = await iframe.getAttribute("sandbox");
-    expect(sandbox).toBe("allow-scripts");
+    expect(sandbox).toBe("allow-scripts allow-forms");
     expect(sandbox?.includes(["allow", "same", "origin"].join("-"))).toBe(false);
   });
 
@@ -287,10 +287,10 @@ test.describe("polish preview performance and width (REQ-4 / REQ-5)", () => {
     expect(mobileWidth).toBeLessThanOrEqual(376);
     expect(mobileWidth).toBeGreaterThan(300);
 
-    // Sandbox must remain scripts-only after the width toggle.
+    // Sandbox must remain without same-origin after the width toggle.
     await expect(page.getByTestId("preview-iframe")).toHaveAttribute(
       "sandbox",
-      "allow-scripts",
+      "allow-scripts allow-forms",
     );
 
     await page.getByRole("button", { name: "桌面" }).click();

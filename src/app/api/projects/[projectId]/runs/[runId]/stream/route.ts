@@ -120,6 +120,7 @@ export async function GET(request: Request, context: RouteContext) {
           projectId,
           runId,
           prompt: userPrompt,
+          history: messages.slice(-10).map(({ role, content }) => ({ role, content })),
           ...(currentVersion
             ? {
                 currentVersion: {

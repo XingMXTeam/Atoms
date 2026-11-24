@@ -37,3 +37,13 @@ Cut order if over budget: zip → share link → mobile preview toggle → merge
 
 ### Verify
 `fh verify` must keep typecheck / lint / unit / e2e / build green. E2E always runs with `LLM_PROVIDER=mock`.
+
+## Production Reliability Guardrails
+
+Lessons distilled from live D1/Workers/Gemini/sandbox production incidents:
+
+1. **Sandbox-Prompt Contract**: Keep `PREVIEW_IFRAME_SANDBOX` (`allow-scripts allow-forms`, never `allow-same-origin`) in sync with LLM engineer prompts. Forbid `localStorage` / `sessionStorage` / `document.cookie` in opaque-origin preview code, and require `e.preventDefault()` or explicit `onClick` handlers so interactive forms work reliably inside the sandbox.
+2. **No Destructive Silent Fallback**: Never fall back to `MOCK_ENGINEER` / `replay` when `currentVersion` exists on a follow-up or repair run. Fail explicitly, keep `currentVersionId` intact, and surface any initial-run `replay` fallback in SSE payloads (`providerLabel: "演示回放"`) so the UI banner always shows.
+3. **Multi-Turn Iteration Context**: Pass recent conversation history and `currentFiles` to Planner, Architect, and Engineer on follow-up iterations, and never overwrite an existing project's title during a follow-up.
+4. **Version Restore Single Source of Truth**: Switching or restoring a version must update client files/tab/URL (`?run` cleared or aligned), switch back to the preview tab, show distinct success (`role="status"`) vs error (`role="alert"`) feedback, and hydrate SSR from `currentVersion` when completed.
+5. **Anti-False-Positive Testing**: E2E tests for user flows must click actual UI buttons (never `page.request.post` alone), assert both positive restored tokens AND negative absence of rolled-back tokens across `page.reload()`, verify computed CSS when changing Tailwind/sandbox assets, and verify generated HTML assets (`tailwind.css`, minified `runtime.js`) in Vitest guardrails.

@@ -61,16 +61,13 @@ const runtimeOut = join(vendorDir, "runtime.js");
 await esbuild.build({
   entryPoints: [join(entriesDir, "runtime.mjs")],
   bundle: true,
+  minify: true,
+  define: { "process.env.NODE_ENV": '"production"' },
   format: "iife",
   platform: "browser",
   outfile: runtimeOut,
   logLevel: "silent",
 });
-
-// Keep legacy filenames as identical copies for any stale absolute references.
-for (const name of ["react.js", "jsx-runtime.js", "react-dom-client.js"]) {
-  cpSync(runtimeOut, join(vendorDir, name));
-}
 
 const preflight = readFileSync(
   join(root, "node_modules/tailwindcss/preflight.css"),

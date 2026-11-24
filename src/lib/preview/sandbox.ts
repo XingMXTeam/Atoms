@@ -1,6 +1,6 @@
-/** Preview iframe sandbox — scripts only; never grant same-origin (RL-1). */
+/** Preview iframe sandbox — scripts and forms; never grant same-origin (RL-1). */
 
-export const PREVIEW_IFRAME_SANDBOX = "allow-scripts" as const;
+export const PREVIEW_IFRAME_SANDBOX = "allow-scripts allow-forms" as const;
 
 /** Assembled so source never embeds the RL-1 veto token literally. */
 const FORBIDDEN_SANDBOX_TOKEN = ["allow", "same", "origin"].join("-");

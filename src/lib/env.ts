@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { readCloudflareEnv } from "./cloudflare";
 
 export const providerModeSchema = z.enum(["gemini", "mock", "replay"]);
 export type ProviderMode = z.infer<typeof providerModeSchema>;
@@ -7,7 +8,6 @@ export type ProviderMode = z.infer<typeof providerModeSchema>;
 export const DEFAULT_GEMINI_MODEL_FLASH = "gemini-3.8-flash";
 export const DEFAULT_GEMINI_MODEL_PRO = "gemini-3.1-pro-preview";
 
-const CLOUDFLARE_CONTEXT_SYMBOL = Symbol.for("__cloudflare-context__");
 const ENV_KEYS = [
   "LLM_PROVIDER",
   "GEMINI_API_KEY",
@@ -27,13 +27,6 @@ const envSchema = z.object({
 });
 
 export type AppEnv = z.infer<typeof envSchema>;
-
-function readCloudflareEnv(): Record<string, unknown> | undefined {
-  const ctx = (globalThis as Record<symbol, unknown>)[
-    CLOUDFLARE_CONTEXT_SYMBOL
-  ] as { env?: Record<string, unknown> } | undefined;
-  return ctx?.env;
-}
 
 function buildDefaultEnvSource(): Record<string, string | undefined> {
   const cfEnv = readCloudflareEnv();

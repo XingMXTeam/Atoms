@@ -46,26 +46,41 @@ test.describe("iterate-versions workbench (REQ-2 / REQ-6)", () => {
     await expect(versionRows.first().getByText("当前版本")).toBeVisible();
     const priorVersionId = await versionRows.nth(1).getAttribute("data-version-id");
 
-    const rollback = await page.request.post(
-      new URL(`/api/projects/${projectId}/versions`, page.url()).toString(),
-      { data: { versionId: priorVersionId } },
+    const rollbackButton = versionRows
+      .nth(1)
+      .getByRole("button", { name: "恢复此版本" });
+    await expect(rollbackButton).toBeVisible();
+    await rollbackButton.click();
+
+    await expect(page.getByTestId("workbench-tab-preview")).toHaveAttribute(
+      "aria-selected",
+      "true",
     );
-    expect(rollback.ok()).toBe(true);
-    const rollbackPayload = (await rollback.json()) as {
-      versionId: string;
-      files: { path: string }[];
-    };
-    expect(rollbackPayload.versionId).toBe(priorVersionId);
-    expect(rollbackPayload.files.map((file) => file.path)).toContain(
-      "src/components/TodoList.tsx",
+    await expect(page.getByTestId("restore-status-banner")).toContainText(
+      "已恢复所选版本",
+    );
+    await expect(page.getByTestId("preview-paint-probe")).toContainText(
+      "体验 Atoms Studio",
+    );
+    await expect(page.getByTestId("preview-paint-probe")).not.toContainText(
+      "优先级",
     );
 
     await page.getByRole("tab", { name: "代码" }).click();
     await expect(page.getByTestId("code-source")).toContainText("体验 Atoms Studio");
-    await page.getByRole("tab", { name: "预览" }).click();
+    await expect(page.getByTestId("code-source")).not.toContainText("优先级");
+
+    // Verify restored version persists across hard reload even after follow-up ?run= was in URL.
+    await page.reload();
     await expect(page.getByTestId("preview-paint-probe")).toContainText(
       "体验 Atoms Studio",
     );
+    await expect(page.getByTestId("preview-paint-probe")).not.toContainText(
+      "优先级",
+    );
+    await page.getByRole("tab", { name: "代码" }).click();
+    await expect(page.getByTestId("code-source")).not.toContainText("优先级");
+    await page.getByRole("tab", { name: "预览" }).click();
 
     await page.getByRole("button", { name: "创建只读分享链接" }).click();
     const shareLink = page.getByRole("link", { name: /\/share\// });

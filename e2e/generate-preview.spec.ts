@@ -26,9 +26,9 @@ test.describe("generate-loop preview + 代码 (REQ-5 / REQ-6)", () => {
 
     const iframe = page.getByTestId("preview-iframe");
     await expect(iframe).toBeVisible({ timeout: 60_000 });
-    await expect(iframe).toHaveAttribute("sandbox", "allow-scripts");
+    await expect(iframe).toHaveAttribute("sandbox", "allow-scripts allow-forms");
     const sandbox = await iframe.getAttribute("sandbox");
-    expect(sandbox).toBe("allow-scripts");
+    expect(sandbox).toBe("allow-scripts allow-forms");
     expect(sandbox?.includes(["allow", "same", "origin"].join("-"))).toBe(
       false,
     );

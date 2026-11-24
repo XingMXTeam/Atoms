@@ -28,6 +28,7 @@ export type RunAgentPipelineOptions = {
   projectId: string;
   runId: string;
   prompt: string;
+  history?: Array<{ role: "user" | "agent"; content: string }>;
   currentVersion?: { id: string; files: GeneratedFile[] };
   onEvent?: (event: AgentEventRecord) => void | Promise<void>;
   /** When true, skip marking the run failed on error (caller handles). */
@@ -106,6 +107,7 @@ export async function runAgentPipeline(
     projectId,
     runId,
     prompt,
+    history,
     currentVersion,
     onEvent,
     signal,
@@ -113,6 +115,19 @@ export async function runAgentPipeline(
     probePreview,
   } = options;
   const nextSeq = createSeqCounter();
+  let sawReplayFallback = false;
+  let replayLabel: string | undefined;
+  const trackedProvider: LlmProvider = {
+    mode: provider.mode,
+    async complete(input: unknown) {
+      const completion = await provider.complete(input);
+      if (completion.meta.mode === "replay") {
+        sawReplayFallback = true;
+        replayLabel = completion.meta.label ?? "演示回放";
+      }
+      return completion;
+    },
+  };
 
   try {
     if (signal?.aborted) {
@@ -120,49 +135,9 @@ export async function runAgentPipeline(
     }
 
     await delayStage(stageDelayMs, signal);
-    const plan = await runPlanner(provider, prompt);
-    await persistEvent(
-      repo,
-      {
-        runId,
-        seq: nextSeq(),
-        agent: "planner",
-        type: "plan",
-        payload: plan,
-      },
-      onEvent,
-    );
-
-    // Prefer Planner title for the project list after generation.
-    await repo.updateProjectTitle(projectId, plan.title);
-
-    if (signal?.aborted) {
-      throw new DOMException("Aborted", "AbortError");
-    }
-
-    await delayStage(stageDelayMs, signal);
-    const design = await runArchitect(provider, { prompt, plan });
-    await persistEvent(
-      repo,
-      {
-        runId,
-        seq: nextSeq(),
-        agent: "architect",
-        type: "design",
-        payload: design,
-      },
-      onEvent,
-    );
-
-    if (signal?.aborted) {
-      throw new DOMException("Aborted", "AbortError");
-    }
-
-    await delayStage(stageDelayMs, signal);
-    const engineer = await runEngineer(provider, {
+    const plan = await runPlanner(trackedProvider, {
       prompt,
-      plan,
-      design,
+      ...(history ? { history } : {}),
       ...(currentVersion ? { currentFiles: currentVersion.files } : {}),
     });
     await persistEvent(
@@ -170,9 +145,75 @@ export async function runAgentPipeline(
       {
         runId,
         seq: nextSeq(),
+        agent: "planner",
+        type: "plan",
+        payload: {
+          ...plan,
+          ...(replayLabel ? { providerLabel: replayLabel } : {}),
+        },
+      },
+      onEvent,
+    );
+
+    // Prefer Planner title only on initial creation; preserve project title during follow-ups.
+    if (!currentVersion) {
+      await repo.updateProjectTitle(projectId, plan.title);
+    }
+
+    if (signal?.aborted) {
+      throw new DOMException("Aborted", "AbortError");
+    }
+
+    await delayStage(stageDelayMs, signal);
+    const design = await runArchitect(trackedProvider, {
+      prompt,
+      plan,
+      ...(history ? { history } : {}),
+      ...(currentVersion ? { currentFiles: currentVersion.files } : {}),
+    });
+    await persistEvent(
+      repo,
+      {
+        runId,
+        seq: nextSeq(),
+        agent: "architect",
+        type: "design",
+        payload: {
+          ...design,
+          ...(replayLabel ? { providerLabel: replayLabel } : {}),
+        },
+      },
+      onEvent,
+    );
+
+    if (signal?.aborted) {
+      throw new DOMException("Aborted", "AbortError");
+    }
+
+    await delayStage(stageDelayMs, signal);
+    const engineer = await runEngineer(trackedProvider, {
+      prompt,
+      plan,
+      design,
+      ...(history ? { history } : {}),
+      ...(currentVersion ? { currentFiles: currentVersion.files } : {}),
+    });
+    if (currentVersion && sawReplayFallback && provider.mode !== "replay") {
+      throw new Error(
+        "上游模型触发演示回放降级，为避免覆盖现有版本已中止保存，请稍后重试",
+      );
+    }
+    await persistEvent(
+      repo,
+      {
+        runId,
+        seq: nextSeq(),
         agent: "engineer",
         type: "file",
-        payload: engineer,
+        payload: {
+          ...engineer,
+          ...(replayLabel ? { providerLabel: replayLabel } : {}),
+        },
       },
       onEvent,
     );
@@ -202,7 +243,7 @@ export async function runAgentPipeline(
         onEvent,
       );
 
-      qaResult = await runQa(provider, { acceptance: plan.acceptance, probe });
+      qaResult = await runQa(trackedProvider, { acceptance: plan.acceptance, probe });
       await persistEvent(
         repo,
         {
@@ -248,7 +289,7 @@ export async function runAgentPipeline(
 
       qaRounds += 1;
       await repo.updateRun(runId, { qaRounds, qaScore: qaResult.qa_score });
-      const repair = await runEngineerRepair(provider, {
+      const repair = await runEngineerRepair(trackedProvider, {
         prompt,
         plan,
         design,
@@ -317,6 +358,8 @@ export async function runAgentPipeline(
       throw error;
     }
 
+    const detail = error instanceof Error ? error.message : String(error);
+    const hasChineseMessage = /[\u4e00-\u9fff]/.test(detail);
     await persistEvent(
       repo,
       {
@@ -325,8 +368,8 @@ export async function runAgentPipeline(
         agent: "engineer",
         type: "error",
         payload: {
-          messageZh: "生成失败，请稍后重试或点击继续",
-          detail: error instanceof Error ? error.message : String(error),
+          messageZh: hasChineseMessage ? detail : "生成失败，请稍后重试或点击继续",
+          detail,
         },
       },
       onEvent,

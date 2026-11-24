@@ -286,6 +286,12 @@ export function AgentTimeline({
         const event = parseSseChunk(`data: ${message.data}`);
         if (!event) return;
         const stamp = Date.now();
+        if (event.payload && typeof event.payload === "object") {
+          const providerLabel = (event.payload as { providerLabel?: unknown }).providerLabel;
+          if (providerLabel === "演示回放") {
+            onProviderLabelRef.current?.("演示回放");
+          }
+        }
         if (event.agent === "qa") {
           setQaEvents((prev) =>
             prev.some((existing) => existing.id === event.id)
@@ -477,10 +483,11 @@ export function AgentTimeline({
       setErrorMessage(null);
       onQaRoundsChangeRef.current?.(0);
       sawTerminalRef.current = false;
+      updateRunStatus("running");
       onRunIdChangeRef.current?.(data.runId);
       setRunId(data.runId);
     },
-    [projectId, runId],
+    [projectId, runId, updateRunStatus],
   );
 
   const handleContinue = async () => {

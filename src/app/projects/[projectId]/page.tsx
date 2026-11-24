@@ -66,7 +66,7 @@ export default async function WorkbenchPage({
   const runId = run?.id ?? "";
 
   let initialFiles: CodeFile[] = [];
-  if (runId && version?.runId === runId) {
+  if (version && (!run || run.status === "completed")) {
     initialFiles = filesFromVersion(version.files);
   } else if (runId) {
     const events = await repo.listAgentEvents(runId);

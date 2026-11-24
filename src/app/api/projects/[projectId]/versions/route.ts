@@ -70,6 +70,7 @@ export async function POST(request: Request, context: RouteContext) {
   return jsonWithCookie(
     {
       versionId: version.id,
+      runId: version.runId,
       qaScore: version.qaScore,
       files: parseVersionFiles(version.files),
     },

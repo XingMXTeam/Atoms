@@ -51,7 +51,7 @@ test.describe("generate-loop core journey (REQ-10 / E2E-1)", () => {
 
     const iframe = page.getByTestId("preview-iframe");
     await expect(iframe).toBeVisible({ timeout: 60_000 });
-    await expect(iframe).toHaveAttribute("sandbox", "allow-scripts");
+    await expect(iframe).toHaveAttribute("sandbox", "allow-scripts allow-forms");
 
     await expect
       .poll(
