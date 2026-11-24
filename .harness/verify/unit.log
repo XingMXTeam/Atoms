@@ -1,60 +1,60 @@
 
  RUN  v5.1.1 /Users/felix/Documents/atoms-worktrees/demo
 
- ✓ src/lib/llm/provider.test.ts (3 tests) 131ms
- ✓ src/lib/preview/bundle.test.ts (2 tests) 507ms
+ ✓ src/lib/llm/model-routing.test.ts (3 tests) 147ms
+ ✓ src/lib/llm/provider.test.ts (3 tests) 163ms
+ ✓ src/lib/preview/bundle.test.ts (2 tests) 645ms
    ✓ preview bundle (REQ-5 / REQ-6) (2)
-     ✓ bundles the mock React fixture as classic IIFE without remote hosts 506ms
- ✓ src/lib/llm/model-routing.test.ts (3 tests) 81ms
- ✓ src/lib/db/repository.test.ts (8 tests) 72ms
- ✓ src/components/workbench/qa-timeline-card.test.tsx (2 tests) 73ms
- ✓ src/components/workbench/agent-card.test.tsx (3 tests) 97ms
- ✓ src/components/workbench/agent-timeline.test.tsx (3 tests) 128ms
- ✓ src/lib/llm/modes/gemini.test.ts (9 tests) 1046ms
+     ✓ bundles the mock React fixture as classic IIFE without remote hosts 643ms
+ ✓ src/components/workbench/agent-card.test.tsx (3 tests) 176ms
+ ✓ src/components/workbench/qa-timeline-card.test.tsx (2 tests) 153ms
+ ✓ src/lib/llm/modes/gemini.test.ts (9 tests) 1042ms
    ✓ Gemini REST transport (REQ-5 / REQ-8) (9)
-     ✓ falls back to replay labelled 演示回放 on HTTP 429 or network error 1004ms
- ✓ src/lib/http/security-headers.test.ts (2 tests) 16ms
- ✓ src/lib/db/repository.events.test.ts (5 tests) 48ms
- ✓ src/components/workbench/follow-up-form.test.tsx (1 test) 49ms
- ✓ src/lib/auth/device-id.test.ts (9 tests) 6ms
- ✓ src/lib/agents/qa.test.ts (4 tests) 6ms
- ✓ src/lib/limits/rate-limit.test.ts (4 tests) 6ms
- ✓ src/lib/exports/index.test.ts (6 tests) 11ms
- ✓ src/lib/sandbox/runner.test.ts (3 tests) 1854ms
+     ✓ falls back to replay labelled 演示回放 on HTTP 429 or network error 1003ms
+ ✓ src/components/workbench/agent-timeline.test.tsx (3 tests) 227ms
+ ✓ src/lib/db/repository.test.ts (8 tests) 126ms
+ ✓ src/lib/http/security-headers.test.ts (2 tests) 46ms
+ ✓ src/components/workbench/follow-up-form.test.tsx (1 test) 128ms
+ ✓ src/lib/db/repository.events.test.ts (5 tests) 72ms
+ ✓ src/lib/auth/device-id.test.ts (9 tests) 36ms
+ ✓ src/lib/agents/qa.test.ts (5 tests) 7ms
+ ✓ src/lib/limits/rate-limit.test.ts (4 tests) 11ms
+ ✓ src/lib/config/foundation-lock.test.ts (5 tests) 13ms
+ ✓ src/lib/preview/storage-bridge.test.ts (3 tests) 6ms
+ ✓ src/lib/sandbox/runner.test.ts (3 tests) 2682ms
    ✓ backend execution sandbox (3)
-     ✓ runs real isolated tsc --noEmit on valid React TSX files and exits 0 1117ms
-     ✓ catches real TypeScript compile errors in isolated subprocess sandbox 735ms
- ✓ src/lib/cn.test.ts (1 test) 7ms
- ✓ src/lib/config/foundation-lock.test.ts (5 tests) 9ms
- ✓ src/lib/preview/storage-bridge.test.ts (3 tests) 5ms
+     ✓ runs real isolated tsc --noEmit on valid React TSX files and exits 0 1512ms
+     ✓ catches real TypeScript compile errors in isolated subprocess sandbox 1165ms
+ ✓ src/lib/exports/index.test.ts (7 tests) 42ms
+ ✓ src/lib/cn.test.ts (1 test) 16ms
  ✓ src/lib/config/guardrails.test.ts (3 tests) 4ms
- ✓ src/lib/time/shanghai.test.ts (1 test) 2ms
- ✓ src/lib/versions/index.test.ts (3 tests) 29ms
  ✓ src/lib/agents/events.test.ts (4 tests) 3ms
- ✓ src/lib/preview/preload.test.ts (3 tests) 5ms
+ ✓ src/lib/preview/preload.test.ts (3 tests) 6ms
+ ✓ src/lib/versions/index.test.ts (3 tests) 50ms
+ ✓ src/lib/preview/probe.test.ts (4 tests) 6ms
+ ✓ src/lib/time/shanghai.test.ts (1 test) 3ms
  ✓ src/lib/llm/modes/mock.test.ts (1 test) 4ms
- ✓ src/lib/preview/probe.test.ts (4 tests) 4ms
- ✓ src/lib/preview/vendor.test.ts (2 tests) 3ms
- ✓ src/lib/preview/cache-headers.test.ts (4 tests) 3ms
- ✓ src/app/globals.css.test.ts (3 tests) 3ms
+ ✓ src/lib/preview/cache-headers.test.ts (4 tests) 5ms
+ ✓ src/app/globals.css.test.ts (3 tests) 4ms
  ✓ src/lib/preview/sandbox.test.ts (2 tests) 2ms
+ ✓ src/lib/preview/vendor.test.ts (2 tests) 3ms
  ✓ src/lib/preview/width.test.ts (2 tests) 2ms
- ✓ src/lib/agents/pipeline.test.ts (9 tests) 4492ms
+ ✓ src/lib/agents/pipeline.test.ts (9 tests) 5749ms
    ✓ agent pipeline (REQ-3 / REQ-7 / REQ-8) (9)
-     ✓ emits Planner → Architect → Engineer events with monotonic seq and persists version 741ms
-     ✓ applies only repair deltas and stops after the preview passes 957ms
-     ✓ caps repairs at three rounds and keeps the final score and version 1137ms
-     ✓ retries structured parse once on failure then succeeds 418ms
-     ✓ tags initial-run SSE events with providerLabel when replay fallback triggers 434ms
-     ✓ accumulates Gemini token usage onto run + device/global totals and forwards probe round 430ms
-     ✓ emits the merged full file set on follow-up engineer events so preview never loses main.tsx 358ms
+     ✓ emits Planner → Architect → Engineer events with monotonic seq and persists version 1422ms
+     ✓ applies only repair deltas and stops after the preview passes 1278ms
+     ✓ caps repairs at three rounds and keeps the final score and version 1156ms
+     ✓ retries structured parse once on failure then succeeds 484ms
+     ✓ tags initial-run SSE events with providerLabel when replay fallback triggers 489ms
+     ✓ accumulates Gemini token usage onto run + device/global totals and forwards probe round 519ms
+     ✓ emits the merged full file set on follow-up engineer events so preview never loses main.tsx 384ms
 
  Test Files  32 passed (32)
-      Tests  117 passed (117)
-   Start at  13:25:35
-   Duration  5.64s (tests 36%, environment 34%, setup 14%, import 13%, transform 3%, worker 1%)
+      Tests  119 passed (119)
+   Start at  14:29:14
+   Duration  7.12s (tests 36%, environment 34%, setup 13%, import 12%, transform 4%, worker 1%)
 
-Environment  jsdom was created 32 times · 8.21s total, 34% of tracked time
+Environment  jsdom was created 32 times · 10.95s total, 34% of tracked time
              create it once per worker with pool: 'vmThreads' (keeps per-file isolation) or isolate: false (shares it across files)
              learn more: https://vitest.dev/guide/improving-performance#test-environments
 

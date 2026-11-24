@@ -106,7 +106,7 @@ function responseSchemaForStage(stage?: string): GeminiSchemaNode | undefined {
               type: "OBJECT",
               properties: {
                 criterion: { type: "STRING" },
-                verdict: { type: "STRING", enum: ["pass", "fail"] },
+                verdict: { type: "STRING", enum: ["pass", "fail", "unverified"] },
                 reason: { type: "STRING" },
               },
               required: ["criterion", "verdict", "reason"],

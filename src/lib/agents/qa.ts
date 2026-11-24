@@ -8,7 +8,7 @@ export const qaVerdictSchema = z.object({
     .array(
       z.object({
         criterion: z.string().min(1),
-        verdict: z.enum(["pass", "fail"]),
+        verdict: z.enum(["pass", "fail", "unverified"]),
         reason: z.string().min(1),
       }),
     )
@@ -25,16 +25,38 @@ export const qaVerdictSchema = z.object({
 
 export type QaVerdict = z.infer<typeof qaVerdictSchema>["verdicts"][number];
 
+export type QaCoverage = {
+  verified: number;
+  unverified: number;
+  total: number;
+};
+
 export type QaResult = {
   verdicts: QaVerdict[];
   qa_score: number;
+  coverage?: QaCoverage;
   fixInstruction?: string;
 };
 
+export function computeQaCoverage(verdicts: QaVerdict[]): QaCoverage {
+  const unverified = verdicts.filter(({ verdict }) => verdict === "unverified").length;
+  return {
+    verified: verdicts.length - unverified,
+    unverified,
+    total: verdicts.length,
+  };
+}
+
+/**
+ * Score only verifiable criteria (`pass` / `fail`) so probe limitations marked
+ * `unverified` do not falsely tank a working app to 0%.
+ */
 export function aggregateQaScore(verdicts: QaVerdict[]): number {
   if (verdicts.length === 0) return 0;
-  const passed = verdicts.filter(({ verdict }) => verdict === "pass").length;
-  return Math.round((passed / verdicts.length) * 100);
+  const verifiable = verdicts.filter(({ verdict }) => verdict !== "unverified");
+  if (verifiable.length === 0) return 100;
+  const passed = verifiable.filter(({ verdict }) => verdict === "pass").length;
+  return Math.round((passed / verifiable.length) * 100);
 }
 
 export async function runQa(
@@ -60,9 +82,11 @@ export async function runQa(
     throw new Error("QA verdicts must cover each acceptance criterion exactly once");
   }
 
+  const coverage = computeQaCoverage(verdicts);
   return {
     verdicts,
     qa_score: aggregateQaScore(verdicts),
+    ...(coverage.unverified > 0 ? { coverage } : {}),
     ...(fixInstruction ? { fixInstruction } : {}),
   };
 }

@@ -82,6 +82,10 @@ export function PromptForm({ initialPrompt = "" }: PromptFormProps) {
             <p className="text-sm text-red-600 dark:text-red-400" role="alert">
               {error}
             </p>
+          ) : !trimmed ? (
+            <span className="text-sm text-zinc-500" data-testid="prompt-empty-hint">
+              请先输入应用需求，或点击下方示例卡片快速填入
+            </span>
           ) : (
             <span className="text-sm text-zinc-500">用一句话描述即可 · ⌘/Ctrl + Enter 提交</span>
           )}

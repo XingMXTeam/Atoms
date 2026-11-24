@@ -105,7 +105,7 @@ export function buildPromptForStage(input: GeminiCompleteInput): {
         "硬性约束：",
         "1. `verdicts` 数组必须包含且仅包含 `acceptance` 中的每一条标准，`criterion` 字段必须与输入完全一致。",
         "2. 如果 probe 中存在 compileErrors、runtimeErrors 或 blankScreen 为 true，相应标准必须判为 `fail`，并给出具体中文 reason 与清晰的 `fixInstruction`。",
-        "3. 注意 `probe` 是初始渲染后的 DOM 与错误探测快照，不包含自动化按键/点击测试日志：只要 compileErrors 和 runtimeErrors 均为空、blankScreen 为 false，且 DOM 摘要显示已渲染出对应的核心标题、按钮、网格或输入框，即判为 `pass`。严禁以「缺少自动化测试脚本 / 未模拟按键点击」为由判 `fail`，严禁在 `fixInstruction` 中要求编写 `.test.tsx` 或引入 `vitest` / `@testing-library/react`。",
+        "3. `verdict` 支持三态：`pass`（已验证通过）、`fail`（存在编译/运行错误、白屏或明显缺失核心界面）、`unverified`（无错误且界面已渲染，但该条依赖长时倒计时归零、真实音频或复杂多步按键状态机，渲染探针无法直接验证，需人工复核）。严禁把「探针无法模拟」判为 `fail`，严禁在 `fixInstruction` 中要求编写 `.test.tsx` 或引入 `vitest` / `@testing-library/react`。",
         "4. 每条 `reason` 必须引用该条标准自己的证据（可见文案、控件名称或具体错误），禁止多条标准复用同一句理由。",
         "严格输出 JSON。",
       ].join("\n"),

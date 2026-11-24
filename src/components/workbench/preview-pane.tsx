@@ -79,6 +79,8 @@ export function PreviewPane({
 }: PreviewPaneProps) {
   const [bundle, setBundle] = useState<BundleResult | null>(null);
   const [paintedText, setPaintedText] = useState("");
+  const [remountKey, setRemountKey] = useState(0);
+  const [autoRetried, setAutoRetried] = useState(false);
   const [widthMode, setWidthMode] = useState<PreviewWidthMode>("desktop");
   const [syncStatus, setSyncStatus] = useState<SyncStatus>(
     initialState && Object.keys(initialState).length > 0 ? "saved" : "idle",
@@ -162,6 +164,7 @@ export function PreviewPane({
         return;
       }
       setPaintedText("");
+      setAutoRetried(false);
       renderedFilesRef.current = files;
       generationRef.current += 1;
       setBundle({
@@ -244,6 +247,16 @@ export function PreviewPane({
     return () => window.removeEventListener("message", onMessage);
   }, [onProbeReport, projectId, readOnly]);
 
+  // Auto-remount once if the iframe fails to paint within 8s after bundling (#8).
+  useEffect(() => {
+    if (bundle?.status !== "ready" || paintedText || autoRetried) return;
+    const timer = setTimeout(() => {
+      setAutoRetried(true);
+      setRemountKey((k) => k + 1);
+    }, 8_000);
+    return () => clearTimeout(timer);
+  }, [bundle, paintedText, autoRetried]);
+
   if (files.length === 0) {
     return (
       <div
@@ -321,29 +334,59 @@ export function PreviewPane({
           />
         </div>
 
-        {!readOnly && projectId && syncStatus !== "idle" ? (
-          <span
-            data-testid="preview-state-sync"
-            data-sync-status={syncStatus}
-            className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-zinc-50 px-2.5 py-1 text-xs text-zinc-600 transition dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400"
-          >
+        <div className="flex flex-wrap items-center gap-2">
+          {!readOnly && projectId && syncStatus !== "idle" ? (
             <span
-              className={
-                syncStatus === "saving"
-                  ? "h-1.5 w-1.5 animate-pulse rounded-full bg-amber-500"
-                  : "h-1.5 w-1.5 rounded-full bg-emerald-500"
-              }
-            />
-            {syncStatus === "saving" ? "正在同步状态…" : "状态已持久化"}
-          </span>
-        ) : null}
+              data-testid="preview-state-sync"
+              data-sync-status={syncStatus}
+              className="inline-flex items-center gap-1.5 rounded-full border border-zinc-200 bg-zinc-50 px-2.5 py-1 text-xs text-zinc-600 transition dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400"
+            >
+              <span
+                className={
+                  syncStatus === "saving"
+                    ? "h-1.5 w-1.5 animate-pulse rounded-full bg-amber-500"
+                    : "h-1.5 w-1.5 rounded-full bg-emerald-500"
+                }
+              />
+              {syncStatus === "saving" ? "正在同步状态…" : "状态已持久化"}
+            </span>
+          ) : null}
+          <button
+            type="button"
+            onClick={() => iframeRef.current?.contentWindow?.focus()}
+            className="atoms-focus-ring rounded-full border border-zinc-200 bg-white px-2.5 py-1 text-xs text-zinc-500 transition hover:border-zinc-300 hover:text-zinc-800 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-400 dark:hover:text-zinc-200"
+            title="点击后可直接使用方向键等键盘快捷键"
+          >
+            点击预览聚焦键盘
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setPaintedText("");
+              setRemountKey((k) => k + 1);
+            }}
+            className="atoms-focus-ring rounded-full border border-zinc-200 bg-white px-2.5 py-1 text-xs text-zinc-500 transition hover:border-zinc-300 hover:text-zinc-800 dark:border-zinc-800 dark:bg-zinc-950 dark:text-zinc-400 dark:hover:text-zinc-200"
+          >
+            重载预览
+          </button>
+        </div>
       </div>
 
       <div
         data-testid="preview-frame"
-        className="mx-auto h-full min-h-56 w-full overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-xs transition-[max-width] duration-200 dark:border-zinc-800 dark:bg-zinc-950"
+        className="relative mx-auto h-[560px] min-h-[520px] w-full overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-xs transition-[max-width] duration-200 lg:h-[620px] dark:border-zinc-800 dark:bg-zinc-950"
         style={maxWidth ? { maxWidth: `${maxWidth}px` } : undefined}
       >
+        {!paintedText ? (
+          <div
+            data-testid="preview-mounting-overlay"
+            className="pointer-events-none absolute inset-x-0 top-3 z-10 flex justify-center"
+          >
+            <span className="rounded-full border border-zinc-200 bg-white/95 px-3 py-1 text-xs text-zinc-600 shadow-xs dark:border-zinc-700 dark:bg-zinc-900/95 dark:text-zinc-300">
+              {autoRetried ? "正在重新挂载预览…" : "正在准备预览…"}
+            </span>
+          </div>
+        ) : null}
         {/* Accessible paint probe for e2e when iframe content is opaque-origin. */}
         {paintedText ? (
           <span className="sr-only" data-testid="preview-paint-probe">
@@ -351,15 +394,15 @@ export function PreviewPane({
           </span>
         ) : null}
         <iframe
-          // Fresh element per bundle so late messages from a prior document
-          // cannot pass the event.source check and be attributed to new files.
-          key={bundle.generation}
+          // Fresh element per bundle or manual/auto remount so late messages from a prior
+          // document cannot pass the event.source check and be attributed to new files.
+          key={`${bundle.generation}-${remountKey}`}
           ref={iframeRef}
           title="应用预览"
           data-testid="preview-iframe"
           sandbox={getPreviewSandboxAttribute()}
           srcDoc={bundle.srcdoc}
-          className="h-full min-h-56 w-full border-0 bg-white"
+          className="h-full min-h-[520px] w-full border-0 bg-white"
         />
       </div>
     </div>

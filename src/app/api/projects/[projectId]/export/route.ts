@@ -44,7 +44,10 @@ export async function GET(_request: Request, context: RouteContext) {
   }
 
   try {
-    const archive = await createVersionZip(parseVersionFiles(version.files));
+    const archive = await createVersionZip(parseVersionFiles(version.files), {
+      includeScaffold: true,
+      title: project.title,
+    });
     return new Response(Buffer.from(archive), {
       headers: {
         "Content-Type": "application/zip",

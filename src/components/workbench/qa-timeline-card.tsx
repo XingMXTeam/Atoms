@@ -18,7 +18,7 @@ type QaTimelineCardProps = {
 
 type QaVerdict = {
   criterion: string;
-  verdict: "pass" | "fail";
+  verdict: "pass" | "fail" | "unverified";
   reason: string;
 };
 
@@ -26,12 +26,19 @@ type QaEventPayload = {
   round?: number;
   verdicts?: QaVerdict[];
   qa_score?: number;
+  coverage?: { verified: number; unverified: number; total: number };
   fixInstruction?: string;
   files?: string[];
   exhausted?: boolean;
   messageZh?: string;
   report?: unknown;
   sandbox?: SandboxVerifyReport;
+};
+
+const VERDICT_LABEL: Record<QaVerdict["verdict"], string> = {
+  pass: "通过",
+  fail: "未通过",
+  unverified: "需人工复核",
 };
 
 const SANDBOX_BACKEND_LABEL: Record<SandboxVerifyReport["backend"], string> = {
@@ -42,7 +49,7 @@ const SANDBOX_BACKEND_LABEL: Record<SandboxVerifyReport["backend"], string> = {
 
 type CriterionHistory = {
   criterion: string;
-  verdicts: Array<{ round: number; verdict: "pass" | "fail"; reason: string }>;
+  verdicts: Array<{ round: number; verdict: "pass" | "fail" | "unverified"; reason: string }>;
   failureRound: number | null;
   resolvedRound: number | null;
 };
@@ -238,17 +245,25 @@ export function QaTimelineCard({ events, status }: QaTimelineCardProps) {
               : exhaustedRound !== null && history.failureRound !== null
                 ? `已达修复上限（第 ${exhaustedRound} 轮）`
                 : lastVerdict
-                  ? `第 ${lastVerdict.round} 轮${lastVerdict.verdict === "pass" ? "通过" : "未通过"}`
+                  ? `第 ${lastVerdict.round} 轮${VERDICT_LABEL[lastVerdict.verdict]}`
                   : "等待判定";
             return (
               <section key={history.criterion} className="rounded-lg border border-zinc-200 p-3 dark:border-zinc-800">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <h4 className="font-medium">{history.criterion}</h4>
-                  <span>{resolution}</span>
+                  <span
+                    className={
+                      lastVerdict?.verdict === "unverified"
+                        ? "rounded-full bg-amber-50 px-2 py-0.5 text-[11px] text-amber-800 dark:bg-amber-950/60 dark:text-amber-300"
+                        : undefined
+                    }
+                  >
+                    {resolution}
+                  </span>
                 </div>
                 {history.verdicts.map((verdict, index) => (
                   <p key={`${verdict.round}-${index}`}>
-                    第 {verdict.round} 轮 · {verdict.verdict === "pass" ? "通过" : "未通过"}：{verdict.reason}
+                    第 {verdict.round} 轮 · {VERDICT_LABEL[verdict.verdict]}：{verdict.reason}
                   </p>
                 ))}
               </section>

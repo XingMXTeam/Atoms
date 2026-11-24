@@ -16,6 +16,14 @@ export const previewProbeReportSchema = z
         elementCount: z.number().int().min(0).max(10_000),
       })
       .strict(),
+    interactionSummary: z
+      .object({
+        interactiveCount: z.number().int().min(0).max(500),
+        buttonLabels: z.array(z.string().max(60)).max(20),
+        inputCount: z.number().int().min(0).max(100),
+      })
+      .strict()
+      .optional(),
   })
   .strict();
 

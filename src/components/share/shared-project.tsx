@@ -36,7 +36,7 @@ export function SharedProject({
         </span>
       </header>
 
-      <section className="flex min-h-80 flex-col gap-3 rounded-2xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950">
+      <section className="flex min-h-[620px] flex-col gap-3 rounded-2xl border border-zinc-200 bg-white p-4 dark:border-zinc-800 dark:bg-zinc-950">
         <div
           role="tablist"
           aria-label="分享项目内容"
