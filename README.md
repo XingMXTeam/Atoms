@@ -1,58 +1,152 @@
-# Atoms Studio — 可验证的 AI 应用生成
+<div align="center">
 
-Atoms Studio 是一个面向 mainland-China 可达网络的演示产品：用可见的多 Agent 流水线（Planner / Architect / Engineer / QA）把自然语言需求变成可预览的前端应用，并用「生成后再验证」的方式做 ≤3 轮 QA 自修复。
+<a href="https://atoms.maoxunxing.com/">
+  <img src="docs/social-preview.png" alt="Atoms Studio — 1 Sentence. Verified App." width="100%" />
+</a>
 
-> 定位：**可验证的 AI 应用生成**（Chinese UI）。匿名 `deviceId` 即可使用，无需注册。
+<br />
 
-## 架构概览
+<p>
+  <a href="https://atoms.maoxunxing.com/">
+    <img src="https://img.shields.io/badge/⚛️_Try_Atoms_Studio_Live-atoms.maoxunxing.com-14b8a6?style=for-the-badge" alt="Try Atoms Studio Live" />
+  </a>
+  <a href="https://github.com/XingMXTeam/agent-skills">
+    <img src="https://img.shields.io/badge/⚡_Built_With-27_Agent_Skills-6366f1?style=for-the-badge" alt="Built with agent-skills" />
+  </a>
+</p>
 
-- **App shell**: Next.js App Router + TypeScript，中文界面，light/dark 跟随 `prefers-color-scheme`。
-- **Agent loop**: 服务端 SSE 流水线；Provider 模式 `gemini` / `mock` / `replay`（默认采用低成本 Gemini Flash/Lite，配额耗尽、鉴权失败或上游异常时自动切换 DeepSeek 实时兜底，主备均不可用时首轮回退到高质量「演示回放」，增量迭代显式报错保护现有版本）。流水线实时统计上游 `usageMetadata` / `usage` token 用量，并在 QA 环节通过 `POST /api/.../probe` + D1 `preview_probes` 接入浏览器沙箱真实 DOM/错误探测报告（超时回退到服务端静态探测）。
-- **Preview & Persistence (Plan A + Dual-Track Sandbox)**: 浏览器内 `esbuild-wasm` 同源极速打包 + `sandbox="allow-scripts allow-forms"`（严禁 `allow-same-origin`）iframe 预览，内置安全 `postMessage` 存储桥将生成应用状态持久化至 D1 `project_state`（整页刷新不丢失）；QA 阶段并行调用可插拔后台执行沙箱（`cloudflare-sandbox` / `local-node-sandbox` 真实 `tsc --noEmit` / `worker-static-verifier`）。**不使用 WebContainer。**
-- **China reachability**: 运行时不依赖外部 CDN。`esbuild.wasm`、白名单 ESM vendor、Tailwind 浏览器构建均自托管在同源 `/preview/*`。
-- **Persistence**: Cloudflare D1 + Drizzle（本地/e2e 用 better-sqlite3，同一 repository 接口）。
-- **Deploy**: OpenNext → Cloudflare Workers，自定义域名 `atoms.maoxunxing.com`，Worker `placement: { region: "aws:us-east-1" }`（避免部分区域无法访问 Gemini）。
+<p>
+  <img src="https://img.shields.io/badge/Next.js-App_Router-0f172a?style=flat-square&logo=nextdotjs&logoColor=white" alt="Next.js" />
+  <img src="https://img.shields.io/badge/Cloudflare-Workers_%2B_D1-F38020?style=flat-square&logo=cloudflare&logoColor=white" alt="Cloudflare Workers + D1" />
+  <img src="https://img.shields.io/badge/Preview-esbuild--wasm-06b6d4?style=flat-square" alt="esbuild-wasm" />
+  <img src="https://img.shields.io/badge/Tests-118%2B_Unit_%7C_37_E2E-10b981?style=flat-square" alt="Tests" />
+  <img src="https://img.shields.io/badge/External_CDN-Zero_(China_Ready)-8b5cf6?style=flat-square" alt="Zero External CDN" />
+</p>
+
+<p>
+  <strong>English</strong> · <a href="./README.zh-CN.md">简体中文</a> · <a href="./docs/DELIVERY.md">Engineering Delivery Write-up</a>
+</p>
+
+> **Stop shipping "generate-and-pray" AI demos.**
+> Describe an app in **one sentence** — Atoms Studio's visible multi-agent pipeline (**Planner → Architect → Engineer → QA**) generates specs, bundles in-browser via `esbuild-wasm`, probes the **real rendered DOM**, self-repairs up to **3 rounds**, persists app state to **Cloudflare D1**, and exports a **runnable Vite ZIP** — with **zero sign-up required**.
+
+</div>
+
+---
+
+## ⚡ Why Atoms Studio Beats "Generate & Pray" Builders
+
+Most text-to-app tools dump unverified JSX into a brittle iframe and hope it compiles. Atoms Studio brings **production harness engineering directly inside the product**:
+
+| Dimension | Typical AI App Builders | **Atoms Studio** |
+| :--- | :--- | :--- |
+| **Verification** | Generate code once & pray | **Real Browser DOM + Interactive Control Probe** + pluggable backend `tsc --noEmit` sandbox |
+| **Self-Healing** | Manual copy-paste of console errors | **≤3-Round Automated QA Self-Repair** with 3-state verdict (`Pass / Fail / Human Review`), coverage score & early stop |
+| **Preview Runtime** | Heavy WebContainer / flaky external CDNs | **Same-origin `esbuild-wasm`** (`sandbox="allow-scripts allow-forms"`, **no** `allow-same-origin`, **no WebContainer**) |
+| **State Persistence** | Refresh the page → all app data vanishes | **Safe `postMessage` → Cloudflare D1 `project_state` bridge** (hard-refresh a generated 2048 board → 100% exact restore) |
+| **Mainland China Reachability** | Broken by `esm.sh` / `unpkg` / Google Fonts | **Zero External CDN at runtime** — Playwright `cdn-audit` fails CI on any disallowed host |
+| **LLM Resilience** | Single provider dies on 429/402 | **Gemini Flash/Lite primary → DeepSeek real-time failover** → Turn-1 replay fallback (non-destructive on follow-ups) |
+| **Ownership & Export** | Trapped in proprietary preview | **One-click Runnable Vite ZIP** (`npm install && npm run dev`) + read-only `/share/[slug]` links |
+
+---
+
+## 🏗️ Dual-Track Sandbox & Verifiable Delivery
+
+<div align="center">
+  <img src="docs/architecture-preview.png" alt="Atoms Studio Dual-Track Sandbox Architecture & Production Benchmarks" width="100%" />
+</div>
+
+### How a Single Prompt Turns Into a Verified App
 
 ```text
-Browser (Chinese UI)
-  ├─ Home / Workbench / Share
-  ├─ Agent timeline + follow-up
-  └─ iframe preview ← same-origin /preview/* (wasm · vendor · tailwind)
-         ↑
-Next.js (OpenNext Worker, aws:us-east-1)
-  ├─ SSE agent pipeline (Gemini | mock | replay)
-  └─ D1 / SQLite repository
+One-Sentence Prompt (Anonymous deviceId · No Sign-Up)
+  │
+  ▼  Server-Side SSE Pipeline (OpenNext on Cloudflare Workers · aws:us-east-1)
+  ├── 01. Planner   → Structured PRD, scope & explicit acceptance criteria
+  ├── 02. Architect → File layout, component boundaries & state schema
+  ├── 03. Engineer  → React + TypeScript + Tailwind code generation (token-metered)
+  └── 04. QA Loop   → Dual-Track Verification (≤3 self-repair rounds + no-progress early stop):
+                       • Browser Track: esbuild-wasm renders in isolated iframe → POST /api/.../probe (DOM + controls + runtime errors)
+                       • Backend Track: Pluggable sandbox (Cloudflare Sandbox / isolated Node tsc --noEmit / Worker static verifier)
+  │
+  ▼  Live Workbench & Delivery
+  ├── Interactive Desktop / Mobile (375px) Preview + Safe postMessage ↔ D1 State Persistence
+  ├── Iterative Follow-Up Prompts + Full Version Timeline & Instant Rollback
+  └── One-Click Read-Only /share/[slug] Link + Standalone Runnable Vite ZIP Export
 ```
 
-## 本地开发
+---
+
+## 🔥 Built in 22.5 Hours Using Harness-Driven AI Engineering
+
+Atoms Studio is itself a live proof of **human-steered, harness-driven autonomous engineering** (built with [`XingMXTeam/agent-skills`](https://github.com/XingMXTeam/agent-skills)):
+
+- **⏱️ 22.5h calendar span** — **9.5h unattended autonomous agent execution** (including a 5.3h overnight run) + **4.5h focused human architecture review & acceptance across 11 strategic interventions**
+- **🚀 75+ commits · 7 merged PRs · 15 closed issues** — continuously green across `typecheck`, `lint`, **118+ Vitest unit tests**, **37 Playwright E2E tests**, and production build
+- **⚡ 0.57s cold-session TTFB** on Cloudflare Workers (crushed down from 3.3–4.2s via async session seeding, immutable `/preview/*` caching, and idle `esbuild.wasm` preloading)
+- **🎮 100% reload fidelity** — verified end-to-end on generated interactive apps (e.g., React 2048 4×4 board & score exact-match persistence across hard reloads in D1)
+
+> 📖 Read the complete engineering post-mortem, architecture trade-offs, and 11-intervention timeline in [**`docs/DELIVERY.md`**](./docs/DELIVERY.md).
+
+---
+
+## 🛠️ Architecture Overview
+
+```text
+Browser (Chinese UI · Light/Dark · Anonymous deviceId)
+  ├─ Home / Workbench / Share / Custom 404
+  ├─ Live Multi-Agent Timeline + Iterative Follow-Up + Version Rollback
+  └─ Isolated iframe preview (sandbox="allow-scripts allow-forms")
+       ├─ Same-origin /preview/* (esbuild.wasm · ESM vendor · Tailwind browser)
+       └─ Safe postMessage storage bridge ↔ Cloudflare D1 project_state
+              ↑
+Next.js App Router (OpenNext → Cloudflare Workers, placement: aws:us-east-1)
+  ├─ Server-side SSE Multi-Agent Pipeline (Gemini → DeepSeek failover | mock | replay)
+  ├─ Pluggable Execution Sandbox (Cloudflare Sandbox / local Node tsc / Worker verifier)
+  └─ Drizzle ORM → Cloudflare D1 (prod) / better-sqlite3 (local & E2E)
+```
+
+---
+
+## 🚀 Quick Start (Local Development)
+
+Run the full multi-agent workbench locally in 30 seconds — **no LLM API key required** in `mock` mode:
 
 ```bash
 pnpm install
-cp .env.example .dev.vars   # 填入本地变量；切勿提交真实密钥
-LLM_PROVIDER=mock pnpm dev  # 推荐本地/测试用 mock
+cp .env.example .dev.vars   # Add local keys if using live Gemini/DeepSeek; never commit secrets
+LLM_PROVIDER=mock pnpm dev  # Deterministic mock pipeline for instant local dev & testing
 ```
 
-常用脚本：
+### Common Commands
 
-| 命令 | 作用 |
-|---|---|
-| `pnpm dev` | 本地开发服务器 |
-| `pnpm typecheck` / `pnpm lint` | 静态检查 |
-| `pnpm test` | Vitest 单元测试 |
-| `LLM_PROVIDER=mock pnpm test:e2e` | Playwright（需先 `pnpm build`；webServer 用 `next start`） |
-| `pnpm build` | 生产构建 |
-| `pnpm run build:cf` | OpenNext Cloudflare 构建 |
+| Command | Description |
+| :--- | :--- |
+| `pnpm dev` | Start local Next.js dev server |
+| `pnpm typecheck` / `pnpm lint` | TypeScript & ESLint static checks |
+| `pnpm test` | Run Vitest unit test suite (118+ tests) |
+| `LLM_PROVIDER=mock pnpm test:e2e` | Run Playwright E2E & CDN audit (requires `pnpm build` first) |
+| `pnpm build` | Production Next.js build |
+| `pnpm run build:cf` | OpenNext Cloudflare Workers bundle |
+| `fh verify` | Full verification gate (`typecheck` → `lint` → `unit` → `e2e` → `build`) |
 
-验证整条交付门禁：
+---
 
-```bash
-fh verify   # typecheck / lint / unit / e2e / build（e2e 固定 LLM_PROVIDER=mock）
-```
+## 📚 Engineering Docs
 
-## 交付文档
+- **Full Delivery Write-up & Human-AI Retrospective**: [`docs/DELIVERY.md`](./docs/DELIVERY.md) (alias: [`docs/writeup.md`](./docs/writeup.md))
+- **Architecture Decisions & Trade-offs**: [`docs/plan/decisions.md`](./docs/plan/decisions.md)
+- **Staged Implementation Plan**: [`docs/plan/implementation_plan.md`](./docs/plan/implementation_plan.md)
+- **Live Production Demo**: **[https://atoms.maoxunxing.com](https://atoms.maoxunxing.com)** *(custom domain — do not rely on `*.workers.dev`)*
 
-- 详细交付说明（思路与取舍 / 完成度 / 后续规划 / Cloudflare 部署步骤）：[`docs/DELIVERY.md`](docs/DELIVERY.md)
-- 短文入口（同内容）：[`docs/writeup.md`](docs/writeup.md)
-- 产品决策与实现计划：[`docs/plan/decisions.md`](docs/plan/decisions.md)、[`docs/plan/implementation_plan.md`](docs/plan/implementation_plan.md)
+---
 
-线上演示域名：**https://atoms.maoxunxing.com**（不要依赖 `*.workers.dev` 作为评测入口）。
+<div align="center">
+
+### Part of Momo's AI Engineering Ecosystem
+
+**[⚡ 27 Agent Skills](https://skills.maoxunxing.com/)** · **[⚛️ Atoms Studio](https://atoms.maoxunxing.com/)** · **[🧠 Prompt Studio](https://prompts.maoxunxing.com/)** · **[🌐 maoxunxing.com](https://maoxunxing.com/)**
+
+<sub>If Atoms Studio sparked an idea for your own verifiable AI product, drop a ⭐ on this repo!</sub>
+
+</div>
