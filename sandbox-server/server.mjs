@@ -252,7 +252,9 @@ async function bundleToStandaloneHtml(files) {
     entryPoints: [entry],
     bundle: true,
     write: false,
+    outfile: "bundle.js",
     format: "iife",
+    platform: "browser",
     target: "es2020",
     jsx: "automatic",
     plugins: [
@@ -288,13 +290,17 @@ async function bundleToStandaloneHtml(files) {
     ],
   });
 
-  const js = (result.outputFiles.find((o) => o.path.endsWith(".js"))?.text || "").replace(/<\/script/gi, "<\\/script");
+  const rawJs = result.outputFiles.find((o) => o.path.endsWith(".js"))?.text || result.outputFiles[0]?.text || "";
+  if (!rawJs) throw new Error("esbuild 打包输出为空");
+  const js = rawJs.replace(/<\/script/gi, "<\\/script");
   const cssParts = [loadAssetText("tailwind.css")];
   for (const out of result.outputFiles) {
     if (out.path.endsWith(".css")) cssParts.push(out.text);
   }
   const css = cssParts.filter(Boolean).join("\n").replace(/<\/style/gi, "<\\/style");
-  const vendorJs = loadAssetText("vendor/runtime.js").replace(/<\/script/gi, "<\\/script");
+  const rawVendorJs = loadAssetText("vendor/runtime.js");
+  if (!rawVendorJs) throw new Error(`缺少自托管预览运行时 (${ASSETS_DIR}/vendor/runtime.js)`);
+  const vendorJs = rawVendorJs.replace(/<\/script/gi, "<\\/script");
   const tailwindJs = loadAssetText("vendor/tailwind-browser.js").replace(/<\/script/gi, "<\\/script");
   const probeCapture = `window.__atomsProbeErrors=[];window.addEventListener("error",function(e){if(window.__atomsProbeErrors.length<20)window.__atomsProbeErrors.push(String(e.message||"Runtime error").slice(0,500));});window.addEventListener("unhandledrejection",function(e){if(window.__atomsProbeErrors.length<20)window.__atomsProbeErrors.push(String(e.reason&&e.reason.message||e.reason||"Unhandled rejection").slice(0,500));});`;
   const paintBeacon = `try{(function(){var r=document.getElementById("root");if(!r)return;function done(){var t=(r.innerText||r.textContent||"").trim();if(!t)return false;document.documentElement.setAttribute("data-atoms-painted","1");return true;}if(done())return;var n=0,timer=setInterval(function(){n++;if(done()||n>400)clearInterval(timer);},50);})();}catch(e){}`;
