@@ -26,6 +26,7 @@ type WorkbenchPanelsProps = {
   onTabChange?: (tab: TabId) => void;
   onRestore: (versionId: string) => void;
   onProbeReport?: (report: PreviewProbeReport, sourceFiles: CodeFile[]) => void;
+  onPreviewError?: (message: string, sourceFiles: CodeFile[]) => void;
 };
 
 export function WorkbenchPanels({
@@ -41,6 +42,7 @@ export function WorkbenchPanels({
   onTabChange,
   onRestore,
   onProbeReport,
+  onPreviewError,
 }: WorkbenchPanelsProps) {
   const [internalTab, setInternalTab] = useState<TabId>("preview");
   const currentTab = activeTab ?? internalTab;
@@ -109,6 +111,7 @@ export function WorkbenchPanels({
           initialState={initialProjectState}
           files={files}
           onProbeReport={onProbeReport}
+          onPreviewError={onPreviewError}
         />
       </div>
 

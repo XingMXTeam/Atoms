@@ -207,17 +207,43 @@ async function runTscVerify(files) {
         ? parsedErrors
         : [combined.slice(0, 400) || "TypeScript 编译校验失败"];
 
+    const commands = [
+      {
+        command: "tsc --noEmit -p tsconfig.json",
+        exitCode,
+        stdout: (stdout || (exitCode === 0 ? `Checked ${written.length} files cleanly.` : "")).slice(0, 2000),
+        stderr: stderr.slice(0, 2000),
+        durationMs: cmdMs,
+      },
+    ];
+
+    // Also verify the exact preview esbuild bundle so bundler/CSS/import issues
+    // are caught deterministically server-side on round 0 (never racing the browser).
+    const bundleStart = Date.now();
+    try {
+      await bundleToStandaloneHtml(files);
+      commands.push({
+        command: "esbuild bundle --format=iife --preview",
+        exitCode: 0,
+        stdout: `Bundled ${written.length} files for browser preview cleanly.`,
+        stderr: "",
+        durationMs: Math.max(1, Date.now() - bundleStart),
+      });
+    } catch (bundleErr) {
+      const msg = String(bundleErr?.message || bundleErr || "预览打包失败").slice(0, 600);
+      errors.push(`预览打包失败：${msg}`);
+      commands.push({
+        command: "esbuild bundle --format=iife --preview",
+        exitCode: 1,
+        stdout: "",
+        stderr: msg,
+        durationMs: Math.max(1, Date.now() - bundleStart),
+      });
+    }
+
     return {
-      ok: exitCode === 0,
-      commands: [
-        {
-          command: "tsc --noEmit -p tsconfig.json",
-          exitCode,
-          stdout: (stdout || (exitCode === 0 ? `Checked ${written.length} files cleanly.` : "")).slice(0, 2000),
-          stderr: stderr.slice(0, 2000),
-          durationMs: cmdMs,
-        },
-      ],
+      ok: exitCode === 0 && errors.length === 0,
+      commands,
       errors,
       durationMs: Math.max(1, Date.now() - started),
     };

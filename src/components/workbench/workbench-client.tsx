@@ -84,6 +84,13 @@ export function WorkbenchClient({
   const activeRunIdRef = useRef(initialRunId);
   const qaRoundsRef = useRef(initialRunQaRounds);
   const lastProbeKeyRef = useRef<string | null>(null);
+  const autoHealCountRef = useRef(0);
+  const autoHealSeqRef = useRef(0);
+  const seenAutoHealKeysRef = useRef<Set<string>>(new Set());
+  const [autoRepairRequest, setAutoRepairRequest] = useState<{
+    id: number;
+    prompt: string;
+  } | null>(null);
 
   // File set most recently emitted by the active run (engineer / QA fix).
   // Only probes rendered from exactly these files may be reported to QA.
@@ -133,6 +140,33 @@ export function WorkbenchClient({
       }).catch(() => undefined);
     },
     [projectId],
+  );
+
+  const handlePreviewError = useCallback(
+    (message: string, sourceFiles: CodeFile[]) => {
+      const trimmed = message.trim();
+      if (!trimmed) return;
+      // While a run is actively executing, server-side `/verify` + `onProbeReport`
+      // already drive automatic repair — never spawn a competing run.
+      if (liveRunStatusRef.current !== "completed") return;
+      if (qaRoundsRef.current >= 3) return;
+      if (providerLabel === "演示回放") return;
+      if (sourceFiles !== files) return;
+      if (autoHealCountRef.current >= 2) return;
+
+      const versionScope = currentVersionId ?? activeRunIdRef.current ?? "v0";
+      const sig = `${versionScope}:${trimmed.slice(0, 120)}`;
+      if (seenAutoHealKeysRef.current.has(sig)) return;
+      seenAutoHealKeysRef.current.add(sig);
+      autoHealCountRef.current += 1;
+
+      const nextId = ++autoHealSeqRef.current;
+      setAutoRepairRequest({
+        id: nextId,
+        prompt: `自动修复预览编译/运行时错误：${trimmed.slice(0, 600)}。请完整保留现有视觉设计与功能，彻底修复该报错并确保预览无异常正常渲染和交互。`,
+      });
+    },
+    [currentVersionId, files, providerLabel],
   );
 
   useEffect(() => {
@@ -430,6 +464,7 @@ export function WorkbenchClient({
           onProviderLabel={setProviderLabel}
           onRunIdChange={handleRunIdChange}
           onTitleChange={handleTitleChange}
+          autoRepairRequest={autoRepairRequest}
         />
         <WorkbenchPanels
           projectId={projectId}
@@ -444,6 +479,7 @@ export function WorkbenchClient({
           onTabChange={setActiveTab}
           onRestore={restoreVersion}
           onProbeReport={handleProbeReport}
+          onPreviewError={handlePreviewError}
         />
       </div>
     </div>

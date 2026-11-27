@@ -141,7 +141,7 @@ export async function GET(request: Request, context: RouteContext) {
           (clientProbe && effectiveProvider.mode !== "mock") || forceClientProbe;
         const probePreview = useClientProbe
           ? async (files: GeneratedFile[], round: number) => {
-              const timeoutMs = round === 0 ? 12_000 : 6_000;
+              const timeoutMs = round === 0 ? 18_000 : 10_000;
               const deadline = Date.now() + timeoutMs;
               while (!abort.signal.aborted && Date.now() < deadline) {
                 const raw = await repo.getPreviewProbe(runId, round);

@@ -13,6 +13,24 @@ describe("backend execution sandbox", () => {
     expect(report.errors).toEqual([]);
     expect(report.commands[0]?.command).toContain("tsc --noEmit");
     expect(report.commands[0]?.exitCode).toBe(0);
+    expect(report.commands[1]?.command).toContain("bundle --format=iife --preview");
+    expect(report.commands[1]?.exitCode).toBe(0);
+  }, 20_000);
+
+  it("catches preview bundle failures (e.g. missing CSS import) server-side in /verify", async () => {
+    const brokenBundleFiles = [
+      {
+        path: "src/main.tsx",
+        content: 'import { createRoot } from "react-dom/client";\nimport App from "./App";\ncreateRoot(document.getElementById("root")!).render(<App />);',
+      },
+      {
+        path: "src/App.tsx",
+        content: 'import "./does-not-exist.css";\nexport default function App() { return <div>Hi</div>; }',
+      },
+    ];
+    const report = await verifyInBackendSandbox(brokenBundleFiles);
+    expect(report.ok).toBe(false);
+    expect(report.errors.some((e) => e.includes("does-not-exist.css") || e.includes("找不到模块"))).toBe(true);
   }, 20_000);
 
   it("catches real TypeScript compile errors in isolated subprocess sandbox", async () => {

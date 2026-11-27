@@ -3,6 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { promisify } from "node:util";
+import { bundlePreviewFiles } from "@/lib/preview/bundle";
 import type { SandboxCommandResult, SandboxFile, SandboxVerifyReport } from "./types";
 
 const execFileAsync = promisify(execFile);
@@ -62,7 +63,7 @@ export async function runLocalNodeSandbox(
     for (const file of files) {
       const rel = sanitizeRelativePath(file.path);
       if (!rel) continue;
-      const target = path.join(tmpDir, rel);
+      const target = path.join(/*turbopackIgnore: true*/ tmpDir, rel);
       fs.mkdirSync(path.dirname(target), { recursive: true });
       fs.writeFileSync(target, file.content, "utf8");
       writtenPaths.push(rel);
@@ -128,19 +129,45 @@ export async function runLocalNodeSandbox(
           ? parsedErrors
           : [combinedOutput.slice(0, 400) || "TypeScript 编译校验失败"];
 
-    const commandResult: SandboxCommandResult = {
-      command: "tsc --noEmit -p tsconfig.json",
-      exitCode,
-      stdout: (stdout || (exitCode === 0 ? `Checked ${writtenPaths.length} files cleanly.` : "")).slice(0, 2000),
-      stderr: stderr.slice(0, 2000),
-      durationMs: cmdDurationMs,
-    };
+    const commands: SandboxCommandResult[] = [
+      {
+        command: "tsc --noEmit -p tsconfig.json",
+        exitCode,
+        stdout: (stdout || (exitCode === 0 ? `Checked ${writtenPaths.length} files cleanly.` : "")).slice(0, 2000),
+        stderr: stderr.slice(0, 2000),
+        durationMs: cmdDurationMs,
+      },
+    ];
+
+    if (exitCode === 0) {
+      const bundleStart = Date.now();
+      const bundleRes = await bundlePreviewFiles(files);
+      const bundleMs = Math.max(1, Date.now() - bundleStart);
+      if (bundleRes.ok) {
+        commands.push({
+          command: "esbuild-wasm bundle --format=iife --preview",
+          exitCode: 0,
+          stdout: `Bundled ${writtenPaths.length} files for browser preview cleanly.`,
+          stderr: "",
+          durationMs: bundleMs,
+        });
+      } else {
+        errors.push(bundleRes.messageZh);
+        commands.push({
+          command: "esbuild-wasm bundle --format=iife --preview",
+          exitCode: 1,
+          stdout: "",
+          stderr: bundleRes.messageZh.slice(0, 2000),
+          durationMs: bundleMs,
+        });
+      }
+    }
 
     return {
       backend: "local-node-sandbox",
       isolated: true,
-      ok: exitCode === 0,
-      commands: [commandResult],
+      ok: exitCode === 0 && errors.length === 0,
+      commands,
       errors,
       durationMs: Math.max(1, Date.now() - started),
     };

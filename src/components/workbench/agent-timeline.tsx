@@ -35,6 +35,8 @@ type AgentTimelineProps = {
   onProviderLabel?: (label: string | null) => void;
   onRunIdChange?: (runId: string) => void;
   onTitleChange?: (title: string) => void;
+  /** Automatic preview/runtime error self-heal request (triggers run immediately with zero clicks). */
+  autoRepairRequest?: { id: number; prompt: string } | null;
 };
 
 function extractFiles(payload: unknown): GeneratedFile[] | null {
@@ -190,6 +192,7 @@ export function AgentTimeline({
   onProviderLabel,
   onRunIdChange,
   onTitleChange,
+  autoRepairRequest,
 }: AgentTimelineProps) {
   const [runId, setRunId] = useState(initialRunId);
   const initialStatus = (initialRunStatus as RunStatus) || "running";
@@ -201,6 +204,8 @@ export function AgentTimeline({
   const [now, setNow] = useState(() => Date.now());
   const [continuePending, setContinuePending] = useState(false);
   const [followUpPending, setFollowUpPending] = useState(false);
+  const [autoRepairBanner, setAutoRepairBanner] = useState<string | null>(null);
+  const handledAutoRepairIdRef = useRef<number>(0);
   const [errorMessage, setErrorMessage] = useState<string | null>(() =>
     initialRunStatus === "interrupted"
       ? "连接已中断。可点击「继续」重新生成。"
@@ -578,6 +583,7 @@ export function AgentTimeline({
   const handleFollowUp = async (prompt: string) => {
     setFollowUpPending(true);
     setErrorMessage(null);
+    setAutoRepairBanner(null);
     try {
       await startNextRun({ prompt });
     } catch (error) {
@@ -588,6 +594,36 @@ export function AgentTimeline({
       setFollowUpPending(false);
     }
   };
+
+  useEffect(() => {
+    if (!autoRepairRequest || !allowFollowUp) return;
+    if (autoRepairRequest.id === handledAutoRepairIdRef.current) return;
+    if (runStatusRef.current !== "completed") return;
+    handledAutoRepairIdRef.current = autoRepairRequest.id;
+    let cancelled = false;
+    void (async () => {
+      setAutoRepairBanner("检测到预览编译/运行异常，已自动触发工程师修复…");
+      setFollowUpPending(true);
+      setErrorMessage(null);
+      try {
+        await startNextRun({ prompt: autoRepairRequest.prompt });
+      } catch (error) {
+        if (!cancelled) {
+          setAutoRepairBanner(null);
+          setErrorMessage(
+            error instanceof Error ? error.message : "自动修复启动失败，请重试",
+          );
+        }
+      } finally {
+        if (!cancelled) {
+          setFollowUpPending(false);
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [allowFollowUp, autoRepairRequest, startNextRun]);
 
   const visibleCards = useMemo(
     () => cards.map((card) => ({ ...card, now })),
@@ -653,6 +689,16 @@ export function AgentTimeline({
           status={qaCardStatus}
         />
       </div>
+
+      {autoRepairBanner && runStatus === "running" ? (
+        <p
+          data-testid="ux-banner-auto-repair"
+          className="rounded-xl border border-indigo-200/80 bg-indigo-50/80 px-3 py-2 text-xs font-medium text-indigo-800 dark:border-indigo-900/50 dark:bg-indigo-950/30 dark:text-indigo-200"
+          role="status"
+        >
+          {autoRepairBanner}
+        </p>
+      ) : null}
 
       {interruptCopy ? (
         <p

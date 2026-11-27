@@ -141,4 +141,37 @@ describe("AgentTimeline QA stream", () => {
 
     expect(onProviderLabel).toHaveBeenCalledWith("演示回放");
   });
+
+  it("automatically dispatches a self-heal run on preview error with zero clicks", async () => {
+    vi.stubGlobal("EventSource", MockEventSource);
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ runId: "run-auto-heal-2" }),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    const onRunIdChange = vi.fn();
+
+    render(
+      <AgentTimeline
+        projectId="project-auto"
+        initialRunId="run-1"
+        initialRunStatus="completed"
+        onRunIdChange={onRunIdChange}
+        autoRepairRequest={{
+          id: 1,
+          prompt: "自动修复预览编译/运行时错误：TypeError: Cannot read properties of undefined",
+        }}
+      />,
+    );
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/projects/project-auto/runs/run-1/continue",
+      expect.objectContaining({ method: "POST" }),
+    );
+    await waitFor(() =>
+      expect(onRunIdChange).toHaveBeenCalledWith("run-auto-heal-2"),
+    );
+    expect(screen.getByTestId("ux-banner-auto-repair").textContent).toContain("自动触发工程师修复");
+  });
 });

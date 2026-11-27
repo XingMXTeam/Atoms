@@ -32,6 +32,8 @@ type PreviewPaneProps = {
   readOnly?: boolean;
   /** `sourceFiles` identifies which file set produced the report (stale-probe guard). */
   onProbeReport?: (report: PreviewProbeReport, sourceFiles: PreviewFile[]) => void;
+  /** Fired immediately on preview bundle failure or uncaught iframe runtime error for automatic self-healing. */
+  onPreviewError?: (message: string, sourceFiles: PreviewFile[]) => void;
 };
 
 type BundleResult =
@@ -42,6 +44,7 @@ type PreviewPaintMessage = {
   source?: string;
   type?: string;
   text?: string;
+  message?: string;
 };
 
 type SyncStatus = "idle" | "saving" | "saved";
@@ -76,6 +79,7 @@ export function PreviewPane({
   initialState,
   readOnly = false,
   onProbeReport,
+  onPreviewError,
 }: PreviewPaneProps) {
   const [bundle, setBundle] = useState<BundleResult | null>(null);
   const [paintedText, setPaintedText] = useState("");
@@ -86,6 +90,10 @@ export function PreviewPane({
     initialState && Object.keys(initialState).length > 0 ? "saved" : "idle",
   );
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const onPreviewErrorRef = useRef(onPreviewError);
+  useEffect(() => {
+    onPreviewErrorRef.current = onPreviewError;
+  }, [onPreviewError]);
   // Files that produced the currently mounted iframe; probes are attributed to them.
   const renderedFilesRef = useRef<PreviewFile[] | null>(null);
   const generationRef = useRef(0);
@@ -156,6 +164,9 @@ export function PreviewPane({
         setPaintedText("");
         renderedFilesRef.current = files;
         onProbeReport?.(createCompileErrorProbeReport(result.messageZh), files);
+        if (!readOnly) {
+          onPreviewErrorRef.current?.(result.messageZh, files);
+        }
         setBundle({
           status: "error",
           messageZh: result.messageZh,
@@ -184,7 +195,7 @@ export function PreviewPane({
     return () => {
       cancelled = true;
     };
-  }, [files, onProbeReport]);
+  }, [files, onProbeReport, readOnly]);
 
   useEffect(() => {
     function onMessage(event: MessageEvent) {
@@ -234,6 +245,19 @@ export function PreviewPane({
 
       if (!data || typeof data !== "object") return;
       const message = data as PreviewPaintMessage;
+      if (
+        !readOnly &&
+        message.source === "atoms-preview" &&
+        message.type === "runtime-error" &&
+        typeof message.message === "string" &&
+        message.message.trim() &&
+        renderedFilesRef.current
+      ) {
+        onPreviewErrorRef.current?.(
+          `预览运行时异常：${message.message.trim()}`,
+          renderedFilesRef.current,
+        );
+      }
       const text = message.text?.trim();
       if (
         message.source === "atoms-preview" &&
