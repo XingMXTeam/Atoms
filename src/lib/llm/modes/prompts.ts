@@ -105,13 +105,51 @@ export function buildPromptForStage(input: GeminiCompleteInput): {
         "硬性约束：",
         "1. `verdicts` 数组必须包含且仅包含 `acceptance` 中的每一条标准，`criterion` 字段必须与输入完全一致。",
         "2. 如果 probe 中存在 compileErrors、runtimeErrors 或 blankScreen 为 true，相应标准必须判为 `fail`，并给出具体中文 reason 与清晰的 `fixInstruction`。",
-        "3. `verdict` 支持三态：`pass`（已验证通过）、`fail`（存在编译/运行错误、白屏或明显缺失核心界面）、`unverified`（无错误且界面已渲染，但该条依赖长时倒计时归零、真实音频或复杂多步按键状态机，渲染探针无法直接验证，需人工复核）。严禁把「探针无法模拟」判为 `fail`，严禁在 `fixInstruction` 中要求编写 `.test.tsx` 或引入 `vitest` / `@testing-library/react`。",
+        "3. `verdict` 支持三态：`pass`（已验证通过）、`fail`（存在编译/运行错误、白屏或明显缺失核心界面）、`unverified`（无错误且界面已渲染，但该条依赖长时倒计时归零、真实音频或复杂多步按键状态机，渲染探针无法直接验证，需交由后续沙箱智能复核或人工复核）。严禁把「探针无法模拟」判为 `fail`，严禁在 `fixInstruction` 中要求编写 `.test.tsx` 或引入 `vitest` / `@testing-library/react`。",
         "4. 每条 `reason` 必须引用该条标准自己的证据（可见文案、控件名称或具体错误），禁止多条标准复用同一句理由。",
         "严格输出 JSON。",
       ].join("\n"),
       userPrompt: JSON.stringify({
         acceptance: input.acceptance ?? [],
         probe: input.probe ?? null,
+      }),
+    };
+  }
+
+  if (stage === "qa-review-plan") {
+    return {
+      systemInstruction: [
+        "你是 Atoms Studio 的智能验收规划师 (Review Planner)。静态探针无法验证以下验收标准，请为每条标准设计在独立沙箱中真实执行的 Playwright 浏览器交互步骤 和/或 隔离 Vitest 边界单元测试。",
+        "硬性约束：",
+        "1. 输出 JSON 对象 `{\"cases\": [...]}`，`cases` 必须逐条覆盖输入的每条 `acceptance`，`criterion` 逐字一致。",
+        "2. `strategy` 可选 `playwright`（常规按键、点击、表单输入、重置、刷新持久化）、`vitest`（深层状态机边界，如 2048 满盘死局触发 Game Over 弹窗、倒计时归零逻辑）、或 `hybrid`（两者结合）。",
+        "3. `steps` 仅允许使用受控动作：`press`（`key`, 可选 `count`）、`click`（`text`/`role`/`selector`）、`fill`（`text`/`label`/`placeholder`/`selector`）、`wait`（`ms <= 2000`）、`reload`、`assert`（`expectText`/`expectVisible`/`expectTextChanged`/`expectStorageChanged`/`expectNoErrors`）。",
+        "4. 若使用 `vitestCode`：测试文件位于临时目录 `__atoms_review__/boundary.test.tsx`，只能从 `vitest`、`@testing-library/react`、`react` 及 `../src/...` 导入（根据 `fileSummaries` 准确引用导出的函数或组件）。严禁引用 `fs`、`child_process`、`http`、`process.env`、`require()` 或外部 URL。",
+        "5. 优先通过真实交互与确定性边界单测覆盖尽可能多的验收标准，避免留空。",
+        "严格输出 JSON。",
+      ].join("\n"),
+      userPrompt: JSON.stringify({
+        acceptance: input.acceptance ?? [],
+        probe: input.probe ?? null,
+        fileSummaries: input.fileSummaries ?? [],
+      }),
+    };
+  }
+
+  if (stage === "qa-review-judge") {
+    return {
+      systemInstruction: [
+        "你是 Atoms Studio 的隔离智能复核裁判 (Isolated Reviewer Judge)。你只能根据沙箱中真实执行的 Playwright 交互轨迹、前后状态差分与 Vitest 边界测试输出逐条判定，严禁凭空猜测或臆断未执行的行为。",
+        "硬性约束：",
+        "1. `verdicts` 必须包含且仅包含输入的每条 `acceptance`，`criterion` 逐字一致。",
+        "2. 若对应 case 的 `status` 为 `not_performed`，必须判为 `unverified`，严禁判 `pass`。",
+        "3. 若 Playwright 动作失败、出现 `consoleErrors`/`pageErrors`，或 `vitestCommand.exitCode !== 0`，必须判为 `fail`，并给出具体中文 `reason` 和精准可执行的 `fixInstruction`（严禁要求产品代码引入测试库或创建 `.test.tsx`）。",
+        "4. 若动作全部成功、观测到符合验收标准的真实状态变化且无报错（或 Vitest 边界单测 `exitCode === 0`），判为 `pass`，并在 `reason` 中引用真实执行的步骤或命令结果。",
+        "严格输出 JSON。",
+      ].join("\n"),
+      userPrompt: JSON.stringify({
+        acceptance: input.acceptance ?? [],
+        reviewReport: input.reviewReport ?? null,
       }),
     };
   }

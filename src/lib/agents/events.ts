@@ -5,6 +5,7 @@ export type AgentEventType =
   | "design"
   | "file"
   | "probe"
+  | "review"
   | "verdict"
   | "fix"
   | "error";

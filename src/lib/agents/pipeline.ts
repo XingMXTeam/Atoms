@@ -3,12 +3,21 @@ import { utcDay } from "@/lib/limits/rate-limit";
 import type { LlmProvider } from "@/lib/llm/types";
 import type { PreviewProbeReport } from "@/lib/preview/probe";
 import {
+  runInteractiveSandboxReview,
   verifyInBackendSandbox,
+  type SandboxReviewPlan,
+  type SandboxReviewReport,
   type SandboxVerifyReport,
 } from "@/lib/sandbox/runner";
+import { computeFilesSha256 } from "@/lib/sandbox/review-types";
 import { runArchitect } from "./architect";
 import { runEngineer, runEngineerRepair } from "./engineer";
 import { runQa, type QaResult } from "./qa";
+import {
+  adjudicateReviewReport,
+  mergeReviewedVerdicts,
+  planInteractiveReview,
+} from "./reviewer";
 import {
   createSeqCounter,
   type AgentEventRecord,
@@ -49,6 +58,12 @@ export type RunAgentPipelineOptions = {
   ) => Promise<PreviewProbeReport>;
   /** Optional override for backend execution sandbox verification (tests). */
   verifySandbox?: (files: GeneratedFile[]) => Promise<SandboxVerifyReport>;
+  /** Optional override for sandbox Playwright/Vitest interactive reviewer (tests). */
+  reviewSandbox?: (
+    files: GeneratedFile[],
+    plan: SandboxReviewPlan,
+    expectedSha256: string,
+  ) => Promise<SandboxReviewReport | null>;
 };
 
 async function delayStage(ms: number | undefined, signal?: AbortSignal) {
@@ -127,6 +142,7 @@ export async function runAgentPipeline(
     stageDelayMs,
     probePreview,
     verifySandbox,
+    reviewSandbox,
   } = options;
   const nextSeq = createSeqCounter();
   let sawReplayFallback = false;
@@ -291,6 +307,53 @@ export async function runAgentPipeline(
 
       const verdictStarted = Date.now();
       qaResult = await runQa(trackedProvider, { acceptance: plan.acceptance, probe });
+
+      const unverifiedCriteria = qaResult.verdicts
+        .filter(({ verdict }) => verdict === "unverified")
+        .map(({ criterion }) => criterion);
+
+      if (
+        unverifiedCriteria.length > 0 &&
+        !hasProbeFailure(probe) &&
+        !hasQaFailure(qaResult)
+      ) {
+        const reviewStarted = Date.now();
+        const expectedSha256 = await computeFilesSha256(files);
+        const reviewPlan = await planInteractiveReview(trackedProvider, {
+          unverifiedCriteria,
+          probe,
+          files,
+        });
+        const reviewReport = await (reviewSandbox ?? runInteractiveSandboxReview)(
+          files,
+          reviewPlan,
+          expectedSha256,
+        );
+        if (reviewReport) {
+          await persistEvent(
+            repo,
+            {
+              runId,
+              seq: nextSeq(),
+              agent: "qa",
+              type: "review",
+              payload: {
+                round: qaRounds,
+                ...reviewReport,
+                timing: stageTiming(reviewStarted),
+              },
+            },
+            onEvent,
+          );
+          const adjudicated = await adjudicateReviewReport(trackedProvider, {
+            unverifiedCriteria,
+            reviewReport,
+            expectedSha256,
+          });
+          qaResult = mergeReviewedVerdicts(qaResult, adjudicated);
+        }
+      }
+
       await persistEvent(
         repo,
         {

@@ -3,6 +3,15 @@ import type { LlmProvider } from "@/lib/llm/types";
 import { modelClassForStage } from "@/lib/llm/model-routing";
 import type { PreviewProbeReport } from "@/lib/preview/probe";
 
+export const qaVerifiedBySchema = z.enum([
+  "static-probe",
+  "playwright-review",
+  "vitest-review",
+  "hybrid-review",
+]);
+
+export type QaVerifiedBy = z.infer<typeof qaVerifiedBySchema>;
+
 export const qaVerdictSchema = z.object({
   verdicts: z
     .array(
@@ -10,6 +19,7 @@ export const qaVerdictSchema = z.object({
         criterion: z.string().min(1),
         verdict: z.enum(["pass", "fail", "unverified"]),
         reason: z.string().min(1),
+        verifiedBy: qaVerifiedBySchema.optional(),
       }),
     )
     .min(1),
@@ -48,13 +58,13 @@ export function computeQaCoverage(verdicts: QaVerdict[]): QaCoverage {
 }
 
 /**
- * Score only verifiable criteria (`pass` / `fail`) so probe limitations marked
- * `unverified` do not falsely tank a working app to 0%.
+ * Score verifiable criteria (`pass` / `fail`). When zero criteria have been
+ * verified (all `unverified`), returns 0 rather than a misleading 100%.
  */
 export function aggregateQaScore(verdicts: QaVerdict[]): number {
   if (verdicts.length === 0) return 0;
   const verifiable = verdicts.filter(({ verdict }) => verdict !== "unverified");
-  if (verifiable.length === 0) return 100;
+  if (verifiable.length === 0) return 0;
   const passed = verifiable.filter(({ verdict }) => verdict === "pass").length;
   return Math.round((passed / verifiable.length) * 100);
 }

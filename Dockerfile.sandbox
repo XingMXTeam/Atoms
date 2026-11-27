@@ -1,10 +1,23 @@
-# Production Cloudflare Sandbox container image (matches stable @cloudflare/sandbox).
-# Build and deploy when Cloudflare Workers Paid + Containers is enabled on the account.
-FROM docker.io/cloudflare/sandbox:0.7.0
+# Production Atoms Backend Execution & Intelligent Reviewer Sandbox Container.
+# Supports both Cloudflare Containers / @cloudflare/sandbox and standalone Docker hosts
+# (Fly.io, Railway, VPS). Exposes HTTP `/health`, `/verify` (tsc), and `/review`
+# (Playwright Chromium interactive journeys + isolated Vitest boundary tests).
+FROM mcr.microsoft.com/playwright:v1.56.0-noble
 
-WORKDIR /workspace
+WORKDIR /app/sandbox-server
 
-# Pre-install TypeScript & React type definitions so verification runs offline
-# without pulling external npm registries at request time.
-RUN npm init -y && \
-    npm install --no-audit --no-fund typescript @types/react @types/react-dom react react-dom
+# Pre-install TypeScript, React, Vitest, Testing Library, esbuild, and Playwright API
+# so verification and intelligent interactive reviews run 100% offline at request time.
+COPY sandbox-server/package.json ./package.json
+RUN npm install --no-audit --no-fund
+
+COPY sandbox-server/server.mjs ./server.mjs
+COPY public/preview /app/public/preview
+
+ENV NODE_ENV=production \
+    PORT=8787 \
+    ATOMS_PREVIEW_ASSETS_DIR=/app/public/preview
+
+EXPOSE 8787
+
+CMD ["node", "server.mjs"]

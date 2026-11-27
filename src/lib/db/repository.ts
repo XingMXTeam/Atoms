@@ -58,7 +58,7 @@ export type AgentEvent = {
   runId: string;
   seq: number;
   agent: "planner" | "architect" | "engineer" | "qa";
-  type: "plan" | "design" | "file" | "probe" | "verdict" | "fix" | "error";
+  type: "plan" | "design" | "file" | "probe" | "review" | "verdict" | "fix" | "error";
   payload: unknown;
 };
 
