@@ -44,7 +44,7 @@ export const agentEvents = sqliteTable("agent_events", {
     enum: ["planner", "architect", "engineer", "qa"],
   }).notNull(),
   type: text("type", {
-    enum: ["plan", "design", "file", "probe", "verdict", "fix", "error"],
+    enum: ["plan", "design", "file", "probe", "review", "verdict", "fix", "error"],
   }).notNull(),
   payload: text("payload", { mode: "json" }).notNull().$type<unknown>(),
 });

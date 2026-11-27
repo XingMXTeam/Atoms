@@ -97,6 +97,7 @@ function responseSchemaForStage(stage?: string): GeminiSchemaNode | undefined {
         required: ["files", "summary"],
       };
     case "qa":
+    case "qa-review-judge":
       return {
         type: "OBJECT",
         properties: {
@@ -115,6 +116,49 @@ function responseSchemaForStage(stage?: string): GeminiSchemaNode | undefined {
           fixInstruction: { type: "STRING" },
         },
         required: ["verdicts"],
+      };
+    case "qa-review-plan":
+      return {
+        type: "OBJECT",
+        properties: {
+          cases: {
+            type: "ARRAY",
+            items: {
+              type: "OBJECT",
+              properties: {
+                criterion: { type: "STRING" },
+                strategy: { type: "STRING", enum: ["playwright", "vitest", "hybrid"] },
+                steps: {
+                  type: "ARRAY",
+                  items: {
+                    type: "OBJECT",
+                    properties: {
+                      type: { type: "STRING", enum: ["press", "click", "fill", "wait", "reload", "assert"] },
+                      key: { type: "STRING" },
+                      count: { type: "INTEGER" },
+                      text: { type: "STRING" },
+                      role: { type: "STRING", enum: ["button", "checkbox", "link", "tab"] },
+                      selector: { type: "STRING" },
+                      label: { type: "STRING" },
+                      placeholder: { type: "STRING" },
+                      ms: { type: "INTEGER" },
+                      expectText: { type: "STRING" },
+                      expectTextChanged: { type: "BOOLEAN" },
+                      expectStorageChanged: { type: "BOOLEAN" },
+                      expectNoErrors: { type: "BOOLEAN" },
+                      expectVisible: { type: "STRING" },
+                    },
+                    required: ["type"],
+                  },
+                },
+                vitestCode: { type: "STRING" },
+                expectDescription: { type: "STRING" },
+              },
+              required: ["criterion", "strategy", "expectDescription"],
+            },
+          },
+        },
+        required: ["cases"],
       };
     default:
       return undefined;
@@ -139,7 +183,12 @@ async function defaultFetchGeminiResult(
       },
     ],
     generationConfig: {
-      temperature: input.stage === "qa" ? 0.1 : 0.3,
+      temperature:
+        input.stage === "qa" ||
+        input.stage === "qa-review-plan" ||
+        input.stage === "qa-review-judge"
+          ? 0.1
+          : 0.3,
       ...(input.modelId.startsWith("gemini-3")
         ? { thinkingConfig: { thinkingLevel: "low" } }
         : {}),

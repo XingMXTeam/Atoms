@@ -142,4 +142,13 @@ describe("structured QA verdicts", () => {
     expect(result.qa_score).toBe(100);
     expect(result.coverage).toEqual({ verified: 1, unverified: 1, total: 2 });
   });
+
+  it("returns 0 instead of a misleading 100 when every criterion is unverified", () => {
+    expect(
+      aggregateQaScore([
+        { criterion: "AC-1", verdict: "unverified", reason: "静态探针无法模拟按键" },
+        { criterion: "AC-2", verdict: "unverified", reason: "静态探针无法模拟连续交互" },
+      ]),
+    ).toBe(0);
+  });
 });

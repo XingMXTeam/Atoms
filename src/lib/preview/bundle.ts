@@ -374,3 +374,39 @@ export function buildPreviewSrcdoc(
 </body>
 </html>`;
 }
+
+/**
+ * Standalone HTML served on an ephemeral localhost origin during server-side
+ * Playwright interactive review. Keeps native `window.localStorage` intact so
+ * `page.reload()` genuinely tests cross-reload state persistence.
+ */
+export function buildStandaloneReviewHtml(
+  js: string,
+  css: string,
+  vendorJs = "",
+  tailwindJs = "",
+): string {
+  const escapedVendor = vendorJs.replace(/<\/script/gi, "<\\/script");
+  const escapedJs = js.replace(/<\/script/gi, "<\\/script");
+  const escapedCss = css.replace(/<\/style/gi, "<\\/style");
+  const escapedTailwind = tailwindJs.replace(/<\/script/gi, "<\\/script");
+  const probeCapture = `window.__atomsProbeErrors=[];window.addEventListener("error",function(e){var errors=window.__atomsProbeErrors;if(errors.length<20){errors.push(String(e.message||"Runtime error").slice(0,500));}});window.addEventListener("unhandledrejection",function(e){var errors=window.__atomsProbeErrors;if(errors.length<20){var reason=e.reason;errors.push(String(reason&&reason.message||reason||"Unhandled rejection").slice(0,500));}});`;
+  const paintBeacon = `try{(function(){var r=document.getElementById("root");if(!r)return;var observer;var timer;function done(){var text=(r.innerText||r.textContent||"").trim();if(!text)return false;document.documentElement.setAttribute("data-atoms-painted","1");if(observer)observer.disconnect();if(timer)clearInterval(timer);return true;}if(done())return;if(typeof MutationObserver!=="undefined"){observer=new MutationObserver(done);observer.observe(r,{childList:true,subtree:true,characterData:true});}var n=0;timer=setInterval(function(){n++;if(done()||n>600){clearInterval(timer);if(observer)observer.disconnect();}},50);})();}catch(e){}`;
+
+  return `<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Atoms Interactive Review</title>
+  <style>${escapedCss}</style>${escapedTailwind ? `\n  <script>${escapedTailwind}</script>` : ""}
+</head>
+<body class="atoms-preview-root">
+  <div id="root"></div>
+  <script>${probeCapture}</script>
+  <script>${escapedVendor}</script>
+  <script>${escapedJs}</script>
+  <script>${paintBeacon}</script>
+</body>
+</html>`;
+}
