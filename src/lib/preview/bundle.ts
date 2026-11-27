@@ -190,6 +190,12 @@ export function resetPreviewAssetCaches(): void {
   tailwindRuntimeCache = null;
 }
 
+function sanitizeVirtualCss(raw: string): string {
+  return raw
+    .replace(/@import\s+['"]tailwindcss(?:\/[^'"]*)?['"]\s*;?/g, "")
+    .replace(/@tailwind\s+(?:base|components|utilities|variants)\s*;?/g, "");
+}
+
 function createVirtualPlugin(files: Map<string, string>): Plugin {
   return {
     name: "atoms-virtual-fs",
@@ -197,6 +203,14 @@ function createVirtualPlugin(files: Map<string, string>): Plugin {
       build.onResolve({ filter: /.*/ }, (args) => {
         if (args.kind === "entry-point") {
           return { path: normalizePath(args.path), namespace: "virtual" };
+        }
+
+        if (
+          (args.kind === "import-rule" || args.importer.endsWith(".css")) &&
+          (args.path === "tailwindcss" || args.path.startsWith("tailwindcss/"))
+        ) {
+          // Tailwind v4 CSS + browser runtime are already self-hosted in preview HTML.
+          return { path: args.path, namespace: "tailwind-noop" };
         }
 
         if (isPreviewVendorSpecifier(args.path)) {
@@ -242,12 +256,20 @@ function createVirtualPlugin(files: Map<string, string>): Plugin {
               : args.path.endsWith(".css")
                 ? "css"
                 : "js";
-        return { contents, loader };
+        return {
+          contents: loader === "css" ? sanitizeVirtualCss(contents) : contents,
+          loader,
+        };
       });
 
       build.onLoad({ filter: /.*/, namespace: "vendor-shim" }, () => ({
         contents: VENDOR_SHIM,
         loader: "js",
+      }));
+
+      build.onLoad({ filter: /.*/, namespace: "tailwind-noop" }, () => ({
+        contents: "",
+        loader: "css",
       }));
     },
   };
@@ -294,6 +316,7 @@ export async function bundlePreviewFiles(
       entryPoints: [entry],
       bundle: true,
       write: false,
+      outfile: "bundle.js",
       // IIFE + classic script: opaque sandboxed iframes block module scripts.
       format: "iife",
       platform: "browser",
@@ -303,12 +326,21 @@ export async function bundlePreviewFiles(
       logLevel: "silent",
     });
 
-    const js = result.outputFiles?.[0]?.text;
+    const js =
+      result.outputFiles?.find((out) => out.path.endsWith(".js"))?.text ??
+      result.outputFiles?.[0]?.text;
     if (!js) {
       return { ok: false, messageZh: "打包结果为空，请检查生成的源码。" };
     }
+    const extraCss = (result.outputFiles ?? [])
+      .filter((out) => out.path.endsWith(".css"))
+      .map((out) => out.text)
+      .filter(Boolean)
+      .join("\n");
+    const mergedCss = extraCss ? `${css}\n${extraCss}` : css;
     if (
       containsBlockedCdnUrl(js) ||
+      containsBlockedCdnUrl(mergedCss) ||
       containsBlockedCdnUrl(vendorJs) ||
       containsBlockedCdnUrl(tailwindJs)
     ) {
@@ -318,7 +350,7 @@ export async function bundlePreviewFiles(
       };
     }
 
-    return { ok: true, js, css, vendorJs, tailwindJs };
+    return { ok: true, js, css: mergedCss, vendorJs, tailwindJs };
   } catch (error) {
     const detail =
       error instanceof Error ? error.message : "未知打包错误";

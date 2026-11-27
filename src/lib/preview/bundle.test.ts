@@ -87,4 +87,35 @@ describe("preview bundle (REQ-5 / REQ-6)", () => {
     if (result.ok) return;
     expect(result.messageZh).toMatch(/CDN/);
   });
+
+  it("bundles TSX apps that import local CSS files containing @import \"tailwindcss\"", async () => {
+    const result = await bundlePreviewFiles(
+      [
+        {
+          path: "src/main.tsx",
+          content: `import { createRoot } from "react-dom/client";
+import App from "./App";
+createRoot(document.getElementById("root")!).render(<App />);`,
+        },
+        {
+          path: "src/styles.css",
+          content: `@import "tailwindcss";
+@tailwind utilities;
+.tile-pop { transform: scale(1.06); }`,
+        },
+        {
+          path: "src/App.tsx",
+          content: `import "./styles.css";
+export default function App() { return <main className="tile-pop">2048 棋盘</main>; }`,
+        },
+      ],
+      { wasmURL },
+    );
+    if (!result.ok) {
+      expect.fail(`CSS + tailwindcss bundle failed: ${result.messageZh}`);
+    }
+    expect(result.ok).toBe(true);
+    expect(result.css).toContain(".tile-pop");
+    expect(result.css).not.toContain('@import "tailwindcss"');
+  }, 60_000);
 });

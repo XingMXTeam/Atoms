@@ -263,6 +263,9 @@ async function bundleToStandaloneHtml(files) {
         setup(build) {
           build.onResolve({ filter: /.*/ }, (args) => {
             if (args.kind === "entry-point") return { path: normalizePath(args.path), namespace: "virtual" };
+            if ((args.kind === "import-rule" || args.importer.endsWith(".css")) && (args.path === "tailwindcss" || args.path.startsWith("tailwindcss/"))) {
+              return { path: args.path, namespace: "tailwind-noop" };
+            }
             if (ALLOWED_VENDOR.has(args.path)) return { path: args.path, namespace: "vendor" };
             if (args.path.startsWith(".") || args.path.startsWith("/")) {
               const found = resolveRel(args.importer, args.path);
@@ -272,7 +275,7 @@ async function bundleToStandaloneHtml(files) {
             return { errors: [{ text: `未授权依赖：${args.path}` }] };
           });
           build.onLoad({ filter: /.*/, namespace: "virtual" }, (args) => {
-            const contents = fileMap.get(normalizePath(args.path)) || "";
+            const raw = fileMap.get(normalizePath(args.path)) || "";
             const loader = args.path.endsWith(".tsx")
               ? "tsx"
               : args.path.endsWith(".ts")
@@ -282,9 +285,15 @@ async function bundleToStandaloneHtml(files) {
                   : args.path.endsWith(".css")
                     ? "css"
                     : "js";
+            const contents = loader === "css"
+              ? raw
+                  .replace(/@import\s+['"]tailwindcss(?:\/[^'"]*)?['"]\s*;?/g, "")
+                  .replace(/@tailwind\s+(?:base|components|utilities|variants)\s*;?/g, "")
+              : raw;
             return { contents, loader };
           });
           build.onLoad({ filter: /.*/, namespace: "vendor" }, () => ({ contents: VENDOR_SHIM, loader: "js" }));
+          build.onLoad({ filter: /.*/, namespace: "tailwind-noop" }, () => ({ contents: "", loader: "css" }));
         },
       },
     ],

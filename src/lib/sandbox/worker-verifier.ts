@@ -42,6 +42,12 @@ export function runWorkerStaticVerifier(files: SandboxFile[]): SandboxVerifyRepo
     while ((match = IMPORT_RE.exec(file.content)) !== null) {
       const spec = match[1] ?? "";
       if (spec.startsWith(".") || spec.startsWith("/")) continue;
+      if (
+        clean.endsWith(".css") &&
+        (spec === "tailwindcss" || spec.startsWith("tailwindcss/"))
+      ) {
+        continue;
+      }
       if (!isPreviewVendorSpecifier(spec)) {
         errors.push(`${clean}: 不支持的第三方依赖 "${spec}"`);
       }

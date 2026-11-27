@@ -44,4 +44,23 @@ describe("backend execution sandbox", () => {
     expect(report.errors.some((e) => e.includes("CDN"))).toBe(true);
     expect(report.errors.some((e) => e.includes("axios"))).toBe(true);
   });
+
+  it("allows @import \"tailwindcss\" inside CSS files in static verifier", () => {
+    const report = runWorkerStaticVerifier([
+      {
+        path: "src/main.tsx",
+        content: 'import App from "./App"; export { App };',
+      },
+      {
+        path: "src/styles.css",
+        content: '@import "tailwindcss";\n.tile { border-radius: 8px; }',
+      },
+      {
+        path: "src/App.tsx",
+        content: 'import "./styles.css"; export default function App() { return <div className="tile">OK</div>; }',
+      },
+    ]);
+    expect(report.ok).toBe(true);
+    expect(report.errors).toEqual([]);
+  });
 });
