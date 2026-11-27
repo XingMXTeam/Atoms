@@ -7,9 +7,9 @@ FROM mcr.microsoft.com/playwright:v1.56.0-noble
 WORKDIR /app/sandbox-server
 
 # Pre-install TypeScript, React, Vitest, Testing Library, esbuild, and Playwright API
-# so verification and intelligent interactive reviews run 100% offline at request time.
+# (exact 1.56.0 matching the pre-installed Chromium in the base image).
 COPY sandbox-server/package.json ./package.json
-RUN npm install --no-audit --no-fund
+RUN PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 npm install --no-audit --no-fund
 
 COPY sandbox-server/server.mjs ./server.mjs
 COPY public/preview /app/public/preview
