@@ -23,8 +23,13 @@
 	],
 	"vars": {
 		"LLM_PROVIDER": "gemini",
-		"DEVICE_DAILY_RUN_LIMIT": "20",
-		"DAILY_TOKEN_CAP": "500000"
+		// Platform-key demo only. BYOK does not consume these caps.
+		// Set TURNSTILE_SITE_KEY here (public) and TURNSTILE_SECRET_KEY
+		// with `wrangler secret put` — never commit the secret.
+		// Also set a low Google billing budget with disable-on-threshold.
+		"PLATFORM_DEMO_GENERATIONS": "1",
+		"PLATFORM_DAILY_TOKEN_CAP": "50000",
+		"PLATFORM_MONTHLY_TOKEN_CAP": "300000"
 	},
 	"d1_databases": [
 		{

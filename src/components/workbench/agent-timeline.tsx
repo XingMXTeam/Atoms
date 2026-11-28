@@ -11,6 +11,15 @@ import {
   readStageTiming,
   UNRECORDED_DURATION_LABEL,
 } from "@/lib/agents/timing";
+import { byokHeaders } from "@/lib/llm/byok";
+import { openRunStream, type RunStream } from "@/lib/http/run-stream";
+import {
+  draftCredentials,
+  EMPTY_BYOK_DRAFT,
+  ModelAccessFields,
+  type ByokDraft,
+} from "@/components/billing/model-access-fields";
+import { readByokSession, writeByokSession } from "@/components/billing/byok-session";
 import { AgentCard, type AgentCardModel, type AgentCardStatus } from "./agent-card";
 import { FollowUpForm } from "./follow-up-form";
 import { QaTimelineCard } from "./qa-timeline-card";
@@ -211,7 +220,8 @@ export function AgentTimeline({
       ? "连接已中断。可点击「继续」重新生成。"
       : null,
   );
-  const sourceRef = useRef<EventSource | null>(null);
+  const sourceRef = useRef<RunStream | null>(null);
+  const [byokDraft, setByokDraft] = useState<ByokDraft>(EMPTY_BYOK_DRAFT);
   const runStatusRef = useRef<RunStatus>(
     (initialRunStatus as RunStatus) || "running",
   );
@@ -317,7 +327,8 @@ export function AgentTimeline({
         qs ? `?${qs}` : ""
       }`;
 
-      const source = new EventSource(url);
+      const stored = readByokSession();
+      const source = openRunStream(url, stored ? byokHeaders(stored) : undefined);
       sourceRef.current = source;
 
       const abortHook = () => {
@@ -522,16 +533,16 @@ export function AgentTimeline({
     async (body?: { prompt: string }) => {
       // Known limitation (REQ-9): starts a fresh run for this project;
       // it does not resume from an exact checkpoint.
+      const stored = readByokSession();
       const response = await fetch(
         `/api/projects/${projectId}/runs/${runId}/continue`,
         {
           method: "POST",
-          ...(body
-            ? {
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(body),
-              }
-            : {}),
+          headers: {
+            ...(body ? { "Content-Type": "application/json" } : {}),
+            ...(stored ? byokHeaders(stored) : {}),
+          },
+          ...(body ? { body: JSON.stringify(body) } : {}),
         },
       );
       const data = (await response.json()) as {
@@ -566,7 +577,42 @@ export function AgentTimeline({
     [projectId, runId, updateRunStatus],
   );
 
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      const existing = readByokSession();
+      if (!existing) return;
+      if (existing.kind === "gemini") {
+        setByokDraft({
+          ...EMPTY_BYOK_DRAFT,
+          provider: "gemini",
+          apiKey: existing.apiKey,
+        });
+        return;
+      }
+      setByokDraft({
+        provider: "openai",
+        apiKey: existing.apiKey,
+        baseUrl: existing.baseUrl,
+        model: existing.model,
+      });
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  const rejectIncompleteByok = () => {
+    if (!byokDraft.apiKey.trim()) return false;
+    if (draftCredentials(byokDraft)) {
+      writeByokSession(draftCredentials(byokDraft));
+      return false;
+    }
+    setErrorMessage(
+      "请完整填写你的 API Key。Gemini 只需密钥；OpenAI 兼容接口还需要 Base URL 和模型名。平台密钥不会被使用。",
+    );
+    return true;
+  };
+
   const handleContinue = async () => {
+    if (rejectIncompleteByok()) return;
     setContinuePending(true);
     setErrorMessage(null);
     try {
@@ -581,6 +627,7 @@ export function AgentTimeline({
   };
 
   const handleFollowUp = async (prompt: string) => {
+    if (rejectIncompleteByok()) return;
     setFollowUpPending(true);
     setErrorMessage(null);
     setAutoRepairBanner(null);
@@ -735,11 +782,25 @@ export function AgentTimeline({
       ) : null}
 
       {allowFollowUp ? (
-        <FollowUpForm
-          disabled={followUpDisabled}
-          pending={followUpPending}
-          onSubmit={handleFollowUp}
-        />
+        <>
+          <ModelAccessFields
+            mode="byok"
+            showModeToggle={false}
+            compact
+            draft={byokDraft}
+            onDraftChange={(next) => {
+              setByokDraft(next);
+              const credentials = draftCredentials(next);
+              if (credentials) writeByokSession(credentials);
+              else if (!next.apiKey.trim()) writeByokSession(null);
+            }}
+          />
+          <FollowUpForm
+            disabled={followUpDisabled}
+            pending={followUpPending}
+            onSubmit={handleFollowUp}
+          />
+        </>
       ) : null}
     </aside>
   );

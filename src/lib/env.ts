@@ -20,6 +20,11 @@ const ENV_KEYS = [
   "DEEPSEEK_BASE_URL",
   "DEVICE_DAILY_RUN_LIMIT",
   "DAILY_TOKEN_CAP",
+  "PLATFORM_DEMO_GENERATIONS",
+  "PLATFORM_DAILY_TOKEN_CAP",
+  "PLATFORM_MONTHLY_TOKEN_CAP",
+  "TURNSTILE_SITE_KEY",
+  "TURNSTILE_SECRET_KEY",
 ] as const;
 
 const envSchema = z.object({
@@ -30,8 +35,24 @@ const envSchema = z.object({
   DEEPSEEK_API_KEY: z.string().optional().default(""),
   DEEPSEEK_MODEL: z.string().min(1).default(DEFAULT_DEEPSEEK_MODEL),
   DEEPSEEK_BASE_URL: z.string().min(1).default(DEFAULT_DEEPSEEK_BASE_URL),
+  /**
+   * Legacy per-device daily run counter. Platform demo no longer uses this
+   * as a billing gate (see PLATFORM_DEMO_GENERATIONS). Kept so older deploys
+   * still parse.
+   */
   DEVICE_DAILY_RUN_LIMIT: z.coerce.number().int().positive().default(20),
+  /** Legacy global token counter. Platform billing uses PLATFORM_* caps. */
   DAILY_TOKEN_CAP: z.coerce.number().int().positive().default(500_000),
+  /** Lifetime platform-key generations per deviceId. Default is one demo. */
+  PLATFORM_DEMO_GENERATIONS: z.coerce.number().int().positive().default(1),
+  /** UTC-day cap on tokens paid by the platform Gemini/DeepSeek keys. */
+  PLATFORM_DAILY_TOKEN_CAP: z.coerce.number().int().positive().default(50_000),
+  /** UTC-month cap on tokens paid by the platform keys. */
+  PLATFORM_MONTHLY_TOKEN_CAP: z.coerce.number().int().positive().default(300_000),
+  /** Public Turnstile site key. Empty disables the widget; demo then fails closed. */
+  TURNSTILE_SITE_KEY: z.string().optional().default(""),
+  /** Turnstile secret. Never commit a real value. Empty refuses platform demo. */
+  TURNSTILE_SECRET_KEY: z.string().optional().default(""),
 });
 
 export type AppEnv = z.infer<typeof envSchema>;
@@ -68,5 +89,10 @@ export function getEnv(source?: Record<string, string | undefined>): AppEnv {
     DEEPSEEK_BASE_URL: effective.DEEPSEEK_BASE_URL,
     DEVICE_DAILY_RUN_LIMIT: effective.DEVICE_DAILY_RUN_LIMIT,
     DAILY_TOKEN_CAP: effective.DAILY_TOKEN_CAP,
+    PLATFORM_DEMO_GENERATIONS: effective.PLATFORM_DEMO_GENERATIONS,
+    PLATFORM_DAILY_TOKEN_CAP: effective.PLATFORM_DAILY_TOKEN_CAP,
+    PLATFORM_MONTHLY_TOKEN_CAP: effective.PLATFORM_MONTHLY_TOKEN_CAP,
+    TURNSTILE_SITE_KEY: effective.TURNSTILE_SITE_KEY,
+    TURNSTILE_SECRET_KEY: effective.TURNSTILE_SECRET_KEY,
   });
 }

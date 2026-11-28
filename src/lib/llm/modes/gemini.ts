@@ -1,3 +1,4 @@
+import { publicByokFailureMessage } from "../byok";
 import { resolveModelId, type ModelClass } from "../model-routing";
 import type { LlmCompletion, LlmProvider, TokenUsage } from "../types";
 import { fetchDeepSeekResult, type DeepSeekConfig } from "./deepseek";
@@ -30,6 +31,11 @@ export type GeminiProviderOptions = {
     input: GeminiCompleteInput,
     config: DeepSeekConfig,
   ) => Promise<{ text: string; usage?: TokenUsage }>;
+  /**
+   * `throw` isolates a visitor key: no platform DeepSeek fallback and no replay.
+   * Default `replay` keeps the platform demo path.
+   */
+  failureMode?: "replay" | "throw";
 };
 
 const GEMINI_API_BASE =
@@ -289,6 +295,7 @@ export function createGeminiProvider(
   };
 
   const deepseekKey = options.deepseekApiKey?.trim() ?? "";
+  const isolated = options.failureMode === "throw";
   const runDeepSeek =
     options.fetchDeepSeek ??
     ((args: GeminiCompleteInput, cfg: DeepSeekConfig) =>
@@ -346,6 +353,27 @@ export function createGeminiProvider(
     }
   };
 
+  const failClosedOrFallback = async (
+    input: unknown,
+    typed: GeminiCompleteInput,
+    reason: string,
+    isFollowUp: boolean,
+    modelIdForLog: string,
+  ): Promise<LlmCompletion> => {
+    if (isolated) {
+      throw new Error(publicByokFailureMessage(reason));
+    }
+    const dsCompletion = await tryDeepSeekFallback(typed, reason);
+    if (dsCompletion) return dsCompletion;
+    console.warn("[gemini-fallback]", {
+      stage: typed.stage ?? "general",
+      modelId: modelIdForLog,
+      hasKey: Boolean(options.apiKey?.trim()),
+      reason,
+    });
+    return fallbackOrThrowFollowUp(input, isFollowUp);
+  };
+
   return {
     mode: "gemini",
     async complete(input: unknown): Promise<LlmCompletion> {
@@ -366,15 +394,7 @@ export function createGeminiProvider(
         const reason = !apiKey
           ? "missing_api_key"
           : "gemini_account_short_circuit";
-        const dsCompletion = await tryDeepSeekFallback(typed, reason);
-        if (dsCompletion) return dsCompletion;
-        console.warn("[gemini-fallback]", {
-          stage: typed.stage ?? "general",
-          modelId,
-          hasKey: Boolean(apiKey),
-          reason,
-        });
-        return fallbackOrThrowFollowUp(input, isFollowUp);
+        return failClosedOrFallback(input, typed, reason, isFollowUp, modelId);
       }
 
       try {
@@ -425,32 +445,18 @@ export function createGeminiProvider(
               if (isGeminiAccountOrAuthFailure(retryMessage)) {
                 skipGeminiForRun = true;
               }
-              const dsCompletion = await tryDeepSeekFallback(
+              return failClosedOrFallback(
+                input,
                 typed,
                 retryMessage,
+                isFollowUp,
+                flashModelId,
               );
-              if (dsCompletion) return dsCompletion;
-              console.warn("[gemini-fallback]", {
-                stage: typed.stage ?? "general",
-                modelId: flashModelId,
-                hasKey: true,
-                reason: retryMessage,
-              });
-              return fallbackOrThrowFollowUp(input, isFollowUp);
             }
           }
         }
 
-        const dsCompletion = await tryDeepSeekFallback(typed, message);
-        if (dsCompletion) return dsCompletion;
-
-        console.warn("[gemini-fallback]", {
-          stage: typed.stage ?? "general",
-          modelId,
-          hasKey: true,
-          reason: message,
-        });
-        return fallbackOrThrowFollowUp(input, isFollowUp);
+        return failClosedOrFallback(input, typed, message, isFollowUp, modelId);
       }
     },
   };
