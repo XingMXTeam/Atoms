@@ -10,8 +10,8 @@
   <a href="https://atoms.maoxunxing.com/">
     <img src="https://img.shields.io/badge/⚛️_Try_Atoms_Studio_Live-atoms.maoxunxing.com-14b8a6?style=for-the-badge" alt="Try Atoms Studio Live" />
   </a>
-  <a href="https://github.com/XingMXTeam/agent-skills">
-    <img src="https://img.shields.io/badge/⚡_Built_With-27_Agent_Skills-6366f1?style=for-the-badge" alt="Built with agent-skills" />
+  <a href="https://github.com/XingMXTeam/ShipProof">
+    <img src="https://img.shields.io/badge/🛡️_Verified_With-ShipProof-6366f1?style=for-the-badge" alt="Verified with ShipProof" />
   </a>
 </p>
 
@@ -79,7 +79,7 @@ One-Sentence Prompt (Anonymous deviceId · No Sign-Up)
 
 ## 🔥 Built in 22.5 Hours Using Harness-Driven AI Engineering
 
-Atoms Studio is itself a live proof of **human-steered, harness-driven autonomous engineering** (built with [`XingMXTeam/agent-skills`](https://github.com/XingMXTeam/agent-skills)):
+Atoms Studio is itself a live proof of **human-steered, harness-driven autonomous engineering** (built with [`XingMXTeam/ShipProof`](https://github.com/XingMXTeam/ShipProof)):
 
 - **⏱️ 22.5h calendar span** — **9.5h unattended autonomous agent execution** (including a 5.3h overnight run) + **4.5h focused human architecture review & acceptance across 11 strategic interventions**
 - **🚀 75+ commits · 7 merged PRs · 15 closed issues** — continuously green across `typecheck`, `lint`, **118+ Vitest unit tests**, **37 Playwright E2E tests**, and production build

@@ -83,7 +83,7 @@ Next.js (OpenNext Worker, aws:us-east-1)
 
 ## 🔥 22.5 小时人机协同实战战绩
 
-本项目完整采用 **Harness 驱动的 AI 无人值守研发 + 人工高杠杆验收**（由 [`XingMXTeam/agent-skills`](https://github.com/XingMXTeam/agent-skills) 驱动）打造：
+本项目完整采用 **Harness 驱动的 AI 无人值守研发 + 人工高杠杆验收**（由 [`XingMXTeam/ShipProof`](https://github.com/XingMXTeam/ShipProof) 驱动）打造：
 
 - **⏱️ 总跨度 22.5 小时**：约 **9.5 小时 AI 无人值守研发**（含夜间连续 5.3 小时）+ **4.5 小时人工架构拍板与真机验收**（仅 **11 次** 关键人工介入）
 - **🚀 75+ 次提交 · 7 个合并 PR · 关闭 15 个 Issue**：`fh verify` 全绿（118+ 单测 / 37 个 Playwright E2E）
