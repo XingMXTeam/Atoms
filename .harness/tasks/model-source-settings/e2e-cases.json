@@ -1,0 +1,140 @@
+[
+  {
+    "id": "E2E-1",
+    "category": "core",
+    "mapsTo": "REQ-2",
+    "blocking": true,
+    "severity": "critical",
+    "route": "/",
+    "steps": [
+      "Open / in a fresh browser context with empty sessionStorage and LLM_PROVIDER=mock.",
+      "Confirm the prompt form has no radio named model-access.",
+      "Fill the prompt and click 开始生成 without opening 设置."
+    ],
+    "expect": [
+      "The app navigates to /projects/… and the workbench title is visible.",
+      "The create request carried no x-atoms-byok-key header."
+    ]
+  },
+  {
+    "id": "E2E-2",
+    "category": "core",
+    "mapsTo": "REQ-3",
+    "blocking": true,
+    "severity": "critical",
+    "route": "/",
+    "steps": [
+      "Open / and click the 设置 control above the title.",
+      "Read the dialog titled 模型设置, including both choices and the product paragraph.",
+      "Close it with Escape."
+    ],
+    "expect": [
+      "The URL stays /.",
+      "Both 平台演示 and 使用我的 API Key are inside the dialog.",
+      "After Escape the radios are gone and focus returns to 设置."
+    ]
+  },
+  {
+    "id": "E2E-3",
+    "category": "negative",
+    "mapsTo": "REQ-5",
+    "blocking": true,
+    "severity": "critical",
+    "route": "/",
+    "steps": [
+      "Open 设置, choose 使用我的 API Key, leave the key empty, and close the dialog.",
+      "Enter a prompt and click 开始生成."
+    ],
+    "expect": [
+      "The URL stays /.",
+      "An alert asks for a complete API key and a button named 打开设置 is visible.",
+      "No POST /api/projects is sent and no model-access radio is visible on the form."
+    ]
+  },
+  {
+    "id": "E2E-4",
+    "category": "negative",
+    "mapsTo": "REQ-1",
+    "blocking": true,
+    "severity": "high",
+    "route": "/",
+    "steps": [
+      "Open / and open 设置.",
+      "Read the visible text of the prompt form and of the dialog."
+    ],
+    "expect": [
+      "Neither surface contains 清除 Cookie, 重置 Cookie, 设备号, x-atoms-byok, or D1.",
+      "With the dialog closed, the prompt form does not contain 模型来源."
+    ]
+  },
+  {
+    "id": "E2E-5",
+    "category": "boundary",
+    "mapsTo": "REQ-7",
+    "blocking": false,
+    "severity": "medium",
+    "route": "/",
+    "steps": [
+      "Open 设置, choose 使用我的 API Key, enter a 513-character key with no spaces, and close the dialog.",
+      "Reload and inspect sessionStorage.",
+      "Switch back to 平台演示, enter a 1000-character prompt, and inspect the form."
+    ],
+    "expect": [
+      "atoms.byok.session is null after the oversized key.",
+      "开始生成 becomes enabled for the 1000-character prompt.",
+      "The prompt form still has no model-access radios."
+    ]
+  },
+  {
+    "id": "E2E-6",
+    "category": "crossFeature",
+    "mapsTo": "REQ-6",
+    "blocking": false,
+    "severity": "high",
+    "route": "/projects/[projectId]",
+    "steps": [
+      "On a fresh platform-demo session, generate from / without opening 设置.",
+      "On the workbench, inspect the follow-up form and click the header 设置 control."
+    ],
+    "expect": [
+      "The follow-up form has no API Key field and no model-access radio.",
+      "The header dialog shows 平台演示 selected, the same panel as on the home page."
+    ]
+  },
+  {
+    "id": "E2E-7",
+    "category": "persistence",
+    "mapsTo": "REQ-3",
+    "blocking": false,
+    "severity": "high",
+    "route": "/",
+    "steps": [
+      "Open 设置, choose 使用我的 API Key, enter abcd1234efgh5678, and close the dialog.",
+      "Reload, open 设置, and read the key field.",
+      "Choose 平台演示, reload, and open 设置 again."
+    ],
+    "expect": [
+      "After the first reload the mode is byok and the key field still holds abcd1234efgh5678.",
+      "After choosing 平台演示 and reloading, the mode is platform and atoms.byok.session is null.",
+      "localStorage does not contain the key."
+    ]
+  },
+  {
+    "id": "E2E-8",
+    "category": "uiJourney",
+    "mapsTo": "REQ-1",
+    "blocking": false,
+    "severity": "medium",
+    "route": "/",
+    "steps": [
+      "Open / at 1280×800 with an empty prompt.",
+      "Observe the empty hint and the disabled 开始生成 control.",
+      "Open 设置, press Escape, then repeat the open and close at 375×812."
+    ],
+    "expect": [
+      "The empty state still shows 请先输入应用需求，或点击下方示例卡片快速填入.",
+      "设置 does not overlap the title, and the closed form has no radios.",
+      "At 375×812 the dialog's close control is visible and the panel scrolls instead of clipping the choices."
+    ]
+  }
+]

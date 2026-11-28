@@ -1,0 +1,85 @@
+{
+  "version": 2,
+  "feature": "model-source-settings",
+  "title": "",
+  "phase": "implement",
+  "createdAt": 1795885310768,
+  "updatedAt": 1795886394992,
+  "macroCycle": {
+    "current": 1,
+    "max": 5
+  },
+  "consecutivePasses": 0,
+  "clarificationComplete": true,
+  "tasks": [
+    {
+      "id": "TASK-1",
+      "title": "Add the shared model-source panel and clean the home prompt",
+      "requirements": [
+        "REQ-1",
+        "REQ-2",
+        "REQ-3",
+        "REQ-4",
+        "REQ-5",
+        "REQ-7"
+      ],
+      "status": "pending",
+      "attempts": 0,
+      "commitSha": null
+    },
+    {
+      "id": "TASK-2",
+      "title": "Use stored model source for follow-up and continue",
+      "requirements": [
+        "REQ-3",
+        "REQ-6",
+        "REQ-7"
+      ],
+      "status": "pending",
+      "attempts": 0,
+      "commitSha": null
+    }
+  ],
+  "history": [
+    {
+      "at": 1795886394992,
+      "event": "clarify-done",
+      "tasks": 2
+    }
+  ],
+  "lastEvaluation": null,
+  "lastReview": null,
+  "lastFailure": null,
+  "baseSha": "3d54c94",
+  "rubricBaseline": {
+    "RB-1": "essential",
+    "RB-2": "essential",
+    "RB-3": "essential",
+    "RB-4": "essential",
+    "RB-5": "essential",
+    "RB-6": "essential",
+    "RB-7": "essential",
+    "RB-8": "essential",
+    "RB-9": "pitfall",
+    "RB-10": "essential",
+    "RB-11": "essential",
+    "RB-12": "pitfall",
+    "RB-13": "pitfall",
+    "RB-14": "pitfall",
+    "RB-15": "essential",
+    "RB-16": "important",
+    "RB-17": "important",
+    "RB-18": "pitfall",
+    "RB-19": "pitfall",
+    "RB-20": "pitfall",
+    "RB-21": "essential",
+    "RB-22": "important",
+    "RB-23": "important",
+    "RB-24": "important",
+    "RB-25": "pitfall",
+    "RB-26": "important",
+    "RB-27": "pitfall",
+    "RB-28": "important"
+  },
+  "rubricHash": "856cb4ff6635b75d"
+}

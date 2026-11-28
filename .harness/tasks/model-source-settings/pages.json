@@ -1,0 +1,19 @@
+{
+  "baseUrl": "http://127.0.0.1:3000",
+  "viewport": { "width": 1280, "height": 800 },
+  "fullPage": false,
+  "pages": [
+    {
+      "name": "home-generate",
+      "route": "/",
+      "waitFor": "#home-prompt",
+      "notes": "LLM_PROVIDER=mock. Fresh sessionStorage. Screenshot the closed prompt: 设置 is outside the form, and the form has no 模型来源 radios and no cookie helper. Also capture at 375×812. Open 设置 before judging the dialog; the URL stays /."
+    },
+    {
+      "name": "workbench-settings",
+      "route": "/projects/[projectId]",
+      "waitFor": "[data-testid=workbench-project-title]",
+      "notes": "Reach this screen by 开始生成 under LLM_PROVIDER=mock on a fresh platform-demo session. Do not send a visitor key. Header shows 设置 beside 返回首页. Follow-up has no key fields."
+    }
+  ]
+}

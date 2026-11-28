@@ -1,0 +1,347 @@
+{
+  "version": 1,
+  "feature": "model-source-settings",
+  "layerWeights": true,
+  "policy": {
+    "minEssentialPerLayer": 1,
+    "minPitfallsPerLayer": 1,
+    "minPitfallsPerRequirement": 0
+  },
+  "requirements": [
+    {
+      "id": "REQ-1",
+      "description": "The generate prompt area does not show the “模型来源” radios (“平台演示” and “使用我的 API Key”) or the cookie, device-id, or verification helper text."
+    },
+    {
+      "id": "REQ-2",
+      "description": "The default model source is platform demo, and a visitor can start a generation without opening settings first."
+    },
+    {
+      "id": "REQ-3",
+      "description": "Platform versus visitor API key, and the key fields, live in one settings panel opened from a 设置 control beside the home title and from the workbench header."
+    },
+    {
+      "id": "REQ-4",
+      "description": "The settings panel explains, in product copy, that each visitor gets one free platform generation, later real generation and edits are paid by the visitor's own API key, the key is used only for that request and is not saved on the server, and a failed key is not replaced by the platform key."
+    },
+    {
+      "id": "REQ-5",
+      "description": "When the platform demo is exhausted, the platform budget is exhausted, or a visitor key is required or invalid, the generate form shows the API message and a control that opens settings, and it does not render the dual radios; the existing 改用演示回放 action stays when replay is available."
+    },
+    {
+      "id": "REQ-6",
+      "description": "Follow-up and 继续 read the stored session key, send it only for that request, and when a key is required they point to the same settings panel instead of embedding the model-source radios or key fields."
+    },
+    {
+      "id": "REQ-7",
+      "description": "Billing policy stays the same: Turnstile still gates the platform path, numeric caps stay the same, denial codes stay the same, the visitor key stays request-scoped in sessionStorage and the existing request headers, a failed visitor key never falls back to platform keys, and wrangler caps and secrets are not changed."
+    }
+  ],
+  "items": [
+    {
+      "id": "RB-1",
+      "requirement": "REQ-1",
+      "layer": "L1",
+      "level": "essential",
+      "kind": "command",
+      "command": "pnpm exec vitest run src/components/home/prompt-form.test.tsx",
+      "description": "The home prompt form renders no 模型来源 legend, no radio named model-access, and no 清除 Cookie or 设备号 text.",
+      "weight": 3
+    },
+    {
+      "id": "RB-2",
+      "requirement": "REQ-2",
+      "layer": "L1",
+      "level": "essential",
+      "kind": "command",
+      "command": "pnpm exec vitest run src/components/home/prompt-form.test.tsx",
+      "description": "With an empty session and a non-empty prompt, 开始生成 sends one POST /api/projects without x-atoms-byok-key and without opening the settings dialog.",
+      "weight": 3
+    },
+    {
+      "id": "RB-3",
+      "requirement": "REQ-3",
+      "layer": "L1",
+      "level": "essential",
+      "kind": "grep",
+      "path": "src/app/page.tsx",
+      "pattern": "ModelSourceSettings",
+      "expect": "present",
+      "description": "The home page mounts the settings control beside the title and outside the prompt form.",
+      "weight": 3
+    },
+    {
+      "id": "RB-4",
+      "requirement": "REQ-3",
+      "layer": "L1",
+      "level": "essential",
+      "kind": "command",
+      "command": "pnpm exec vitest run src/components/billing/model-source-settings.test.tsx src/components/workbench/workbench-settings-entry.test.tsx",
+      "description": "设置 opens the shared dialog, and the workbench header renders that control outside the follow-up form.",
+      "weight": 3
+    },
+    {
+      "id": "RB-5",
+      "requirement": "REQ-4",
+      "layer": "L1",
+      "level": "essential",
+      "kind": "command",
+      "command": "pnpm exec vitest run src/components/billing/model-source-settings.test.tsx",
+      "description": "The open panel shows the exact product paragraph and does not show cookie, device-id, header-name, or D1 wording.",
+      "weight": 3
+    },
+    {
+      "id": "RB-6",
+      "requirement": "REQ-5",
+      "layer": "L1",
+      "level": "essential",
+      "kind": "command",
+      "command": "pnpm exec vitest run src/components/home/prompt-form.test.tsx",
+      "description": "demo_exhausted and platform_budget show the API message, 打开设置, and 改用演示回放; byok_required shows 打开设置 without 改用演示回放; the radios stay off the form.",
+      "weight": 3
+    },
+    {
+      "id": "RB-7",
+      "requirement": "REQ-6",
+      "layer": "L1",
+      "level": "essential",
+      "kind": "command",
+      "command": "pnpm exec vitest run src/components/workbench/agent-timeline.test.tsx",
+      "description": "Follow-up sends the stored visitor-key header and, on byok_required, shows 打开设置 without embedding key fields or radios.",
+      "weight": 3
+    },
+    {
+      "id": "RB-8",
+      "requirement": "REQ-7",
+      "layer": "L1",
+      "level": "essential",
+      "kind": "command",
+      "command": "pnpm exec vitest run src/lib/limits/demo-policy.test.ts src/lib/limits/turnstile.test.ts src/lib/llm/byok.test.ts src/lib/runs/access.test.ts",
+      "description": "Denial codes, Turnstile gating, numeric cap behavior, and the no-platform-fallback tests still pass.",
+      "weight": 3
+    },
+    {
+      "id": "RB-9",
+      "requirement": "REQ-7",
+      "layer": "L1",
+      "level": "pitfall",
+      "kind": "grep",
+      "path": "wrangler.jsonc",
+      "pattern": "\"PLATFORM_DEMO_GENERATIONS\": \"1\"[\\s\\S]*\"PLATFORM_DAILY_TOKEN_CAP\": \"50000\"[\\s\\S]*\"PLATFORM_MONTHLY_TOKEN_CAP\": \"300000\"",
+      "expect": "present",
+      "description": "wrangler.jsonc still sets the platform demo to 1 generation and the token caps to 50000 and 300000."
+    },
+    {
+      "id": "RB-10",
+      "requirement": "REQ-7",
+      "layer": "L2",
+      "level": "essential",
+      "kind": "command",
+      "command": "pnpm exec vitest run src/components/billing/model-source-session.test.ts",
+      "description": "Platform mode ignores a stored key, a key shorter than 8 or longer than 512 characters is not persisted, and localStorage is not written.",
+      "weight": 3
+    },
+    {
+      "id": "RB-11",
+      "requirement": "REQ-5",
+      "layer": "L2",
+      "level": "essential",
+      "kind": "command",
+      "command": "pnpm exec vitest run src/components/home/prompt-form.test.tsx",
+      "description": "Choosing a visitor key and submitting with no valid key does not POST, so the request cannot fall through onto platform keys.",
+      "weight": 3
+    },
+    {
+      "id": "RB-12",
+      "requirement": "REQ-7",
+      "layer": "L2",
+      "level": "pitfall",
+      "kind": "grep",
+      "path": "src/components/billing",
+      "pattern": "localStorage\\.setItem",
+      "expect": "absent",
+      "description": "The billing UI never writes the visitor key or the mode with localStorage.setItem."
+    },
+    {
+      "id": "RB-13",
+      "requirement": "REQ-7",
+      "layer": "L2",
+      "level": "pitfall",
+      "kind": "grep",
+      "path": "src/components/billing",
+      "pattern": "document\\.cookie",
+      "expect": "absent",
+      "description": "The billing UI never reads or writes document.cookie."
+    },
+    {
+      "id": "RB-14",
+      "requirement": "REQ-7",
+      "layer": "L2",
+      "level": "pitfall",
+      "kind": "grep",
+      "path": "src/lib/llm/byok.ts",
+      "pattern": "x-atoms-byok-key",
+      "expect": "present",
+      "description": "The visitor-key request header name stays x-atoms-byok-key."
+    },
+    {
+      "id": "RB-15",
+      "requirement": "REQ-1",
+      "layer": "L3",
+      "level": "essential",
+      "kind": "judge",
+      "anchor": "REF-1",
+      "evidence": ".harness/tasks/model-source-settings/evaluation/judge-rb-15.json",
+      "description": "At 1280×800 the home prompt shows the textarea and one 开始生成 pill, 设置 sits outside the form near the title, and there is no two-column radio group. Radius and zinc borders match REF-1.",
+      "weight": 3
+    },
+    {
+      "id": "RB-16",
+      "requirement": "REQ-3",
+      "layer": "L3",
+      "level": "important",
+      "kind": "judge",
+      "anchor": "REF-1",
+      "evidence": ".harness/tasks/model-source-settings/evaluation/judge-rb-16.json",
+      "description": "The open dialog uses the same zinc rounded-2xl card as the prompt, is titled 模型设置, and at 375×812 keeps the close control visible while the body scrolls.",
+      "weight": 2
+    },
+    {
+      "id": "RB-17",
+      "requirement": "REQ-4",
+      "layer": "L3",
+      "level": "important",
+      "kind": "judge",
+      "anchor": "ANTI-1",
+      "evidence": ".harness/tasks/model-source-settings/evaluation/judge-rb-17.json",
+      "description": "The settings paragraph states the one free generation, visitor-key payment, request-only use, and no platform fallback, and it does not include the rejected cookie, device-id, or verification helper.",
+      "weight": 2
+    },
+    {
+      "id": "RB-18",
+      "requirement": "REQ-1",
+      "layer": "L3",
+      "level": "pitfall",
+      "kind": "judge",
+      "anchor": "RL-1",
+      "evidence": ".harness/tasks/model-source-settings/evaluation/judge-rb-18.json",
+      "description": "Score 1 only when screenshots of the home prompt and the workbench follow-up show neither the dual radios nor the cookie or device-id helper. Score 0 when either surface shows that block."
+    },
+    {
+      "id": "RB-19",
+      "requirement": "REQ-1",
+      "layer": "L3",
+      "level": "pitfall",
+      "kind": "grep",
+      "path": "src/components/home/prompt-form.tsx",
+      "pattern": "模型来源|清除 Cookie|设备号|重置 Cookie",
+      "expect": "absent",
+      "description": "The prompt form source does not contain the rejected legend or the cookie and device-id helper."
+    },
+    {
+      "id": "RB-20",
+      "requirement": "REQ-6",
+      "layer": "L3",
+      "level": "pitfall",
+      "kind": "grep",
+      "path": "src/components/workbench/agent-timeline.tsx",
+      "pattern": "ModelAccessFields|模型来源|清除 Cookie|设备号",
+      "expect": "absent",
+      "description": "The timeline does not embed the model-access fields or the cookie and device-id helper."
+    },
+    {
+      "id": "RB-21",
+      "requirement": "REQ-3",
+      "layer": "L4",
+      "level": "essential",
+      "kind": "command",
+      "command": "pnpm exec vitest run src/components/billing/model-source-settings.test.tsx",
+      "description": "Escape closes the dialog, focus returns to the 设置 trigger, and that trigger is a button with min-h-11.",
+      "weight": 3
+    },
+    {
+      "id": "RB-22",
+      "requirement": "REQ-2",
+      "layer": "L4",
+      "level": "important",
+      "kind": "judge",
+      "anchor": "REF-1",
+      "evidence": ".harness/tasks/model-source-settings/evaluation/judge-rb-22.json",
+      "description": "From a fresh session the visitor types a prompt and activates 开始生成 without opening settings. The button shows 创建中… and is disabled while the request is in flight.",
+      "weight": 2
+    },
+    {
+      "id": "RB-23",
+      "requirement": "REQ-5",
+      "layer": "L4",
+      "level": "important",
+      "kind": "judge",
+      "anchor": "REF-1",
+      "evidence": ".harness/tasks/model-source-settings/evaluation/judge-rb-23.json",
+      "description": "A demo-exhausted response keeps the prompt, shows the alert and 打开设置, and shows 改用演示回放. The radios do not appear. 打开设置 opens the same dialog.",
+      "weight": 2
+    },
+    {
+      "id": "RB-24",
+      "requirement": "REQ-6",
+      "layer": "L4",
+      "level": "important",
+      "kind": "judge",
+      "anchor": "REF-1",
+      "evidence": ".harness/tasks/model-source-settings/evaluation/judge-rb-24.json",
+      "description": "Workbench follow-up stays one textarea and one send button. A byok_required response shows 打开设置 and does not reveal key fields.",
+      "weight": 2
+    },
+    {
+      "id": "RB-25",
+      "requirement": "REQ-3",
+      "layer": "L4",
+      "level": "pitfall",
+      "kind": "grep",
+      "path": "src/components/billing/model-source-settings.tsx",
+      "pattern": "type=\"button\"",
+      "expect": "present",
+      "description": "Every settings trigger is type=button, so the text control inside the prompt form cannot submit the form."
+    },
+    {
+      "id": "RB-26",
+      "requirement": "REQ-7",
+      "layer": "L4",
+      "level": "important",
+      "kind": "judge",
+      "anchor": "RL-2",
+      "evidence": ".harness/tasks/model-source-settings/evaluation/judge-rb-26.json",
+      "description": "Visible denial copy points at 设置 rather than telling the visitor to paste a key into the form, the key is absent from localStorage, and a failed visitor key is not replaced by the platform key.",
+      "weight": 2
+    },
+    {
+      "id": "RB-27",
+      "requirement": "REQ-2",
+      "layer": "L4",
+      "level": "pitfall",
+      "kind": "judge",
+      "anchor": "RL-3",
+      "evidence": ".harness/tasks/model-source-settings/evaluation/judge-rb-27.json",
+      "description": "Score 1 only when 开始生成 can be used on a non-empty prompt before settings is opened, and when a configured Turnstile site key mounts the verification slot on the platform path and removes it for a visitor key. Score 0 if the first generation requires settings or the platform path drops the widget."
+    },
+    {
+      "id": "RB-28",
+      "requirement": "REQ-2",
+      "layer": "L1",
+      "level": "important",
+      "kind": "command",
+      "command": "pnpm exec playwright test e2e/model-source-settings.spec.ts",
+      "description": "The mock browser journeys in e2e-cases.json pass, including generate-without-settings and the workbench settings entry.",
+      "weight": 1
+    }
+  ],
+  "qualityWaivers": [],
+  "e2eCategories": {
+    "core": 2,
+    "negative": 2,
+    "boundary": 1,
+    "crossFeature": 1,
+    "persistence": 1,
+    "uiJourney": 1
+  }
+}
