@@ -30,6 +30,8 @@ export const runs = sqliteTable("runs", {
   qaScore: integer("qa_score"),
   tokensIn: integer("tokens_in").notNull().default(0),
   tokensOut: integer("tokens_out").notNull().default(0),
+  /** Who pays for model calls on this run: platform | byok | mock | replay. */
+  billing: text("billing").notNull().default("mock"),
   startedAt: integer("started_at", { mode: "timestamp_ms" }).notNull(),
   finishedAt: integer("finished_at", { mode: "timestamp_ms" }),
 });
@@ -71,9 +73,19 @@ export const usage = sqliteTable(
     day: text("day").notNull(),
     runs: integer("runs").notNull().default(0),
     tokens: integer("tokens").notNull().default(0),
+    /** Platform-key generations started on this day (not BYOK). */
+    platformRuns: integer("platform_runs").notNull().default(0),
+    /** Tokens billed to the platform key on this day (not BYOK). */
+    platformTokens: integer("platform_tokens").notNull().default(0),
   },
   (table) => [primaryKey({ columns: [table.deviceId, table.day] })],
 );
+
+/** Lifetime platform-demo generations per anonymous device. */
+export const deviceDemo = sqliteTable("device_demo", {
+  deviceId: text("device_id").primaryKey(),
+  platformGenerations: integer("platform_generations").notNull().default(0),
+});
 
 export const previewProbes = sqliteTable(
   "preview_probes",

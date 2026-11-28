@@ -45,7 +45,7 @@
 | **预览沙箱** | 依赖重型 WebContainer 或海外 CDN | **同源 `esbuild-wasm` 极速打包** + `sandbox="allow-scripts allow-forms"`（严禁 `allow-same-origin`，**不使用 WebContainer**） |
 | **状态持久化** | 刷新页面数据瞬间清零 | **安全 `postMessage` → D1 `project_state` 存储桥**（实测生成的 2048 整页刷新后 4×4 棋盘与分数 100% 精准恢复） |
 | **中国大陆可达性** | `esm.sh` / `unpkg` / Google Fonts 白屏 | **运行时零外部 CDN**，自托管 `/preview/*`，Playwright `cdn-audit` 违规即红灯 |
-| **多模型容灾** | 单一上游 429/402 直接瘫痪 | **Gemini Flash/Lite 主链 → DeepSeek 实时兜底** → 首轮演示回放保底（增量迭代显式报错保护现有版本） |
+| **模型费用** | 每次生成都走平台密钥 | **每位访客仅 1 次平台演示生成**，之后必须 **自带密钥（BYOK）**（Gemini 或 OpenAI 兼容接口）。访客密钥失败不会回退到平台密钥。 |
 | **成果带走** | 锁死在在线预览框里 | **一键只读 `/share/[slug]` 分享** + **独立可运行 Vite 脚手架 ZIP 导出**（解压 `npm install && npm run dev` 即跑） |
 
 ---
@@ -59,7 +59,7 @@
 ### 技术亮点一览
 
 - **App Shell**：Next.js App Router + TypeScript，中文界面，light/dark 自动跟随 `prefers-color-scheme`，匿名 `deviceId` Cookie 零门槛体验，支持桌面 / 移动 `375px` 预览切换。
-- **可见多 Agent SSE 流水线**：`Planner / Architect / Engineer / QA` 实时状态、真实耗时与增量迭代版本时间线（支持一键回滚）；Provider 支持 `gemini` / `mock` / `replay`，实时统计 `usageMetadata` / `usage` Token 用量并执行每日限流保护。
+- **可见多 Agent SSE 流水线**：`Planner / Architect / Engineer / QA` 实时状态、真实耗时与增量迭代版本时间线（支持一键回滚）；Provider 支持 `gemini` / `mock` / `replay`。平台密钥只承担每位访客 1 次演示生成，后续迭代使用访客自己的密钥，平台 Token 额度不计入 BYOK。
 - **双轨验证沙箱（Plan A + 可插拔后台沙箱）**：
   - 浏览器侧：`esbuild-wasm` 同源极速打包 + `sandbox="allow-scripts allow-forms"` 严格隔离，通过 `POST /api/.../probe` + D1 `preview_probes` 回传真实渲染与交互控件探测报告（超时回退服务端静态探测）。
   - 后台侧：可插拔执行沙箱（`cloudflare-sandbox` 容器 / `local-node-sandbox` 隔离执行真实 `tsc --noEmit` / `worker-static-verifier`）。
@@ -74,7 +74,7 @@ Browser (Chinese UI)
        └─ safe postMessage storage bridge ↔ D1 project_state
          ↑
 Next.js (OpenNext Worker, aws:us-east-1)
-  ├─ SSE agent pipeline (Gemini → DeepSeek failover | mock | replay)
+  ├─ SSE agent pipeline (one platform demo or visitor BYOK | mock | replay)
   ├─ Pluggable backend sandbox (Cloudflare Sandbox / local Node tsc / Worker verifier)
   └─ D1 / SQLite repository
 ```
@@ -103,6 +103,17 @@ pnpm install
 cp .env.example .dev.vars   # 如需联调真实 Gemini/DeepSeek 请填入本地变量；切勿提交真实密钥
 LLM_PROVIDER=mock pnpm dev  # 推荐本地开发与测试使用 mock 模式
 ```
+
+### 模型费用
+
+公开站点无需登录。平台付费模型只保留很薄的演示：
+
+- 未提供密钥时，每位访客只能用平台 `GEMINI_API_KEY` / `DEEPSEEK_API_KEY` **完整生成 1 次**。后续修改和再次完整生成必须使用访客自己的密钥。
+- BYOK 支持 Google Gemini API Key，以及 OpenAI 兼容接口（Base URL + API Key + 模型名，因此 DeepSeek 等可用）。密钥只随该次请求使用，不写入 D1、Cookie、事件载荷或应用日志。
+- 访客密钥调用失败会明确报错，**不会**改用平台 Gemini 或 DeepSeek。
+- 平台演示路径在配置了 `TURNSTILE_SECRET_KEY` 后要求 Cloudflare Turnstile。密钥未配置时演示路径直接拒绝（mock / 演示回放仍可运行）。每日与每月额度只统计**平台密钥**的 Token。
+- 清除 `deviceId` Cookie 会签发新设备号，这不是可靠绕过。Turnstile 和全站额度是额外刹车，不能称为防刷。
+- 请在持有平台密钥的 Google AI/Cloud 项目上设置较低的预算并开启超限停用。应用内额度不能代替云账单阈值。若保留平台 DeepSeek 密钥，同样设置账单上限。
 
 ### 常用脚本
 

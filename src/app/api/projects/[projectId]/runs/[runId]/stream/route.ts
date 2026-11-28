@@ -5,8 +5,10 @@ import { defaultProbe, runAgentPipeline } from "@/lib/agents/pipeline";
 import { DEVICE_ID_COOKIE, getOrMintDeviceId } from "@/lib/auth/device-id";
 import { getDb } from "@/lib/db";
 import { getEnv } from "@/lib/env";
-import { utcDay } from "@/lib/limits/rate-limit";
-import { createLlmProvider } from "@/lib/llm/provider";
+import { utcDay, utcMonth } from "@/lib/limits/rate-limit";
+import { parseByokHeaders } from "@/lib/llm/byok";
+import { createByokProvider, createLlmProvider } from "@/lib/llm/provider";
+import { selectStreamProvider } from "@/lib/llm/run-provider";
 import { previewProbeReportSchema } from "@/lib/preview/probe";
 import { parseVersionFiles } from "@/lib/versions";
 
@@ -41,7 +43,6 @@ export async function GET(request: Request, context: RouteContext) {
   );
 
   const repo = getDb();
-  const provider = createLlmProvider();
   const project = await repo.getProject(projectId, deviceId);
   if (!project) {
     return new Response(JSON.stringify({ messageZh: "项目不存在" }), {
@@ -57,6 +58,35 @@ export async function GET(request: Request, context: RouteContext) {
       headers: { "Content-Type": "application/json" },
     });
   }
+
+  const byok = parseByokHeaders(request.headers);
+  const env = getEnv();
+  const day = utcDay();
+  const [platformToday, platformMonth] = await Promise.all([
+    repo.getGlobalPlatformTokens(day),
+    repo.getMonthlyPlatformTokens(utcMonth()),
+  ]);
+  const choice = selectStreamProvider({
+    billing: run.billing,
+    byok,
+    overPlatformBudget:
+      platformToday >= env.PLATFORM_DAILY_TOKEN_CAP ||
+      platformMonth >= env.PLATFORM_MONTHLY_TOKEN_CAP,
+  });
+  if (!choice.ok) {
+    return new Response(JSON.stringify({ messageZh: choice.messageZh }), {
+      status: choice.status,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  const provider =
+    choice.kind === "byok"
+      ? createByokProvider(choice.credentials)
+      : choice.kind === "platform"
+        ? createLlmProvider()
+        : createLlmProvider({ mode: choice.kind });
+  const billTo = choice.billTo;
 
   const existingEvents = await repo.listAgentEvents(runId);
   const encoder = new TextEncoder();
@@ -121,21 +151,7 @@ export async function GET(request: Request, context: RouteContext) {
           throw new Error("Current version does not belong to this project");
         }
 
-        let effectiveProvider = provider;
-        if (provider.mode === "gemini" && !currentVersion) {
-          const env = getEnv();
-          const day = utcDay();
-          const [usageSnapshot, globalTokens] = await Promise.all([
-            repo.getUsage(deviceId, day),
-            repo.getGlobalTokens(day),
-          ]);
-          const overRuns =
-            (usageSnapshot?.runs ?? 0) > env.DEVICE_DAILY_RUN_LIMIT;
-          const overTokens = globalTokens >= env.DAILY_TOKEN_CAP;
-          if (overRuns || overTokens) {
-            effectiveProvider = createLlmProvider({ mode: "replay" });
-          }
-        }
+        const effectiveProvider = provider;
 
         const useClientProbe =
           (clientProbe && effectiveProvider.mode !== "mock") || forceClientProbe;
@@ -171,6 +187,7 @@ export async function GET(request: Request, context: RouteContext) {
             : {}),
           signal: abort.signal,
           stageDelayMs,
+          billTo,
           ...(probePreview ? { probePreview } : {}),
           onEvent: (event) => {
             send(encodeSseMessage(event));

@@ -2,7 +2,9 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { DEVICE_ID_COOKIE, getOrMintDeviceId, isSecureRequestUrl } from "@/lib/auth/device-id";
 import { getDb } from "@/lib/db";
-import { assertRateLimit, utcDay } from "@/lib/limits/rate-limit";
+import { getEnv } from "@/lib/env";
+import { parseByokHeaders } from "@/lib/llm/byok";
+import { beginContinuation } from "@/lib/runs/access";
 import { z } from "zod";
 
 export const runtime = "nodejs";
@@ -17,9 +19,9 @@ type RouteContext = {
 };
 
 /**
- * 「继续」 after an interrupted/failed run (REQ-9), or follow-up iteration (F5 REQ-2).
- * Known limitation: starts a fresh run for the same project — not an exact
- * checkpoint resume from the last agent_event.
+ * 「继续」 after an interrupted/failed run, or a follow-up iteration.
+ * Platform keys are never used here. Production follow-ups require BYOK.
+ * Known limitation: starts a fresh run — not an exact checkpoint resume.
  */
 export async function POST(request: Request, context: RouteContext) {
   const { projectId, runId } = await context.params;
@@ -30,16 +32,10 @@ export async function POST(request: Request, context: RouteContext) {
     { secure: isSecureRequestUrl(request) },
   );
 
-  const repo = getDb();
-  const project = await repo.getProject(projectId, deviceId);
-  if (!project) {
-    const response = NextResponse.json(
-      { messageZh: "项目不存在" },
-      { status: 404 },
-    );
+  const withCookie = (response: NextResponse) => {
     if (setCookie) response.headers.append("Set-Cookie", setCookie);
     return response;
-  }
+  };
 
   let followUpPrompt: string | undefined;
   const rawBody = await request.text();
@@ -48,70 +44,48 @@ export async function POST(request: Request, context: RouteContext) {
     try {
       body = JSON.parse(rawBody);
     } catch {
-      return NextResponse.json({ messageZh: "请求格式无效，请重试" }, { status: 400 });
+      return withCookie(
+        NextResponse.json({ messageZh: "请求格式无效，请重试" }, { status: 400 }),
+      );
     }
     const parsed = followUpSchema.safeParse(body);
     if (!parsed.success) {
-      return NextResponse.json({ messageZh: "请输入有效的后续需求" }, { status: 400 });
+      return withCookie(
+        NextResponse.json({ messageZh: "请输入有效的后续需求" }, { status: 400 }),
+      );
     }
     followUpPrompt = parsed.data.prompt;
   }
 
-  const previous = await repo.getRun(runId);
-  if (!previous || previous.projectId !== projectId) {
-    const response = NextResponse.json(
-      { messageZh: "运行不存在" },
-      { status: 404 },
-    );
-    if (setCookie) response.headers.append("Set-Cookie", setCookie);
-    return response;
-  }
-
-  const day = utcDay();
-  const decision = await assertRateLimit(deviceId, {
-    getDeviceUsage: async (id, d) => {
-      const row = await repo.getUsage(id, d);
-      return row ? { runs: row.runs, tokens: row.tokens } : null;
-    },
-    getGlobalTokens: (d) => repo.getGlobalTokens(d),
-  });
-
-  if (!decision.ok && "refuse" in decision && decision.refuse) {
-    const response = NextResponse.json(
-      { messageZh: decision.messageZh },
-      { status: 429 },
-    );
-    if (setCookie) response.headers.append("Set-Cookie", setCookie);
-    return response;
-  }
-
-  if (previous.status === "running") {
-    await repo.updateRun(runId, {
-      status: "interrupted",
-      finishedAt: new Date(),
-    });
-  }
-
-  const nextRun = await repo.createRun({
+  const result = await beginContinuation({
+    repo: getDb(),
+    deviceId,
     projectId,
-    status: "running",
+    runId,
+    ...(followUpPrompt ? { prompt: followUpPrompt } : {}),
+    env: getEnv(),
+    byok: parseByokHeaders(request.headers),
   });
-  if (followUpPrompt) {
-    await repo.addMessage({ projectId, role: "user", content: followUpPrompt });
+
+  if (!result.ok) {
+    return withCookie(
+      NextResponse.json(
+        {
+          code: result.code,
+          messageZh: result.messageZh,
+          replayAvailable: result.replayAvailable,
+        },
+        { status: result.status },
+      ),
+    );
   }
-  await repo.incrementUsage(deviceId, day, { runs: 1 });
 
-  const payload = decision.ok
-    ? { runId: nextRun.id, mode: decision.mode }
-    : "mode" in decision
-      ? {
-          runId: nextRun.id,
-          mode: decision.mode,
-          label: decision.label,
-        }
-      : { runId: nextRun.id };
-
-  const response = NextResponse.json(payload);
-  if (setCookie) response.headers.append("Set-Cookie", setCookie);
-  return response;
+  return withCookie(
+    NextResponse.json({
+      runId: result.runId,
+      mode: result.mode,
+      billing: result.billing,
+      ...(result.label ? { label: result.label } : {}),
+    }),
+  );
 }

@@ -45,7 +45,7 @@ Most text-to-app tools dump unverified JSX into a brittle iframe and hope it com
 | **Preview Runtime** | Heavy WebContainer / flaky external CDNs | **Same-origin `esbuild-wasm`** (`sandbox="allow-scripts allow-forms"`, **no** `allow-same-origin`, **no WebContainer**) |
 | **State Persistence** | Refresh the page → all app data vanishes | **Safe `postMessage` → Cloudflare D1 `project_state` bridge** (hard-refresh a generated 2048 board → 100% exact restore) |
 | **Mainland China Reachability** | Broken by `esm.sh` / `unpkg` / Google Fonts | **Zero External CDN at runtime** — Playwright `cdn-audit` fails CI on any disallowed host |
-| **LLM Resilience** | Single provider dies on 429/402 | **Gemini Flash/Lite primary → DeepSeek real-time failover** → Turn-1 replay fallback (non-destructive on follow-ups) |
+| **Model billing** | Platform key on every prompt | **One platform demo generation per visitor**, then **BYOK** (Gemini or OpenAI-compatible). A failed visitor key never falls back to platform keys. |
 | **Ownership & Export** | Trapped in proprietary preview | **One-click Runnable Vite ZIP** (`npm install && npm run dev`) + read-only `/share/[slug]` links |
 
 ---
@@ -101,7 +101,7 @@ Browser (Chinese UI · Light/Dark · Anonymous deviceId)
        └─ Safe postMessage storage bridge ↔ Cloudflare D1 project_state
               ↑
 Next.js App Router (OpenNext → Cloudflare Workers, placement: aws:us-east-1)
-  ├─ Server-side SSE Multi-Agent Pipeline (Gemini → DeepSeek failover | mock | replay)
+  ├─ Server-side SSE pipeline (one platform demo or visitor BYOK | mock | replay)
   ├─ Pluggable Execution Sandbox (Cloudflare Sandbox / local Node tsc / Worker verifier)
   └─ Drizzle ORM → Cloudflare D1 (prod) / better-sqlite3 (local & E2E)
 ```
@@ -117,6 +117,17 @@ pnpm install
 cp .env.example .dev.vars   # Add local keys if using live Gemini/DeepSeek; never commit secrets
 LLM_PROVIDER=mock pnpm dev  # Deterministic mock pipeline for instant local dev & testing
 ```
+
+### Model billing
+
+The public site stays usable without an account. Platform-paid models are a thin demo:
+
+- A visitor with no API key may complete **one** full generation on `GEMINI_API_KEY` / `DEEPSEEK_API_KEY`. Follow-up edits and later generations require the visitor's own key.
+- BYOK accepts a Google Gemini API key, or an OpenAI-compatible base URL + API key + model (DeepSeek and similar). The key is sent only with that request. It is not written to D1, cookies, event payloads, or application logs.
+- If a visitor key fails, the run fails in the open. It does not fall back to the platform keys.
+- The demo path requires Cloudflare Turnstile once `TURNSTILE_SECRET_KEY` is set. Missing Turnstile configuration refuses the platform path (mock and replay still run). Daily and monthly caps apply to **platform-key tokens only**.
+- Clearing the `deviceId` cookie can mint a new id. That is not a reliable bypass; Turnstile and the global caps are additional brakes, not a bot-proof guarantee.
+- Set a low Google AI/Cloud billing budget with disable-on-threshold on the platform key. The in-app cap is not a substitute. Do the same for a platform DeepSeek key if you keep one.
 
 ### Common Commands
 

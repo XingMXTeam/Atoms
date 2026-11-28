@@ -6,6 +6,7 @@ import * as schema from "./schema";
 import { persistSeedBundle } from "./seed-bundle";
 import {
   agentEvents,
+  deviceDemo,
   messages,
   previewProbes,
   projects,
@@ -26,11 +27,15 @@ export type Project = {
   updatedAt: Date;
 };
 
+export type RunBilling = "platform" | "byok" | "mock" | "replay";
+
 export type UsageRecord = {
   deviceId: string;
   day: string;
   runs: number;
   tokens: number;
+  platformRuns: number;
+  platformTokens: number;
 };
 
 export type Run = {
@@ -41,6 +46,7 @@ export type Run = {
   qaScore: number | null;
   tokensIn: number;
   tokensOut: number;
+  billing: RunBilling;
   startedAt: Date;
   finishedAt: Date | null;
 };
@@ -81,7 +87,11 @@ export interface AppRepository {
   getProjectByShareSlug(shareSlug: string): Promise<Project | null>;
   ensureShareSlug(projectId: string, shareSlug: string): Promise<string | null>;
   updateProjectTitle(id: string, title: string): Promise<Project>;
-  createRun(input: { projectId: string; status: string }): Promise<Run>;
+  createRun(input: {
+    projectId: string;
+    status: string;
+    billing?: RunBilling;
+  }): Promise<Run>;
   getRun(id: string): Promise<Run | null>;
   getLatestRun(projectId: string): Promise<Run | null>;
   getVersion(id: string): Promise<Version | null>;
@@ -127,10 +137,25 @@ export interface AppRepository {
   incrementUsage(
     deviceId: string,
     day: string,
-    delta: { runs?: number; tokens?: number },
+    delta: {
+      runs?: number;
+      tokens?: number;
+      platformRuns?: number;
+      platformTokens?: number;
+    },
   ): Promise<UsageRecord>;
   getUsage(deviceId: string, day: string): Promise<UsageRecord | null>;
   getGlobalTokens(day: string): Promise<number>;
+  /** Sum of platform-key tokens for one UTC day. BYOK usage is excluded. */
+  getGlobalPlatformTokens(day: string): Promise<number>;
+  /** Sum of platform-key tokens for a UTC month `YYYY-MM`. */
+  getMonthlyPlatformTokens(month: string): Promise<number>;
+  getDevicePlatformGenerations(deviceId: string): Promise<number>;
+  /**
+   * Atomically consume one lifetime platform demo generation.
+   * Returns false when the device is already at `limit`.
+   */
+  reservePlatformGeneration(deviceId: string, limit: number): Promise<boolean>;
 }
 
 export type AppDb =
@@ -159,7 +184,21 @@ function mapUsage(row: typeof usage.$inferSelect): UsageRecord {
     day: row.day,
     runs: row.runs,
     tokens: row.tokens,
+    platformRuns: row.platformRuns,
+    platformTokens: row.platformTokens,
   };
+}
+
+function asRunBilling(value: string): RunBilling {
+  if (
+    value === "platform" ||
+    value === "byok" ||
+    value === "mock" ||
+    value === "replay"
+  ) {
+    return value;
+  }
+  return "mock";
 }
 
 function mapRun(row: typeof runs.$inferSelect): Run {
@@ -171,6 +210,7 @@ function mapRun(row: typeof runs.$inferSelect): Run {
     qaScore: row.qaScore,
     tokensIn: row.tokensIn,
     tokensOut: row.tokensOut,
+    billing: asRunBilling(row.billing),
     startedAt: row.startedAt,
     finishedAt: row.finishedAt,
   };
@@ -307,6 +347,7 @@ export function createAppRepository(db: AppDb): AppRepository {
         qaScore: null,
         tokensIn: 0,
         tokensOut: 0,
+        billing: input.billing ?? "mock",
         startedAt: now,
         finishedAt: null,
       };
@@ -469,6 +510,8 @@ export function createAppRepository(db: AppDb): AppRepository {
     async incrementUsage(deviceId, day, delta) {
       const runsDelta = delta.runs ?? 0;
       const tokensDelta = delta.tokens ?? 0;
+      const platformRunsDelta = delta.platformRuns ?? 0;
+      const platformTokensDelta = delta.platformTokens ?? 0;
 
       await db
         .insert(usage)
@@ -477,12 +520,16 @@ export function createAppRepository(db: AppDb): AppRepository {
           day,
           runs: runsDelta,
           tokens: tokensDelta,
+          platformRuns: platformRunsDelta,
+          platformTokens: platformTokensDelta,
         })
         .onConflictDoUpdate({
           target: [usage.deviceId, usage.day],
           set: {
             runs: sql`${usage.runs} + ${runsDelta}`,
             tokens: sql`${usage.tokens} + ${tokensDelta}`,
+            platformRuns: sql`${usage.platformRuns} + ${platformRunsDelta}`,
+            platformTokens: sql`${usage.platformTokens} + ${platformTokensDelta}`,
           },
         });
 
@@ -509,6 +556,63 @@ export function createAppRepository(db: AppDb): AppRepository {
         .from(usage)
         .where(eq(usage.day, day));
       return rows.reduce((sum, row) => sum + row.tokens, 0);
+    },
+
+    async getGlobalPlatformTokens(day) {
+      const rows = await db
+        .select()
+        .from(usage)
+        .where(eq(usage.day, day));
+      return rows.reduce((sum, row) => sum + row.platformTokens, 0);
+    },
+
+    async getMonthlyPlatformTokens(month) {
+      const rows = await db
+        .select()
+        .from(usage)
+        .where(sql`${usage.day} LIKE ${`${month}-%`}`);
+      return rows.reduce((sum, row) => sum + row.platformTokens, 0);
+    },
+
+    async getDevicePlatformGenerations(deviceId) {
+      const rows = await db
+        .select()
+        .from(deviceDemo)
+        .where(eq(deviceDemo.deviceId, deviceId))
+        .limit(1);
+      return rows[0]?.platformGenerations ?? 0;
+    },
+
+    async reservePlatformGeneration(deviceId, limit) {
+      if (limit <= 0) return false;
+      const before = await this.getDevicePlatformGenerations(deviceId);
+      if (before >= limit) return false;
+      if (before === 0) {
+        try {
+          await db.insert(deviceDemo).values({
+            deviceId,
+            platformGenerations: 1,
+          });
+          return true;
+        } catch (error) {
+          const message = error instanceof Error ? error.message : String(error);
+          if (!/unique|constraint/i.test(message)) throw error;
+        }
+      }
+      const updated = await db
+        .update(deviceDemo)
+        .set({
+          platformGenerations: sql`${deviceDemo.platformGenerations} + 1`,
+        })
+        .where(
+          and(
+            eq(deviceDemo.deviceId, deviceId),
+            sql`${deviceDemo.platformGenerations} = ${before}`,
+            sql`${deviceDemo.platformGenerations} < ${limit}`,
+          ),
+        )
+        .returning();
+      return updated.length > 0;
     },
 
     async getProjectState(projectId) {

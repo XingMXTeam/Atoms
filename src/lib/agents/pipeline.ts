@@ -64,6 +64,12 @@ export type RunAgentPipelineOptions = {
     plan: SandboxReviewPlan,
     expectedSha256: string,
   ) => Promise<SandboxReviewReport | null>;
+  /**
+   * `platform` counts tokens against the platform budget.
+   * `visitor` (BYOK) records run tokens but does not touch that budget.
+   * Omitted keeps the historical device `usage.tokens` counter.
+   */
+  billTo?: "platform" | "visitor";
 };
 
 async function delayStage(ms: number | undefined, signal?: AbortSignal) {
@@ -143,12 +149,28 @@ export async function runAgentPipeline(
     probePreview,
     verifySandbox,
     reviewSandbox,
+    billTo,
   } = options;
   const nextSeq = createSeqCounter();
   let sawReplayFallback = false;
   let replayLabel: string | undefined;
   let tokensIn = 0;
   let tokensOut = 0;
+  const chargeUsage = async (swallow: boolean) => {
+    if (!deviceId || tokensIn + tokensOut <= 0) return;
+    if (billTo === "visitor") return;
+    const total = tokensIn + tokensOut;
+    const write = repo.incrementUsage(deviceId, utcDay(), {
+      tokens: total,
+      ...(billTo === "platform" ? { platformTokens: total } : {}),
+    });
+    if (swallow) {
+      await write.catch(() => undefined);
+      return;
+    }
+    await write;
+  };
+
   const trackedProvider: LlmProvider = {
     mode: provider.mode,
     async complete(input: unknown) {
@@ -492,11 +514,7 @@ export async function runAgentPipeline(
       tokensIn,
       tokensOut,
     });
-    if (deviceId && tokensIn + tokensOut > 0) {
-      await repo.incrementUsage(deviceId, utcDay(), {
-        tokens: tokensIn + tokensOut,
-      });
-    }
+    await chargeUsage(false);
 
     return {
       plan,
@@ -541,13 +559,7 @@ export async function runAgentPipeline(
       tokensIn,
       tokensOut,
     });
-    if (deviceId && tokensIn + tokensOut > 0) {
-      await repo
-        .incrementUsage(deviceId, utcDay(), {
-          tokens: tokensIn + tokensOut,
-        })
-        .catch(() => undefined);
-    }
+    await chargeUsage(true);
     throw error;
   }
 }

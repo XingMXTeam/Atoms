@@ -1,6 +1,8 @@
 import { getEnv, type ProviderMode } from "@/lib/env";
+import type { ByokCredentials } from "./byok";
 import { createGeminiProvider } from "./modes/gemini";
 import { createMockProvider } from "./modes/mock";
+import { createOpenAiCompatibleProvider } from "./modes/openai-compatible";
 import { createReplayProvider } from "./modes/replay";
 import type { LlmProvider } from "./types";
 
@@ -40,4 +42,23 @@ export function createLlmProvider(
       return _exhaustive;
     }
   }
+}
+
+/**
+ * Visitor key only. Does not read GEMINI_API_KEY or DEEPSEEK_API_KEY.
+ * Transport failures throw instead of falling back to platform keys or replay.
+ */
+export function createByokProvider(credentials: ByokCredentials): LlmProvider {
+  if (credentials.kind === "gemini") {
+    return createGeminiProvider({
+      apiKey: credentials.apiKey,
+      deepseekApiKey: "",
+      failureMode: "throw",
+    });
+  }
+  return createOpenAiCompatibleProvider({
+    apiKey: credentials.apiKey,
+    baseUrl: credentials.baseUrl,
+    model: credentials.model,
+  });
 }
